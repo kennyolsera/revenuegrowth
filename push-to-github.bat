@@ -30,8 +30,6 @@ if exist "%LOCALAPPDATA%\Programs\Git\cmd\git.exe" (
     goto GIT_FOUND
 )
 
-echo [PERINGATAN] git.exe tidak ditemukan otomatis di PATH sistem.
-echo Mencoba memanggil 'git'...
 set "GIT_CMD=git"
 
 :GIT_FOUND
@@ -60,9 +58,9 @@ echo [4/5] Menambahkan seluruh file terbaru dan commit...
 "%GIT_CMD%" add -A
 "%GIT_CMD%" commit -m "feat: bilingual ID/EN, collapsible sidebar, senior UI/UX polish"
 
-:: 5. Push ke GitHub
-echo [5/5] Melakukan push update ke GitHub...
-"%GIT_CMD%" push -u origin main
+:: 5. Force Push ke GitHub
+echo [5/5] Melakukan sinkronisasi push ke GitHub...
+"%GIT_CMD%" push -u origin main --force
 
 echo.
 echo ======================================================
