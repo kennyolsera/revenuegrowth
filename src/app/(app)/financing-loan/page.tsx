@@ -87,7 +87,7 @@ export default function FinancingLoanPage() {
         description={t("fl_desc")}
         addLabel={t("fl_add")}
         selectQuery="*, merchant:merchants(name)"
-        searchKeys={[]}
+        searchKeys={["pic", "notes"]}
         filters={[{ key: "status", label: t("fl_col_status"), options: STATUS_OPTIONS }]}
         defaultValues={{ status: "diajukan" }}
         columns={columns}
@@ -100,7 +100,7 @@ export default function FinancingLoanPage() {
         formFields={[
           { key: "merchant_id", label: t("fl_col_merchant"), type: "select", required: true, options: merchantOptions },
           { key: "loan_amount", label: t("fl_col_amount"), type: "number", required: true },
-          { key: "disbursed_at", label: t("fl_col_disbursed"), type: "date", required: true },
+          { key: "disbursed_at", label: t("fl_col_disbursed"), type: "date" },
           { key: "status", label: t("fl_col_status"), type: "select", required: true, options: STATUS_OPTIONS },
           { key: "revenue_before", label: t("fl_col_rev_before"), type: "number" },
           { key: "revenue_after", label: t("fl_col_rev_after"), type: "number" },

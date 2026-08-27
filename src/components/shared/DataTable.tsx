@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { EmptyState } from "./SupabaseNotice";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export interface ColumnDef<T> {
   key: string;
@@ -13,7 +14,7 @@ export function DataTable<T extends { id: string | number }>({
   columns,
   rows,
   actions,
-  emptyText = "Belum ada data.",
+  emptyText,
   onRowClick,
 }: {
   columns: ColumnDef<T>[];
@@ -22,6 +23,9 @@ export function DataTable<T extends { id: string | number }>({
   emptyText?: string;
   onRowClick?: (row: T) => void;
 }) {
+  const { t } = useLanguage();
+  const resolvedEmptyText = emptyText ?? t("no_data");
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="scrollbar-thin overflow-x-auto">
@@ -42,7 +46,7 @@ export function DataTable<T extends { id: string | number }>({
               ))}
               {actions && (
                 <th className="px-4 py-3.5 text-right text-xs font-bold uppercase tracking-wider text-slate-600">
-                  Aksi
+                  {t("actions")}
                 </th>
               )}
             </tr>
@@ -51,7 +55,7 @@ export function DataTable<T extends { id: string | number }>({
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + (actions ? 1 : 0)} className="px-4 py-12">
-                  <EmptyState text={emptyText} />
+                  <EmptyState text={resolvedEmptyText} />
                 </td>
               </tr>
             ) : (

@@ -403,7 +403,18 @@ export default function UsersPage() {
             <Input value={inviteForm.division} onChange={(e) => setInviteForm((p) => ({ ...p, division: e.target.value }))} placeholder="mis. Revenue Growth / Sales" />
           </Field>
 
+          {/* Info notice about email invite + no default password */}
+          <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2.5 text-xs text-blue-800 leading-relaxed">
+            <span className="font-bold">
+              {language === "id" ? "ℹ️ Cara Kerja:" : "ℹ️ How it works:"}
+            </span>{" "}
+            {language === "id"
+              ? "Pengguna akan menerima email undangan dari Supabase. Mereka perlu klik link di email untuk mengatur password sendiri. Tidak ada password default. Minta pengguna untuk cek inbox (dan folder spam) setelah diundang."
+              : "The invited user will receive an email from Supabase with a setup link. They click the link to set their own password. There is no default password — ask the new member to check their inbox (and spam folder) after being invited."}
+          </div>
+
           {inviteMsg && (
+
             <p className="mb-3 rounded-xl bg-slate-100 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-700">{inviteMsg}</p>
           )}
 

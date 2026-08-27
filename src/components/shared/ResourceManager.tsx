@@ -42,6 +42,25 @@ export interface ResourceManagerProps<T extends { id: string }> {
   extraRowActions?: (row: T, refresh: () => void) => React.ReactNode;
 }
 
+/**
+ * Strip nested objects / joins from a payload before sending to Supabase.
+ * Supabase PostgREST rejects payloads that include joined relation objects
+ * (e.g., { merchant: { name: "X" } }) — those come from selectQuery joins
+ * but must never be written back.
+ */
+function sanitizePayload(values: Record<string, any>): Record<string, any> {
+  const result: Record<string, any> = {};
+  for (const [key, val] of Object.entries(values)) {
+    // Skip nested objects (joined relations like merchant: { id, name })
+    // Keep null, booleans, numbers, strings, and arrays (e.g., jsonb)
+    if (val !== null && typeof val === "object" && !Array.isArray(val)) {
+      continue;
+    }
+    result[key] = val;
+  }
+  return result;
+}
+
 export function ResourceManager<T extends { id: string }>({
   table,
   title,
@@ -119,7 +138,13 @@ export function ResourceManager<T extends { id: string }>({
 
   function openEdit(row: T) {
     setEditing(row);
-    setFormValues({ ...row });
+    // Only populate form with fields that correspond to actual form fields (strip joins)
+    const fieldKeys = formFields.map((f) => f.key);
+    const cleanFormValues: Record<string, any> = {};
+    fieldKeys.forEach((key) => {
+      cleanFormValues[key] = (row as any)[key] ?? defaultValues[key] ?? "";
+    });
+    setFormValues(cleanFormValues);
     setFormError(null);
     setDialogOpen(true);
   }
@@ -149,7 +174,7 @@ export function ResourceManager<T extends { id: string }>({
       alert(`${t("delete_error")}: ${error.message}`);
       return;
     }
-    await logActivity("DELETE", row.id, row);
+    await logActivity("DELETE", row.id, sanitizePayload(row as any));
     fetchRows();
   }
 
@@ -161,7 +186,7 @@ export function ResourceManager<T extends { id: string }>({
       const supabase = createClient();
       const currentValues = { ...formValues };
 
-      // Check for merchant_id manual entry resolution
+      // Resolve merchant_id if user typed manually
       for (const f of formFields) {
         if (f.type === "merchant_select" || f.key === "merchant_id") {
           const rawVal = currentValues[f.key];
@@ -176,12 +201,14 @@ export function ResourceManager<T extends { id: string }>({
         }
       }
 
-      const payload = onBeforeSave ? await onBeforeSave(currentValues) : currentValues;
+      // Sanitize payload — remove any nested join objects
+      const sanitized = sanitizePayload(currentValues);
+      const payload = onBeforeSave ? await onBeforeSave(sanitized) : sanitized;
 
       if (editing) {
         const { error } = await supabase.from(table).update(payload).eq("id", editing.id);
         if (error) throw error;
-        await logActivity("UPDATE", editing.id, editing, payload);
+        await logActivity("UPDATE", editing.id, sanitizePayload(editing as any), payload);
       } else {
         const { data: inserted, error } = await supabase.from(table).insert(payload).select().single();
         if (error) throw error;
@@ -259,7 +286,7 @@ export function ResourceManager<T extends { id: string }>({
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title={editing ? `${t("edit")} - ${title}` : effectiveAddLabel}
+        title={editing ? `${t("edit")} — ${title}` : effectiveAddLabel}
         width="max-w-xl"
       >
         <form onSubmit={handleSubmit}>

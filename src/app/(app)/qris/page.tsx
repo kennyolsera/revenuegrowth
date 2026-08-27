@@ -35,7 +35,7 @@ export default function QrisPage() {
       description={t("qris_desc")}
       addLabel={t("qris_add")}
       selectQuery="*, merchant:merchants(name)"
-      searchKeys={["region", "pic"]}
+      searchKeys={["region", "pic", "notes"]}
       filters={[{ key: "status", label: t("qris_col_status"), options: STATUS_OPTIONS }]}
       defaultValues={{ status: "diajukan" }}
       columns={columns}

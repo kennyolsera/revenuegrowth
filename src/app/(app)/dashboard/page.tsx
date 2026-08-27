@@ -16,9 +16,9 @@ import Link from "next/link";
 
 interface DashboardData {
   merchantCount: number;
-  qrisGrowthPct: number | null;
   loanDisbursed: number;
   openRequests: number;
+  qrisActive: number;
   growthSeries: GrowthPoint[];
   pipeline: { name: string; value: number }[];
   agenda: { id: string; title: string; start_time: string; event_type: string }[];
@@ -27,14 +27,22 @@ interface DashboardData {
 
 const EMPTY: DashboardData = {
   merchantCount: 0,
-  qrisGrowthPct: null,
   loanDisbursed: 0,
   openRequests: 0,
+  qrisActive: 0,
   growthSeries: [],
   pipeline: [],
   agenda: [],
   recentRequests: [],
 };
+
+/** Returns today's start and end in local time converted to ISO */
+function todayBoundaryISO(): { start: string; end: string } {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  return { start: startOfDay.toISOString(), end: endOfDay.toISOString() };
+}
 
 export default function DashboardPage() {
   const { t, language } = useLanguage();
@@ -44,21 +52,46 @@ export default function DashboardPage() {
   useEffect(() => {
     async function load() {
       if (!isSupabaseConfigured) {
+        // Use realistic sample data for demo when Supabase not configured
+        setData({
+          merchantCount: 248,
+          loanDisbursed: 1850000000,
+          openRequests: 6,
+          qrisActive: 142,
+          growthSeries: [
+            { period: "M-5", qris: 12, onlineOrder: 6, financing: 3 },
+            { period: "M-4", qris: 19, onlineOrder: 11, financing: 5 },
+            { period: "M-3", qris: 28, onlineOrder: 15, financing: 8 },
+            { period: "M-2", qris: 35, onlineOrder: 22, financing: 12 },
+            { period: "M-1", qris: 42, onlineOrder: 30, financing: 18 },
+            { period: "This Month", qris: 50, onlineOrder: 38, financing: 24 },
+          ],
+          pipeline: [
+            { name: "Active", value: 45 },
+            { name: "Processing", value: 25 },
+            { name: "Verification", value: 15 },
+            { name: "Review", value: 10 },
+          ],
+          agenda: [],
+          recentRequests: [],
+        });
         setLoading(false);
         return;
       }
       const supabase = createClient();
+      const { start, end } = todayBoundaryISO();
 
-      const [merchants, qris, loans, requests, events, recentReq] = await Promise.all([
+      const [merchants, qrisList, loans, requests, events, recentReq] = await Promise.all([
         supabase.from("merchants").select("id", { count: "exact", head: true }),
         supabase.from("qris_acquisitions").select("status"),
-        supabase.from("financing_loans").select("loan_amount, status"),
+        // Only sum loans that are actually disbursed or fully paid off
+        supabase.from("financing_loans").select("loan_amount, status").in("status", ["dicairkan", "lunas"]),
         supabase.from("requests").select("id", { count: "exact", head: true }).neq("status", "selesai"),
         supabase
           .from("calendar_events")
           .select("id, title, start_time, event_type")
-          .gte("start_time", new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
-          .lte("start_time", new Date(new Date().setHours(23, 59, 59, 999)).toISOString())
+          .gte("start_time", start)
+          .lte("start_time", end)
           .order("start_time", { ascending: true })
           .limit(5),
         supabase
@@ -69,29 +102,41 @@ export default function DashboardPage() {
       ]);
 
       const statusCounts: Record<string, number> = {};
-      (qris.data ?? []).forEach((r: any) => {
+      (qrisList.data ?? []).forEach((r: any) => {
         statusCounts[r.status] = (statusCounts[r.status] ?? 0) + 1;
       });
 
-      const disbursed = (loans.data ?? []).reduce((sum: number, l: any) => sum + (l.loan_amount ?? 0), 0);
+      const qrisActive = statusCounts["aktif"] ?? 0;
+      const disbursed = (loans.data ?? []).reduce(
+        (sum: number, l: any) => sum + (l.loan_amount ?? 0),
+        0
+      );
 
-      const sampleGrowth: GrowthPoint[] = [
+      const growthSeries: GrowthPoint[] = [
         { period: "M-5", qris: 12, onlineOrder: 6, financing: 3 },
         { period: "M-4", qris: 19, onlineOrder: 11, financing: 5 },
         { period: "M-3", qris: 28, onlineOrder: 15, financing: 8 },
         { period: "M-2", qris: 35, onlineOrder: 22, financing: 12 },
         { period: "M-1", qris: 42, onlineOrder: 30, financing: 18 },
-        { period: "Bulan Ini", qris: (qris.data?.length ?? 0) || 50, onlineOrder: 38, financing: 24 },
+        {
+          period: language === "id" ? "Bulan Ini" : "This Month",
+          qris: (qrisList.data?.length ?? 0) || 50,
+          onlineOrder: 38,
+          financing: 24,
+        },
       ];
 
       setData({
         merchantCount: merchants.count ?? 0,
-        qrisGrowthPct: 18.4,
         loanDisbursed: disbursed,
         openRequests: requests.count ?? 0,
-        growthSeries: sampleGrowth,
+        qrisActive,
+        growthSeries,
         pipeline: Object.entries(statusCounts).length
-          ? Object.entries(statusCounts).map(([name, value]) => ({ name: name.replaceAll("_", " "), value }))
+          ? Object.entries(statusCounts).map(([name, value]) => ({
+              name: name.replaceAll("_", " "),
+              value,
+            }))
           : [
               { name: "Aktif", value: 45 },
               { name: "Proses", value: 25 },
@@ -104,7 +149,7 @@ export default function DashboardPage() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [language]);
 
   return (
     <div className="space-y-6">
@@ -124,7 +169,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={t("dash_kpi_merchants")}
-          value={loading ? "…" : String(data.merchantCount || 248)}
+          value={loading ? "…" : String(data.merchantCount)}
           icon={Users}
           trend="+14.2% MoM"
           trendTone="success"
@@ -132,7 +177,7 @@ export default function DashboardPage() {
         />
         <KpiCard
           label={t("dash_kpi_loans")}
-          value={loading ? "…" : formatRupiah(data.loanDisbursed || 1850000000)}
+          value={loading ? "…" : formatRupiah(data.loanDisbursed)}
           icon={Landmark}
           trend="+22.8% YTD"
           trendTone="success"
@@ -140,15 +185,15 @@ export default function DashboardPage() {
         />
         <KpiCard
           label={t("dash_kpi_requests")}
-          value={loading ? "…" : String(data.openRequests || 6)}
+          value={loading ? "…" : String(data.openRequests)}
           icon={Inbox}
-          trend="4 high priority"
+          trend={`${data.openRequests > 0 ? data.openRequests : 0} open`}
           trendTone="neutral"
           color="amber"
         />
         <KpiCard
           label={t("dash_kpi_qris_active")}
-          value={loading ? "…" : String(data.pipeline.find((p) => p.name.toLowerCase() === "aktif")?.value || 142)}
+          value={loading ? "…" : String(data.qrisActive)}
           icon={QrCode}
           trend="+18.4% growth"
           trendTone="success"
