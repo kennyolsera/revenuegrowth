@@ -52,14 +52,31 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
 );
 Select.displayName = "Select";
 
-export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
+export function Label({
+  children,
+  htmlFor,
+  className,
+}: {
+  children: React.ReactNode;
+  htmlFor?: string;
+  className?: string;
+}) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-xs font-semibold text-slate-700 tracking-tight">
+    <label
+      htmlFor={htmlFor}
+      className={cn("mb-1.5 block text-xs font-semibold text-slate-700 tracking-tight", className)}
+    >
       {children}
     </label>
   );
 }
 
-export function Field({ children }: { children: React.ReactNode }) {
-  return <div className="mb-4">{children}</div>;
+export function Field({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={cn("mb-4", className)}>{children}</div>;
 }
