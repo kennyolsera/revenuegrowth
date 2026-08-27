@@ -13,19 +13,26 @@ export const translations = {
     logout: "Keluar",
     version: "VAS — Revenue Growth v1.0",
 
+    // Nav Groups
+    nav_group_operations: "Operasional",
+    nav_group_features: "Fitur VAS",
+    nav_group_data: "Data & Laporan",
+    nav_group_settings: "Pengaturan",
+
     // Nav items
     nav_dashboard: "Dashboard",
+    nav_calendar: "Calendar & Meeting",
+    nav_mom: "MOM / Notulen",
     nav_qris: "Akuisisi QRIS",
-    nav_network_partner: "Network Partner",
     nav_online_order: "Online Order",
     nav_financing_loan: "Financing Loan",
+    nav_network_partner: "Network Partner",
     nav_merchant_status: "Status & Klaim Komisi",
     nav_requests: "Request Form",
     nav_weekly_report: "Report Mingguan",
     nav_leads: "Data Leads",
-    nav_calendar: "Calendar & Meeting",
-    nav_mom: "MOM / Notulen",
     nav_users: "User Management",
+    nav_logs: "Activity Log",
 
     // Dashboard
     dash_header_title: "Dashboard Operasional",
@@ -67,6 +74,14 @@ export const translations = {
     approved: "Disetujui",
     rejected: "Ditolak",
     success_save: "Data berhasil disimpan.",
+
+    // Merchant Smart Field (Select / Manual Input)
+    merchant_select_existing: "Pilih dari Daftar Merchant",
+    merchant_input_manual: "Input Nama Merchant Manual",
+    merchant_placeholder_manual: "Ketik nama merchant baru...",
+    merchant_toggle_manual: "Ketik Manual",
+    merchant_toggle_select: "Pilih dari List",
+    merchant_new_tag: "Merchant Baru",
 
     // QRIS
     qris_title: "Akuisisi QRIS",
@@ -176,7 +191,7 @@ export const translations = {
     mom_col_date: "Tanggal Meeting",
     mom_col_actions: "Action Item",
 
-    // Users
+    // Users & Logs
     users_title: "User & Role Management",
     users_desc: "Kelola akun pengguna, peran otorisasi, dan status akses tim Revenue Growth.",
     users_add: "Undang Pengguna",
@@ -188,6 +203,20 @@ export const translations = {
     users_col_joined: "Bergabung",
     users_active: "Aktif",
     users_inactive: "Nonaktif",
+    users_tab_members: "Daftar Anggota",
+    users_tab_logs: "Activity Log Anggota",
+
+    // Activity Logs
+    logs_title: "Activity & Audit Logs",
+    logs_desc: "Pantau seluruh rekam jejak aktivitas, perubahan data, dan histori operasional semua member tim.",
+    logs_col_user: "Pengguna / Pelaku",
+    logs_col_action: "Aktivitas",
+    logs_col_module: "Modul / Entitas",
+    logs_col_time: "Waktu",
+    logs_col_details: "Rincian Perubahan",
+    logs_filter_action: "Tipe Aksi",
+    logs_filter_module: "Modul",
+    logs_empty: "Belum ada rekaman aktivitas.",
 
     // Login
     login_hero_title: "Pusat Operasional Divisi Revenue Growth",
@@ -212,19 +241,26 @@ export const translations = {
     logout: "Log Out",
     version: "VAS — Revenue Growth v1.0",
 
+    // Nav Groups
+    nav_group_operations: "Operations",
+    nav_group_features: "Features",
+    nav_group_data: "Data & Reports",
+    nav_group_settings: "Settings",
+
     // Nav items
     nav_dashboard: "Dashboard",
+    nav_calendar: "Calendar & Meetings",
+    nav_mom: "MOM Minutes",
     nav_qris: "QRIS Acquisition",
-    nav_network_partner: "Network Partner",
     nav_online_order: "Online Order",
     nav_financing_loan: "Financing Loan",
+    nav_network_partner: "Network Partner",
     nav_merchant_status: "Status & Commission Claims",
     nav_requests: "Request Form",
     nav_weekly_report: "Weekly Report",
     nav_leads: "Leads Data",
-    nav_calendar: "Calendar & Meetings",
-    nav_mom: "MOM / Minutes",
     nav_users: "User Management",
+    nav_logs: "Activity Log",
 
     // Dashboard
     dash_header_title: "Operations Dashboard",
@@ -266,6 +302,14 @@ export const translations = {
     approved: "Approved",
     rejected: "Rejected",
     success_save: "Data successfully saved.",
+
+    // Merchant Smart Field (Select / Manual Input)
+    merchant_select_existing: "Select from Merchant List",
+    merchant_input_manual: "Enter Merchant Name Manually",
+    merchant_placeholder_manual: "Type new merchant name...",
+    merchant_toggle_manual: "Type Manually",
+    merchant_toggle_select: "Select from List",
+    merchant_new_tag: "New Merchant",
 
     // QRIS
     qris_title: "QRIS Acquisition",
@@ -375,7 +419,7 @@ export const translations = {
     mom_col_date: "Meeting Date",
     mom_col_actions: "Action Items",
 
-    // Users
+    // Users & Logs
     users_title: "User & Role Management",
     users_desc: "Manage member accounts, role permissions, and access privileges for Revenue Growth.",
     users_add: "Invite Member",
@@ -387,6 +431,20 @@ export const translations = {
     users_col_joined: "Joined Date",
     users_active: "Active",
     users_inactive: "Inactive",
+    users_tab_members: "Member List",
+    users_tab_logs: "Member Activity Logs",
+
+    // Activity Logs
+    logs_title: "Activity & Audit Logs",
+    logs_desc: "Monitor member activity footprints, data alterations, and full operational history for all team members.",
+    logs_col_user: "User / Actor",
+    logs_col_action: "Activity Action",
+    logs_col_module: "Module / Target",
+    logs_col_time: "Timestamp",
+    logs_col_details: "Change Details",
+    logs_filter_action: "Action Type",
+    logs_filter_module: "Module",
+    logs_empty: "No activity logs recorded yet.",
 
     // Login
     login_hero_title: "Operations Hub for Revenue Growth Division",
@@ -401,4 +459,4 @@ export const translations = {
   },
 };
 
-export type TranslationKey = keyof typeof translations.id;
+export type TranslationKey = keyof typeof translations.en;

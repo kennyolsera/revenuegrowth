@@ -13,7 +13,7 @@ interface LanguageContextValue {
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>("id");
+  const [language, setLanguageState] = useState<Language>("en");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,12 +32,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }
 
   function toggleLanguage() {
-    const next = language === "id" ? "en" : "id";
+    const next = language === "en" ? "id" : "en";
     setLanguage(next);
   }
 
   function t(key: TranslationKey, fallback?: string): string {
-    const dict = translations[language] || translations.id;
+    const dict = translations[language] || translations.en;
     return dict[key] ?? fallback ?? key;
   }
 

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
+import { MerchantSelectField, resolveMerchantId } from "@/components/shared/MerchantSelectField";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 
@@ -102,12 +103,19 @@ function MomPageInner() {
     setSaving(true);
     try {
       const supabase = createClient();
+      let resolvedMerchantId = form.merchant_id;
+
+      if (typeof resolvedMerchantId === "string" && resolvedMerchantId.startsWith("manual:")) {
+        const rawName = resolvedMerchantId.replace("manual:", "");
+        resolvedMerchantId = (await resolveMerchantId(rawName, merchantOptions)) || "";
+      }
+
       const { data: userData } = await supabase.auth.getUser();
       const { error } = await supabase.from("meeting_minutes").insert({
         title: form.title,
         meeting_date: form.meeting_date,
         category: form.category,
-        merchant_id: form.merchant_id || null,
+        merchant_id: resolvedMerchantId || null,
         participants: form.participants,
         discussion_points: form.discussion_points,
         action_items: actionItems.filter((a) => a.label.trim() !== ""),
@@ -203,15 +211,11 @@ function MomPageInner() {
               </Select>
             </Field>
             <Field>
-              <Label>{t("mom_col_merchant")}</Label>
-              <Select value={form.merchant_id} onChange={(e) => setForm((p) => ({ ...p, merchant_id: e.target.value }))}>
-                <option value="">{language === "id" ? "Tidak ada" : "None"}</option>
-                {merchantOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
+              <MerchantSelectField
+                label={t("mom_col_merchant")}
+                value={form.merchant_id}
+                onChange={(val) => setForm((p) => ({ ...p, merchant_id: val }))}
+              />
             </Field>
           </div>
           <Field>

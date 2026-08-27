@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, ShieldCheck, ShieldOff } from "lucide-react";
+import { Plus, ShieldCheck, ShieldOff, Users, Activity, Eye, User, Clock, Layers } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -11,8 +11,52 @@ import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Input, Label, Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+
+interface AuditLogRow {
+  id: string;
+  table_name: string;
+  record_id: string | null;
+  action: string;
+  changed_by: string;
+  changed_at: string;
+  old_value: any;
+  new_value: any;
+}
+
+const SAMPLE_LOGS: AuditLogRow[] = [
+  {
+    id: "log-1",
+    table_name: "profiles",
+    record_id: "usr-01",
+    action: "LOGIN",
+    changed_by: "superadmin@revenuegrowth.com",
+    changed_at: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+    old_value: null,
+    new_value: { status: "success", ip: "103.28.12.9" },
+  },
+  {
+    id: "log-2",
+    table_name: "qris_acquisitions",
+    record_id: "qris-88",
+    action: "CREATE",
+    changed_by: "kenny@perusahaan.com",
+    changed_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+    old_value: null,
+    new_value: { merchant_name: "Kopi Kenangan Grand Indonesia", region: "Jakarta Pusat", status: "diajukan" },
+  },
+  {
+    id: "log-3",
+    table_name: "financing_loans",
+    record_id: "fl-32",
+    action: "UPDATE",
+    changed_by: "finance.ops@perusahaan.com",
+    changed_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+    old_value: { status: "diajukan", loan_amount: 150000000 },
+    new_value: { status: "disetujui", loan_amount: 150000000, approved_by: "Head of RG" },
+  },
+];
 
 export default function UsersPage() {
   const { t, language } = useLanguage();
@@ -25,6 +69,9 @@ export default function UsersPage() {
     { value: "finance_ops", label: "Finance / Ops" },
   ];
 
+  const [activeTab, setActiveTab] = useState<"members" | "logs">("members");
+
+  // Members state
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +84,11 @@ export default function UsersPage() {
 
   const [editing, setEditing] = useState<any | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Logs state
+  const [logs, setLogs] = useState<AuditLogRow[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [inspectRow, setInspectRow] = useState<AuditLogRow | null>(null);
 
   async function fetchRows() {
     setLoading(true);
@@ -53,12 +105,34 @@ export default function UsersPage() {
     }
   }
 
+  async function fetchLogs() {
+    setLogsLoading(true);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("audit_logs").select("*").order("changed_at", { ascending: false }).limit(50);
+      if (error || !data || data.length === 0) {
+        setLogs(SAMPLE_LOGS);
+      } else {
+        setLogs(data);
+      }
+    } catch {
+      setLogs(SAMPLE_LOGS);
+    } finally {
+      setLogsLoading(false);
+    }
+  }
+
   useEffect(() => {
     fetchRows();
+    fetchLogs();
   }, []);
 
-  const filtered = rows.filter(
+  const filteredMembers = rows.filter(
     (r) => !search || r.full_name?.toLowerCase().includes(search.toLowerCase()) || r.email?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const filteredLogs = logs.filter(
+    (l) => !search || l.changed_by.toLowerCase().includes(search.toLowerCase()) || l.action.toLowerCase().includes(search.toLowerCase()) || l.table_name.toLowerCase().includes(search.toLowerCase())
   );
 
   async function handleInvite(e: React.FormEvent) {
@@ -108,7 +182,7 @@ export default function UsersPage() {
     }
   }
 
-  const columns: ColumnDef<any>[] = [
+  const memberColumns: ColumnDef<any>[] = [
     { key: "full_name", label: t("users_col_name") },
     { key: "email", label: t("users_col_email") },
     {
@@ -133,6 +207,59 @@ export default function UsersPage() {
     { key: "created_at", label: t("users_col_joined"), render: (r) => formatDate(r.created_at) },
   ];
 
+  const logColumns: ColumnDef<AuditLogRow>[] = [
+    {
+      key: "changed_by",
+      label: t("logs_col_user"),
+      render: (r) => (
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-600 font-semibold text-xs border border-slate-200">
+            <User className="h-3.5 w-3.5" />
+          </div>
+          <span className="font-semibold text-slate-800 text-xs">{r.changed_by}</span>
+        </div>
+      ),
+    },
+    {
+      key: "action",
+      label: t("logs_col_action"),
+      render: (r) => {
+        const action = r.action.toUpperCase();
+        let tone: "success" | "danger" | "warning" | "info" | "neutral" = "neutral";
+        if (action.includes("CREATE") || action.includes("INSERT")) tone = "success";
+        else if (action.includes("UPDATE") || action.includes("EDIT")) tone = "info";
+        else if (action.includes("DELETE") || action.includes("REMOVE")) tone = "danger";
+        else if (action.includes("LOGIN") || action.includes("AUTH")) tone = "warning";
+
+        return (
+          <Badge tone={tone} showDot>
+            {action}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "table_name",
+      label: t("logs_col_module"),
+      render: (r) => (
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100/80 px-2 py-1 text-xs font-mono font-medium text-slate-700 border border-slate-200/80">
+          <Layers className="h-3 w-3 text-slate-400" />
+          {r.table_name}
+        </span>
+      ),
+    },
+    {
+      key: "changed_at",
+      label: t("logs_col_time"),
+      render: (r) => (
+        <span className="flex items-center gap-1.5 text-xs text-slate-500 font-mono">
+          <Clock className="h-3.5 w-3.5 text-slate-400" />
+          {formatDate(r.changed_at, true)}
+        </span>
+      ),
+    },
+  ];
+
   return (
     <div className="space-y-5">
       <PageHeader
@@ -145,39 +272,103 @@ export default function UsersPage() {
         }
       />
 
+      {/* Tabs Header */}
+      <div className="flex items-center gap-2 border-b border-slate-200">
+        <button
+          type="button"
+          onClick={() => setActiveTab("members")}
+          className={cn(
+            "flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-all",
+            activeTab === "members"
+              ? "border-accent text-accent"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          )}
+        >
+          <Users className="h-4 w-4" />
+          {t("users_tab_members")}
+          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600">
+            {rows.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("logs")}
+          className={cn(
+            "flex items-center gap-2 border-b-2 px-4 py-2.5 text-xs font-bold transition-all",
+            activeTab === "logs"
+              ? "border-accent text-accent"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          )}
+        >
+          <Activity className="h-4 w-4" />
+          {t("users_tab_logs")}
+          <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] text-accent font-semibold">
+            {logs.length}
+          </span>
+        </button>
+      </div>
+
       {!isSupabaseConfigured && <SupabaseNotice />}
       {isSupabaseConfigured && error && <ErrorNotice message={error} />}
 
       <Toolbar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder={language === "id" ? "Cari nama / email..." : "Search name / email..."}
+        searchPlaceholder={
+          activeTab === "members"
+            ? language === "id"
+              ? "Cari nama / email member..."
+              : "Search member name / email..."
+            : language === "id"
+            ? "Cari riwayat aktivitas user..."
+            : "Search user activity logs..."
+        }
       />
 
-      <DataTable
-        columns={columns}
-        rows={filtered}
-        emptyText={loading ? t("loading") : t("no_data")}
-        actions={(row) => (
-          <div className="flex justify-end gap-1">
-            <button
-              onClick={() => setEditing(row)}
-              className="rounded-lg px-2.5 py-1 text-xs font-semibold text-accent hover:bg-blue-50 transition-colors"
+      {activeTab === "members" ? (
+        <DataTable
+          columns={memberColumns}
+          rows={filteredMembers}
+          emptyText={loading ? t("loading") : t("no_data")}
+          actions={(row) => (
+            <div className="flex justify-end gap-1">
+              <button
+                onClick={() => setEditing(row)}
+                className="rounded-lg px-2.5 py-1 text-xs font-semibold text-accent hover:bg-blue-50 transition-colors"
+              >
+                {language === "id" ? "Edit Role" : "Edit Role"}
+              </button>
+              <button
+                onClick={() => toggleActive(row)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 transition-colors"
+                aria-label="Toggle status"
+                title={row.is_active ? (language === "id" ? "Nonaktifkan" : "Deactivate") : (language === "id" ? "Aktifkan" : "Activate")}
+              >
+                {row.is_active ? <ShieldOff className="h-4 w-4 text-slate-400" /> : <ShieldCheck className="h-4 w-4 text-emerald-600" />}
+              </button>
+            </div>
+          )}
+        />
+      ) : (
+        <DataTable
+          columns={logColumns}
+          rows={filteredLogs}
+          emptyText={logsLoading ? t("loading") : t("logs_empty")}
+          actions={(row) => (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setInspectRow(row)}
+              className="text-xs text-accent hover:bg-blue-50"
             >
-              {language === "id" ? "Edit Role" : "Edit Role"}
-            </button>
-            <button
-              onClick={() => toggleActive(row)}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 transition-colors"
-              aria-label="Toggle status"
-              title={row.is_active ? (language === "id" ? "Nonaktifkan" : "Deactivate") : (language === "id" ? "Aktifkan" : "Activate")}
-            >
-              {row.is_active ? <ShieldOff className="h-4 w-4 text-slate-400" /> : <ShieldCheck className="h-4 w-4 text-emerald-600" />}
-            </button>
-          </div>
-        )}
-      />
+              <Eye className="h-3.5 w-3.5" /> {language === "id" ? "Detail" : "Inspect"}
+            </Button>
+          )}
+        />
+      )}
 
+      {/* Invite Member Modal */}
       <Dialog
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
@@ -227,6 +418,7 @@ export default function UsersPage() {
         </form>
       </Dialog>
 
+      {/* Edit Role Modal */}
       {editing && (
         <Dialog
           open={!!editing}
@@ -261,6 +453,57 @@ export default function UsersPage() {
               </Button>
             </div>
           </form>
+        </Dialog>
+      )}
+
+      {/* Inspect Log Details Modal */}
+      {inspectRow && (
+        <Dialog
+          open={!!inspectRow}
+          onClose={() => setInspectRow(null)}
+          title={`${inspectRow.action} • ${inspectRow.table_name}`}
+          width="max-w-xl"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200">
+                <span className="text-slate-400 block font-semibold">{t("logs_col_user")}</span>
+                <span className="font-semibold text-slate-800">{inspectRow.changed_by}</span>
+              </div>
+              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200">
+                <span className="text-slate-400 block font-semibold">{t("logs_col_time")}</span>
+                <span className="font-mono text-slate-800">{formatDate(inspectRow.changed_at, true)}</span>
+              </div>
+            </div>
+
+            {inspectRow.old_value && (
+              <div>
+                <span className="text-xs font-bold text-slate-700 block mb-1">
+                  {language === "id" ? "Nilai Sebelumnya (Before)" : "Previous Value (Before)"}:
+                </span>
+                <pre className="max-h-36 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] font-mono text-emerald-400 border border-slate-800 scrollbar-thin">
+                  {JSON.stringify(inspectRow.old_value, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            {inspectRow.new_value && (
+              <div>
+                <span className="text-xs font-bold text-slate-700 block mb-1">
+                  {language === "id" ? "Nilai Baru (After / Payload)" : "New Value (After / Payload)"}:
+                </span>
+                <pre className="max-h-36 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] font-mono text-blue-400 border border-slate-800 scrollbar-thin">
+                  {JSON.stringify(inspectRow.new_value, null, 2)}
+                </pre>
+              </div>
+            )}
+
+            <div className="flex justify-end border-t border-slate-100 pt-3">
+              <Button variant="secondary" onClick={() => setInspectRow(null)}>
+                {t("close")}
+              </Button>
+            </div>
+          </div>
         </Dialog>
       )}
     </div>

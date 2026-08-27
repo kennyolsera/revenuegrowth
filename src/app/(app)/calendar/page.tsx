@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
+import { MerchantSelectField, resolveMerchantId } from "@/components/shared/MerchantSelectField";
 import { EVENT_TYPE_COLORS, getMonthGrid, isSameDay, toDateInputValue } from "@/components/calendar/calendar-utils";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -125,6 +126,13 @@ export default function CalendarPage() {
     setSaving(true);
     try {
       const supabase = createClient();
+      let resolvedMerchantId = form.merchant_id;
+
+      if (typeof resolvedMerchantId === "string" && resolvedMerchantId.startsWith("manual:")) {
+        const rawName = resolvedMerchantId.replace("manual:", "");
+        resolvedMerchantId = (await resolveMerchantId(rawName, merchantOptions)) || "";
+      }
+
       const start_time = new Date(`${form.date}T${form.start_time}:00`).toISOString();
       const end_time = new Date(`${form.date}T${form.end_time}:00`).toISOString();
       const payload = {
@@ -132,7 +140,7 @@ export default function CalendarPage() {
         event_type: form.event_type,
         start_time,
         end_time,
-        merchant_id: form.merchant_id || null,
+        merchant_id: resolvedMerchantId || null,
         organizer: form.organizer || null,
         attendees: form.attendees || null,
         meeting_link: form.meeting_link || null,
@@ -297,15 +305,11 @@ export default function CalendarPage() {
               </Select>
             </Field>
             <Field>
-              <Label>{language === "id" ? "Merchant Terkait" : "Associated Merchant"}</Label>
-              <Select value={form.merchant_id} onChange={(e) => setForm((p) => ({ ...p, merchant_id: e.target.value }))}>
-                <option value="">{language === "id" ? "Tidak ada (Internal)" : "None (Internal)"}</option>
-                {merchantOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </Select>
+              <MerchantSelectField
+                label={language === "id" ? "Merchant Terkait" : "Associated Merchant"}
+                value={form.merchant_id}
+                onChange={(val) => setForm((p) => ({ ...p, merchant_id: val }))}
+              />
             </Field>
             <Field>
               <Label>{language === "id" ? "Tanggal" : "Date"}</Label>

@@ -1,16 +1,17 @@
 import {
   LayoutDashboard,
+  CalendarDays,
+  NotebookPen,
   QrCode,
-  Network,
   ShoppingCart,
   Landmark,
+  Network,
   BadgeCheck,
   Inbox,
   FileBarChart,
   Database,
-  CalendarDays,
-  NotebookPen,
   Users,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 import type { TranslationKey } from "@/lib/i18n";
@@ -23,17 +24,50 @@ export interface NavItem {
   badge?: string;
 }
 
-export const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", translationKey: "nav_dashboard", icon: LayoutDashboard },
-  { href: "/qris", label: "Akuisisi QRIS", translationKey: "nav_qris", icon: QrCode },
-  { href: "/network-partner", label: "Network Partner", translationKey: "nav_network_partner", icon: Network },
-  { href: "/online-order", label: "Online Order", translationKey: "nav_online_order", icon: ShoppingCart },
-  { href: "/financing-loan", label: "Financing Loan", translationKey: "nav_financing_loan", icon: Landmark },
-  { href: "/merchant-status", label: "Status & Klaim Komisi", translationKey: "nav_merchant_status", icon: BadgeCheck },
-  { href: "/requests", label: "Request Form", translationKey: "nav_requests", icon: Inbox },
-  { href: "/weekly-report", label: "Report Mingguan", translationKey: "nav_weekly_report", icon: FileBarChart },
-  { href: "/leads", label: "Data Leads", translationKey: "nav_leads", icon: Database },
-  { href: "/calendar", label: "Calendar & Meeting", translationKey: "nav_calendar", icon: CalendarDays },
-  { href: "/mom", label: "MOM / Notulen", translationKey: "nav_mom", icon: NotebookPen },
-  { href: "/users", label: "User Management", translationKey: "nav_users", icon: Users },
+export interface NavGroup {
+  id: string;
+  titleKey: TranslationKey;
+  items: NavItem[];
+}
+
+export const NAV_GROUPS: NavGroup[] = [
+  {
+    id: "operations",
+    titleKey: "nav_group_operations",
+    items: [
+      { href: "/dashboard", label: "Dashboard", translationKey: "nav_dashboard", icon: LayoutDashboard },
+      { href: "/calendar", label: "Calendar & Meetings", translationKey: "nav_calendar", icon: CalendarDays },
+      { href: "/mom", label: "MOM Minutes", translationKey: "nav_mom", icon: NotebookPen },
+    ],
+  },
+  {
+    id: "feature",
+    titleKey: "nav_group_features",
+    items: [
+      { href: "/qris", label: "QRIS", translationKey: "nav_qris", icon: QrCode },
+      { href: "/online-order", label: "Online Order", translationKey: "nav_online_order", icon: ShoppingCart },
+      { href: "/financing-loan", label: "Financing Loan", translationKey: "nav_financing_loan", icon: Landmark },
+      { href: "/network-partner", label: "Network Partner", translationKey: "nav_network_partner", icon: Network },
+    ],
+  },
+  {
+    id: "data",
+    titleKey: "nav_group_data",
+    items: [
+      { href: "/merchant-status", label: "Status & Commission Claim", translationKey: "nav_merchant_status", icon: BadgeCheck },
+      { href: "/requests", label: "Request Form", translationKey: "nav_requests", icon: Inbox },
+      { href: "/weekly-report", label: "Weekly Report", translationKey: "nav_weekly_report", icon: FileBarChart },
+      { href: "/leads", label: "Leads Data", translationKey: "nav_leads", icon: Database },
+    ],
+  },
+  {
+    id: "settings",
+    titleKey: "nav_group_settings",
+    items: [
+      { href: "/users", label: "User Management", translationKey: "nav_users", icon: Users },
+      { href: "/logs", label: "Activity Log", translationKey: "nav_logs", icon: Activity },
+    ],
+  },
 ];
+
+export const ALL_NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);

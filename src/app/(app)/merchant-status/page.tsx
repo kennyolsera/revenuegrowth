@@ -12,6 +12,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { StatusBadge } from "@/components/ui/Badge";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
+import { MerchantSelectField, resolveMerchantId } from "@/components/shared/MerchantSelectField";
 import { formatDate, formatRupiah } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 
@@ -103,8 +104,16 @@ export default function MerchantStatusPage() {
     setSaving(true);
     try {
       const supabase = createClient();
+      let merchantId = newClaim.merchant_id;
+
+      if (typeof merchantId === "string" && merchantId.startsWith("manual:")) {
+        const rawName = merchantId.replace("manual:", "");
+        merchantId = await resolveMerchantId(rawName, merchantOptions);
+        if (!merchantId) throw new Error(`Gagal memproses merchant: ${rawName}`);
+      }
+
       const { error } = await supabase.from("merchant_status_claims").insert({
-        merchant_id: newClaim.merchant_id,
+        merchant_id: merchantId,
         feature: newClaim.feature,
         submitted_by_team: newClaim.submitted_by_team,
         checklist: DEFAULT_CHECKLIST,
@@ -234,21 +243,12 @@ export default function MerchantStatusPage() {
       >
         <form onSubmit={handleCreate}>
           <Field>
-            <Label>{t("ms_col_merchant")}</Label>
-            <Select
+            <MerchantSelectField
               required
+              label={t("ms_col_merchant")}
               value={newClaim.merchant_id ?? ""}
-              onChange={(e) => setNewClaim((p) => ({ ...p, merchant_id: e.target.value }))}
-            >
-              <option value="" disabled>
-                {language === "id" ? "Pilih merchant" : "Select merchant"}
-              </option>
-              {merchantOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
+              onChange={(val) => setNewClaim((p) => ({ ...p, merchant_id: val }))}
+            />
           </Field>
           <Field>
             <Label>{language === "id" ? "Fitur VAS Terkait" : "Associated VAS Feature"}</Label>

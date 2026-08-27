@@ -11,11 +11,12 @@ import { Toolbar, type FilterDef } from "./Toolbar";
 import { SupabaseNotice, ErrorNotice, EmptyState } from "./SupabaseNotice";
 import { PageHeader } from "./PageHeader";
 import { useLanguage } from "@/lib/LanguageContext";
+import { MerchantSelectField, resolveMerchantId } from "./MerchantSelectField";
 
 export interface FormFieldDef {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "date" | "datetime-local" | "select";
+  type?: "text" | "textarea" | "number" | "date" | "datetime-local" | "select" | "merchant_select";
   options?: { value: string; label: string }[];
   required?: boolean;
   placeholder?: string;
@@ -36,7 +37,7 @@ export interface ResourceManagerProps<T extends { id: string }> {
   selectQuery?: string;
   orderBy?: string;
   ascending?: boolean;
-  onBeforeSave?: (values: Record<string, any>) => Record<string, any>;
+  onBeforeSave?: (values: Record<string, any>) => Record<string, any> | Promise<Record<string, any>>;
   disableDelete?: boolean;
   extraRowActions?: (row: T, refresh: () => void) => React.ReactNode;
 }
@@ -123,6 +124,23 @@ export function ResourceManager<T extends { id: string }>({
     setDialogOpen(true);
   }
 
+  async function logActivity(action: string, recordId?: string, oldVal?: any, newVal?: any) {
+    try {
+      const supabase = createClient();
+      const { data: userRes } = await supabase.auth.getUser();
+      await supabase.from("audit_logs").insert({
+        table_name: table,
+        record_id: recordId || null,
+        action,
+        changed_by: userRes.user?.email || "System",
+        old_value: oldVal || null,
+        new_value: newVal || null,
+      });
+    } catch {
+      // Non-blocking audit log
+    }
+  }
+
   async function handleDelete(row: T) {
     if (!confirm(t("confirm_delete"))) return;
     const supabase = createClient();
@@ -131,6 +149,7 @@ export function ResourceManager<T extends { id: string }>({
       alert(`${t("delete_error")}: ${error.message}`);
       return;
     }
+    await logActivity("DELETE", row.id, row);
     fetchRows();
   }
 
@@ -140,13 +159,33 @@ export function ResourceManager<T extends { id: string }>({
     setFormError(null);
     try {
       const supabase = createClient();
-      const payload = onBeforeSave ? onBeforeSave(formValues) : formValues;
+      const currentValues = { ...formValues };
+
+      // Check for merchant_id manual entry resolution
+      for (const f of formFields) {
+        if (f.type === "merchant_select" || f.key === "merchant_id") {
+          const rawVal = currentValues[f.key];
+          if (typeof rawVal === "string" && rawVal.startsWith("manual:")) {
+            const rawName = rawVal.replace("manual:", "");
+            const resolvedId = await resolveMerchantId(rawName, f.options ?? []);
+            if (!resolvedId) {
+              throw new Error(`Failed to create new merchant: "${rawName}"`);
+            }
+            currentValues[f.key] = resolvedId;
+          }
+        }
+      }
+
+      const payload = onBeforeSave ? await onBeforeSave(currentValues) : currentValues;
+
       if (editing) {
         const { error } = await supabase.from(table).update(payload).eq("id", editing.id);
         if (error) throw error;
+        await logActivity("UPDATE", editing.id, editing, payload);
       } else {
-        const { error } = await supabase.from(table).insert(payload);
+        const { data: inserted, error } = await supabase.from(table).insert(payload).select().single();
         if (error) throw error;
+        await logActivity("CREATE", inserted?.id, null, payload);
       }
       setDialogOpen(false);
       fetchRows();
@@ -227,43 +266,54 @@ export function ResourceManager<T extends { id: string }>({
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
             {formFields.map((f) => (
               <div key={f.key} className={f.colSpan === 2 ? "sm:col-span-2" : undefined}>
-                <Field>
-                  <Label htmlFor={f.key}>{f.label}</Label>
-                  {f.type === "textarea" ? (
-                    <Textarea
-                      id={f.key}
+                {f.type === "merchant_select" || f.key === "merchant_id" ? (
+                  <Field>
+                    <MerchantSelectField
+                      label={f.label}
                       required={f.required}
-                      placeholder={f.placeholder}
                       value={formValues[f.key] ?? ""}
-                      onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                      onChange={(val) => setFormValues((p) => ({ ...p, [f.key]: val }))}
                     />
-                  ) : f.type === "select" ? (
-                    <Select
-                      id={f.key}
-                      required={f.required}
-                      value={formValues[f.key] ?? ""}
-                      onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
-                    >
-                      <option value="" disabled>
-                        {language === "id" ? `Pilih ${f.label.toLowerCase()}` : `Select ${f.label.toLowerCase()}`}
-                      </option>
-                      {f.options?.map((o) => (
-                        <option key={o.value} value={o.value}>
-                          {o.label}
+                  </Field>
+                ) : (
+                  <Field>
+                    <Label htmlFor={f.key}>{f.label}</Label>
+                    {f.type === "textarea" ? (
+                      <Textarea
+                        id={f.key}
+                        required={f.required}
+                        placeholder={f.placeholder}
+                        value={formValues[f.key] ?? ""}
+                        onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                      />
+                    ) : f.type === "select" ? (
+                      <Select
+                        id={f.key}
+                        required={f.required}
+                        value={formValues[f.key] ?? ""}
+                        onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                      >
+                        <option value="" disabled>
+                          {language === "id" ? `Pilih ${f.label.toLowerCase()}` : `Select ${f.label.toLowerCase()}`}
                         </option>
-                      ))}
-                    </Select>
-                  ) : (
-                    <Input
-                      id={f.key}
-                      type={f.type ?? "text"}
-                      required={f.required}
-                      placeholder={f.placeholder}
-                      value={formValues[f.key] ?? ""}
-                      onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
-                    />
-                  )}
-                </Field>
+                        {f.options?.map((o) => (
+                          <option key={o.value} value={o.value}>
+                            {o.label}
+                          </option>
+                        ))}
+                      </Select>
+                    ) : (
+                      <Input
+                        id={f.key}
+                        type={f.type ?? "text"}
+                        required={f.required}
+                        placeholder={f.placeholder}
+                        value={formValues[f.key] ?? ""}
+                        onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                      />
+                    )}
+                  </Field>
+                )}
               </div>
             ))}
           </div>
