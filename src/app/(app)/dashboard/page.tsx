@@ -44,6 +44,36 @@ function todayBoundaryISO(): { start: string; end: string } {
   return { start: startOfDay.toISOString(), end: endOfDay.toISOString() };
 }
 
+/**
+ * Build a real 6-month acquisition series by bucketing created_at timestamps
+ * per feature. No fabricated numbers — empty months legitimately show 0.
+ */
+function buildGrowthSeries(
+  qris: string[],
+  online: string[],
+  financing: string[],
+  language: string
+): GrowthPoint[] {
+  const now = new Date();
+  const fmt = new Intl.DateTimeFormat(language === "id" ? "id-ID" : "en-US", { month: "short" });
+  const buckets = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return { year: d.getFullYear(), month: d.getMonth(), period: fmt.format(d), qris: 0, onlineOrder: 0, financing: 0 };
+  });
+  const tally = (rows: string[], key: "qris" | "onlineOrder" | "financing") => {
+    for (const ts of rows) {
+      const d = ts ? new Date(ts) : null;
+      if (!d || Number.isNaN(d.getTime())) continue;
+      const b = buckets.find((x) => x.year === d.getFullYear() && x.month === d.getMonth());
+      if (b) b[key] += 1;
+    }
+  };
+  tally(qris, "qris");
+  tally(online, "onlineOrder");
+  tally(financing, "financing");
+  return buckets.map(({ period, qris, onlineOrder, financing }) => ({ period, qris, onlineOrder, financing }));
+}
+
 export default function DashboardPage() {
   const { t, language } = useLanguage();
   const [data, setData] = useState<DashboardData>(EMPTY);
@@ -81,25 +111,30 @@ export default function DashboardPage() {
       const supabase = createClient();
       const { start, end } = todayBoundaryISO();
 
-      const [merchants, qrisList, loans, requests, events, recentReq] = await Promise.all([
-        supabase.from("merchants").select("id", { count: "exact", head: true }),
-        supabase.from("qris_acquisitions").select("status"),
-        // Only sum loans that are actually disbursed or fully paid off
-        supabase.from("financing_loans").select("loan_amount, status").in("status", ["dicairkan", "lunas"]),
-        supabase.from("requests").select("id", { count: "exact", head: true }).neq("status", "selesai"),
-        supabase
-          .from("calendar_events")
-          .select("id, title, start_time, event_type")
-          .gte("start_time", start)
-          .lte("start_time", end)
-          .order("start_time", { ascending: true })
-          .limit(5),
-        supabase
-          .from("requests")
-          .select("id, title, status, assigned_pic, created_at")
-          .order("created_at", { ascending: false })
-          .limit(5),
-      ]);
+      const [merchants, qrisList, loans, requests, events, recentReq, qrisDates, ooDates, finDates] =
+        await Promise.all([
+          supabase.from("merchants").select("id", { count: "exact", head: true }),
+          supabase.from("qris_acquisitions").select("status"),
+          // Only sum loans that are actually disbursed or fully paid off
+          supabase.from("financing_loans").select("loan_amount, status").in("status", ["dicairkan", "lunas"]),
+          supabase.from("requests").select("id", { count: "exact", head: true }).neq("status", "selesai"),
+          supabase
+            .from("calendar_events")
+            .select("id, title, start_time, event_type")
+            .gte("start_time", start)
+            .lte("start_time", end)
+            .order("start_time", { ascending: true })
+            .limit(5),
+          supabase
+            .from("requests")
+            .select("id, title, status, assigned_pic, created_at")
+            .order("created_at", { ascending: false })
+            .limit(5),
+          // created_at streams used to build a real acquisition trend
+          supabase.from("qris_acquisitions").select("created_at"),
+          supabase.from("online_order_activities").select("created_at"),
+          supabase.from("financing_loans").select("created_at"),
+        ]);
 
       const statusCounts: Record<string, number> = {};
       (qrisList.data ?? []).forEach((r: any) => {
@@ -112,19 +147,12 @@ export default function DashboardPage() {
         0
       );
 
-      const growthSeries: GrowthPoint[] = [
-        { period: "M-5", qris: 12, onlineOrder: 6, financing: 3 },
-        { period: "M-4", qris: 19, onlineOrder: 11, financing: 5 },
-        { period: "M-3", qris: 28, onlineOrder: 15, financing: 8 },
-        { period: "M-2", qris: 35, onlineOrder: 22, financing: 12 },
-        { period: "M-1", qris: 42, onlineOrder: 30, financing: 18 },
-        {
-          period: language === "id" ? "Bulan Ini" : "This Month",
-          qris: (qrisList.data?.length ?? 0) || 50,
-          onlineOrder: 38,
-          financing: 24,
-        },
-      ];
+      const growthSeries = buildGrowthSeries(
+        (qrisDates.data ?? []).map((r: any) => r.created_at),
+        (ooDates.data ?? []).map((r: any) => r.created_at),
+        (finDates.data ?? []).map((r: any) => r.created_at),
+        language
+      );
 
       setData({
         merchantCount: merchants.count ?? 0,
@@ -132,17 +160,10 @@ export default function DashboardPage() {
         openRequests: requests.count ?? 0,
         qrisActive,
         growthSeries,
-        pipeline: Object.entries(statusCounts).length
-          ? Object.entries(statusCounts).map(([name, value]) => ({
-              name: name.replaceAll("_", " "),
-              value,
-            }))
-          : [
-              { name: "Aktif", value: 45 },
-              { name: "Proses", value: 25 },
-              { name: "Verifikasi", value: 15 },
-              { name: "Review", value: 10 },
-            ],
+        pipeline: Object.entries(statusCounts).map(([name, value]) => ({
+          name: name.replaceAll("_", " "),
+          value,
+        })),
         agenda: events.data ?? [],
         recentRequests: recentReq.data ?? [],
       });
@@ -158,7 +179,7 @@ export default function DashboardPage() {
         description={t("dash_header_desc")}
         badge={
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent border border-accent/20">
-            <Sparkles className="h-3 w-3" /> Live Operations
+            <Sparkles className="h-3 w-3" /> {isSupabaseConfigured ? t("live_operations") : t("sample_data")}
           </span>
         }
       />
@@ -169,33 +190,35 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={t("dash_kpi_merchants")}
-          value={loading ? "…" : String(data.merchantCount)}
+          value={String(data.merchantCount)}
+          loading={loading}
           icon={Users}
-          trend="+14.2% MoM"
+          trend={isSupabaseConfigured ? undefined : "+14.2% MoM"}
           trendTone="success"
           color="indigo"
         />
         <KpiCard
           label={t("dash_kpi_loans")}
-          value={loading ? "…" : formatRupiah(data.loanDisbursed)}
+          value={formatRupiah(data.loanDisbursed)}
+          loading={loading}
           icon={Landmark}
-          trend="+22.8% YTD"
+          trend={isSupabaseConfigured ? undefined : "+22.8% YTD"}
           trendTone="success"
           color="emerald"
         />
         <KpiCard
           label={t("dash_kpi_requests")}
-          value={loading ? "…" : String(data.openRequests)}
+          value={String(data.openRequests)}
+          loading={loading}
           icon={Inbox}
-          trend={`${data.openRequests > 0 ? data.openRequests : 0} open`}
-          trendTone="neutral"
           color="amber"
         />
         <KpiCard
           label={t("dash_kpi_qris_active")}
-          value={loading ? "…" : String(data.qrisActive)}
+          value={String(data.qrisActive)}
+          loading={loading}
           icon={QrCode}
-          trend="+18.4% growth"
+          trend={isSupabaseConfigured ? undefined : "+18.4% growth"}
           trendTone="success"
           color="blue"
         />
@@ -220,7 +243,7 @@ export default function DashboardPage() {
                 href="/calendar"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
               >
-                {language === "id" ? "Lihat Semua" : "View All"} <ArrowUpRight className="h-3.5 w-3.5" />
+                {t("view_all")} <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             }
           />
@@ -238,7 +261,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-slate-800">{a.title}</p>
-                      <p className="text-xs text-slate-400 font-mono">{formatDate(a.start_time, true)}</p>
+                      <p className="text-xs text-slate-500 font-mono">{formatDate(a.start_time, true)}</p>
                     </div>
                     <StatusBadge status={a.event_type} />
                   </li>
@@ -259,7 +282,7 @@ export default function DashboardPage() {
                 href="/requests"
                 className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
               >
-                {language === "id" ? "Lihat Semua" : "View All"} <ArrowUpRight className="h-3.5 w-3.5" />
+                {t("view_all")} <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             }
           />
@@ -277,7 +300,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-slate-800">{r.title}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-500">
                         PIC: {r.assigned_pic ?? t("dash_unassigned")} · {formatDate(r.created_at)}
                       </p>
                     </div>

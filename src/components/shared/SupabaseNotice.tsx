@@ -47,7 +47,7 @@ export function EmptyState({ text, description }: { text: string; description?: 
         </div>
       </div>
       <p className="text-sm font-semibold text-slate-700">{text}</p>
-      {description && <p className="mt-1 text-xs text-slate-400 max-w-sm">{description}</p>}
+      {description && <p className="mt-1 text-xs text-slate-500 max-w-sm">{description}</p>}
     </div>
   );
 }

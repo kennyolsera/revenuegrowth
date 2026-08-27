@@ -51,6 +51,7 @@ export function KpiCard({
   trend,
   trendTone = "success",
   color = "blue",
+  loading = false,
 }: {
   label: string;
   value: string;
@@ -58,6 +59,7 @@ export function KpiCard({
   trend?: string;
   trendTone?: "success" | "danger" | "neutral";
   color?: Tone;
+  loading?: boolean;
 }) {
   const currentTone = toneStyles[color] ?? toneStyles.blue;
 
@@ -85,8 +87,12 @@ export function KpiCard({
       </div>
 
       <div className="mt-3">
-        <div className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl font-mono">{value}</div>
-        {trend && (
+        {loading ? (
+          <div className="h-8 w-24 animate-pulse rounded-lg bg-slate-200/70 sm:h-9" />
+        ) : (
+          <div className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl font-mono">{value}</div>
+        )}
+        {!loading && trend && (
           <div className="mt-2 flex items-center gap-1.5">
             <span
               className={cn(

@@ -95,6 +95,9 @@ export function ResourceManager<T extends { id: string }>({
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<T | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function fetchRows() {
     setLoading(true);
@@ -166,15 +169,25 @@ export function ResourceManager<T extends { id: string }>({
     }
   }
 
-  async function handleDelete(row: T) {
-    if (!confirm(t("confirm_delete"))) return;
+  function requestDelete(row: T) {
+    setDeleteError(null);
+    setDeleteTarget(row);
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setDeleteError(null);
     const supabase = createClient();
-    const { error } = await supabase.from(table).delete().eq("id", row.id);
+    const { error } = await supabase.from(table).delete().eq("id", deleteTarget.id);
     if (error) {
-      alert(`${t("delete_error")}: ${error.message}`);
+      setDeleteError(`${t("delete_error")}: ${error.message}`);
+      setDeleting(false);
       return;
     }
-    await logActivity("DELETE", row.id, sanitizePayload(row as any));
+    await logActivity("DELETE", deleteTarget.id, sanitizePayload(deleteTarget as any));
+    setDeleting(false);
+    setDeleteTarget(null);
     fetchRows();
   }
 
@@ -271,7 +284,7 @@ export function ResourceManager<T extends { id: string }>({
               </button>
               {!disableDelete && (
                 <button
-                  onClick={() => handleDelete(row)}
+                  onClick={() => requestDelete(row)}
                   className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-status-danger"
                   title={t("delete")}
                 >
@@ -360,6 +373,35 @@ export function ResourceManager<T extends { id: string }>({
             </Button>
           </div>
         </form>
+      </Dialog>
+
+      <Dialog
+        open={deleteTarget !== null}
+        onClose={() => (deleting ? undefined : setDeleteTarget(null))}
+        title={t("confirm_delete_title")}
+        width="max-w-md"
+      >
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-status-danger">
+            <Trash2 className="h-5 w-5" />
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed">{t("confirm_delete")}</p>
+        </div>
+
+        {deleteError && (
+          <p className="mt-4 rounded-xl bg-red-50 border border-red-200 px-3.5 py-2 text-xs text-status-danger">
+            {deleteError}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-2.5 border-t border-slate-100 pt-4 mt-5">
+          <Button type="button" variant="secondary" onClick={() => setDeleteTarget(null)} disabled={deleting}>
+            {t("cancel")}
+          </Button>
+          <Button type="button" variant="danger" loading={deleting} onClick={confirmDelete}>
+            {t("delete")}
+          </Button>
+        </div>
       </Dialog>
     </div>
   );

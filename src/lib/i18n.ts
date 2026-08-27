@@ -52,6 +52,10 @@ export const translations = {
     dash_empty_agenda: "Tidak ada agenda terjadwal hari ini.",
     dash_empty_requests: "Belum ada request masuk.",
     dash_unassigned: "Belum ditugaskan",
+    view_all: "Lihat Semua",
+    live_operations: "Operasional Live",
+    sample_data: "Data Contoh",
+    confirm_delete_title: "Hapus Data",
 
     // Common CRUD & Actions
     add: "Tambah Data",
@@ -280,6 +284,10 @@ export const translations = {
     dash_empty_agenda: "No agenda scheduled for today.",
     dash_empty_requests: "No request tickets available.",
     dash_unassigned: "Unassigned",
+    view_all: "View All",
+    live_operations: "Live Operations",
+    sample_data: "Sample Data",
+    confirm_delete_title: "Delete Record",
 
     // Common CRUD & Actions
     add: "Add Data",
