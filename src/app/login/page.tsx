@@ -7,13 +7,13 @@ import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";
 import {
   AlertTriangle,
-  LayoutDashboard,
   Lock,
   Mail,
   Sparkles,
   TrendingUp,
   ShieldCheck,
 } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 import { useLanguage } from "@/lib/LanguageContext";
 import { cn } from "@/lib/utils";
 
@@ -77,18 +77,14 @@ function LoginPageInner() {
       </div>
 
       {/* Left Panel — Premium Visual Graphic Hero */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 p-12 text-white lg:flex border-r border-slate-800/60">
-        <div className="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-96 w-96 rounded-full bg-indigo-600/20 blur-3xl" />
+      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-slate-950 p-12 text-white lg:flex border-r border-slate-800/60">
+        {/* Layered background graphics */}
+        <div className="pointer-events-none absolute inset-0 bg-mesh-dark" />
+        <div className="pointer-events-none absolute inset-0 bg-grid opacity-[0.15]" />
+        <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-accent-violet/20 blur-3xl animate-float" />
 
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-accent to-blue-500 shadow-lg shadow-accent/30">
-            <LayoutDashboard className="h-6 w-6 text-white" />
-          </div>
-          <div>
-            <span className="block text-base font-bold tracking-tight text-white">Revenue Growth</span>
-            <span className="block text-xs font-medium text-slate-400">VAS Operations Hub</span>
-          </div>
+        <div className="relative z-10">
+          <Logo tone="light" size={44} />
         </div>
 
         <div className="relative z-10 my-auto space-y-6">
@@ -141,16 +137,12 @@ function LoginPageInner() {
       </div>
 
       {/* Right Panel — Login Form */}
-      <div className="flex w-full items-center justify-center bg-slate-50 p-6 lg:w-1/2">
-        <div className="w-full max-w-md space-y-6">
-          <div className="flex items-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-accent to-blue-500 text-white shadow-md">
-              <LayoutDashboard className="h-5 w-5" />
-            </div>
-            <div>
-              <span className="block text-base font-bold text-slate-900">Revenue Growth</span>
-              <span className="block text-xs text-slate-500">VAS Operations Hub</span>
-            </div>
+      <div className="relative flex w-full items-center justify-center bg-surface-canvas p-6 lg:w-1/2">
+        <div className="pointer-events-none absolute inset-0 bg-dots opacity-60" />
+        <div className="pointer-events-none absolute inset-0 bg-aurora" />
+        <div className="relative w-full max-w-md space-y-6">
+          <div className="lg:hidden">
+            <Logo tone="dark" size={38} />
           </div>
 
           <div className="space-y-1.5">

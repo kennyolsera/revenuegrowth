@@ -17,7 +17,7 @@ const variantClasses: Record<Variant, string> = {
   primary:
     "bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white shadow-sm hover:from-slate-800 hover:to-slate-700 hover:shadow active:scale-[0.98] disabled:opacity-50",
   accent:
-    "bg-gradient-to-r from-accent to-blue-600 text-white shadow-md shadow-accent/25 hover:from-blue-600 hover:to-blue-700 active:scale-[0.98] disabled:opacity-50",
+    "bg-gradient-to-r from-accent to-accent-violet text-white shadow-glow hover:from-accent-dark hover:to-accent-violet active:scale-[0.98] disabled:opacity-50",
   secondary:
     "bg-white text-slate-700 border border-slate-200/90 shadow-xs hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 active:scale-[0.98] disabled:opacity-50",
   ghost:

@@ -4,7 +4,7 @@ export function Card({ className, children }: { className?: string; children: Re
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm hover:shadow-md transition-all duration-200",
+        "rounded-2xl border border-slate-200/70 bg-white/95 shadow-card backdrop-blur-sm transition-all duration-200 hover:border-slate-300/70 hover:shadow-elevated",
         className
       )}
     >
@@ -25,11 +25,11 @@ export function CardHeader({
   icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4.5">
+    <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-4">
       <div className="flex items-start gap-3">
         {Icon && (
-          <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-accent/10 text-accent">
-            <Icon className="h-4.5 w-4.5" />
+          <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-accent/12 to-accent-violet/12 text-accent ring-1 ring-accent/10">
+            <Icon className="h-[18px] w-[18px]" />
           </div>
         )}
         <div>

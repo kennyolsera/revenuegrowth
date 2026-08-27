@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
   X,
   PanelLeftClose,
   PanelLeft,
   ChevronRight,
 } from "lucide-react";
+import { Logo, LogoMark } from "@/components/brand/Logo";
 import { NAV_GROUPS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useSidebar } from "@/lib/SidebarContext";
@@ -32,31 +32,25 @@ export function Sidebar({
   };
 
   const content = (
-    <div className="flex h-full flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-200 border-r border-slate-800/80 shadow-xl">
+    <div className="relative flex h-full flex-col overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-200 border-r border-slate-800/80 shadow-xl">
+      {/* Ambient brand glow */}
+      <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-accent/20 blur-3xl" />
+
       {/* Brand Header */}
       <div
         className={cn(
-          "flex items-center border-b border-slate-800/60 px-4 py-4.5 transition-all",
+          "relative flex items-center border-b border-slate-800/60 px-4 py-4 transition-all",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
         <Link
           href="/dashboard"
-          className={cn("flex items-center gap-3 group", isCollapsed && "justify-center")}
+          className={cn("group flex items-center transition-transform hover:scale-[1.02]", isCollapsed && "justify-center")}
         >
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-accent to-blue-500 shadow-md shadow-accent/25 transition-transform group-hover:scale-105">
-            <LayoutDashboard className="h-5 w-5 text-white" />
-            <div className="absolute -inset-0.5 -z-10 rounded-xl bg-accent opacity-30 blur-sm group-hover:opacity-60" />
-          </div>
-          {!isCollapsed && (
-            <div className="min-w-0 flex-1">
-              <span className="block text-sm font-bold tracking-tight text-white leading-tight">
-                Revenue Growth
-              </span>
-              <span className="block text-[11px] font-medium text-slate-400">
-                VAS Operations Hub
-              </span>
-            </div>
+          {isCollapsed ? (
+            <LogoMark size={36} />
+          ) : (
+            <Logo tone="light" size={36} />
           )}
         </Link>
 
@@ -103,16 +97,19 @@ export function Sidebar({
                     className={cn(
                       "group relative flex items-center rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
                       active
-                        ? "bg-gradient-to-r from-accent to-blue-600 text-white shadow-md shadow-accent/25"
+                        ? "bg-gradient-to-r from-accent to-accent-violet text-white shadow-glow"
                         : "text-slate-400 hover:bg-white/5 hover:text-white",
                       isCollapsed && "justify-center px-2 py-2.5"
                     )}
                   >
+                    {active && !isCollapsed && (
+                      <span className="absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-white/80" />
+                    )}
                     <Icon
                       className={cn(
                         "shrink-0 transition-transform duration-150 group-hover:scale-110",
                         active ? "text-white" : "text-slate-400 group-hover:text-white",
-                        isCollapsed ? "h-5 w-5" : "h-4.5 w-4.5 mr-3"
+                        isCollapsed ? "h-5 w-5" : "mr-3 h-[18px] w-[18px]"
                       )}
                     />
 

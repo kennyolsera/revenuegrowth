@@ -40,7 +40,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md transition-all sm:px-6">
+    <header className="glass sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/70 px-4 transition-all sm:px-6">
       {/* Left section: Collapse Toggle & Breadcrumb / Title */}
       <div className="flex items-center gap-3">
         <button
@@ -64,7 +64,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
 
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 text-accent">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-accent/15 to-accent-violet/15 text-accent ring-1 ring-accent/10">
             {current?.icon ? <current.icon className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
           </div>
           <div>
@@ -111,7 +111,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         <div className="hidden items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 sm:flex">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-accent to-blue-400 text-[11px] font-bold text-white shadow-sm">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-accent to-accent-violet text-[11px] font-bold text-white shadow-sm">
             {email ? email[0].toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
           </div>
           <span className="max-w-[140px] truncate text-xs font-medium text-slate-700">

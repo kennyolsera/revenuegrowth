@@ -66,7 +66,7 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        "group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 p-5 backdrop-blur-sm shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg",
+        "group relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/95 p-5 backdrop-blur-sm shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-elevated",
         currentTone.glow,
         currentTone.border
       )}
@@ -88,7 +88,7 @@ export function KpiCard({
 
       <div className="mt-3">
         {loading ? (
-          <div className="h-8 w-24 animate-pulse rounded-lg bg-slate-200/70 sm:h-9" />
+          <div className="skeleton h-8 w-24 rounded-lg sm:h-9" />
         ) : (
           <div className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl font-mono">{value}</div>
         )}
