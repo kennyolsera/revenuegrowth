@@ -208,42 +208,56 @@ create table if not exists public.meeting_minutes (
 );
 
 -- ---------------------------------------------------------------------
--- 11b. FINANCING WEEKLY PERFORMANCE (laporan agregat mingguan)
---      Disimpan apa adanya dari file ("import as-is"); anomali ditandai
---      di aplikasi, bukan diubah di sini.
+-- 11b. FINANCING PERFORMANCE REPORTS (agregat dari export GoTyme)
+--      Mendukung periode bulanan & mingguan + kolom ringkasan
+--      (Launch-to-Date / Yearly / YTD). Disimpan apa adanya
+--      ("import as-is"); anomali ditandai di aplikasi.
 -- ---------------------------------------------------------------------
-create table if not exists public.financing_weekly_reports (
+create table if not exists public.financing_reports (
   id uuid primary key default gen_random_uuid(),
+  period_type text not null check (period_type in ('month','week','ltd','yearly','ytd')),
+  period_key text not null unique,
   period_label text not null,
   year int not null,
-  month int not null check (month between 1 and 12),
-  week_no int not null check (week_no between 1 and 6),
-  -- Funnel (counts)
-  id_verification int not null default 0,
-  facial_verification int not null default 0,
-  bank_info_confirmation int not null default 0,
-  loan_agreement_opened int not null default 0,
-  loan_agreement_review int not null default 0,
-  application_completed int not null default 0,   -- B
-  total_attempts int not null default 0,          -- C
+  month int check (month between 1 and 12),
+  week_no int check (week_no between 1 and 6),
+  sort_key numeric not null default 0,
+  -- Reach / base
+  days numeric,
+  working_days numeric,
+  offer_unique_merchants numeric,
+  business_owner_a numeric,           -- A (activation denominator)
+  total_site_visits numeric,
+  less_active_loan numeric,
+  new_applicant_visits numeric,
+  unique_merchant_ids numeric,
+  -- Application journey
+  intro_page numeric,
+  slider_activity numeric,
+  otp_verification numeric,
+  id_verification numeric,
+  facial_verification numeric,
+  bank_info_confirmation numeric,
+  loan_agreement_opened numeric,
+  loan_agreement_review numeric,
+  application_completed numeric,      -- B
+  total_attempts numeric,             -- C
   -- Conversion
-  contract_verification_rejected int not null default 0,
-  contract_verification_approved int not null default 0,
-  new_loan int not null default 0,                -- D
-  loan_dashboard int not null default 0,
+  contract_rejected numeric,
+  contract_approved numeric,
+  new_loan numeric,                   -- D
+  loan_dashboard numeric,
   new_loan_per_working_day numeric,
-  activation_pct numeric,                          -- D/A as given in the sheet
   -- Finance (Rp)
-  disbursed_amount numeric not null default 0,
+  disbursed_amount numeric,
   avg_disbursed_loan_amount numeric,
-  expected_fee numeric,                            -- F
-  less_15 numeric,                                 -- G
-  net_fee numeric,                                 -- F - G
+  expected_fee numeric,               -- F
+  less_15 numeric,                    -- G
+  net_fee numeric,                    -- F - G
   commission_10 numeric,
   source_file text,
   imported_by text,
-  created_at timestamptz not null default now(),
-  unique (year, month, week_no)
+  created_at timestamptz not null default now()
 );
 
 -- ---------------------------------------------------------------------
@@ -344,7 +358,7 @@ alter table public.calendar_events enable row level security;
 alter table public.meeting_minutes enable row level security;
 alter table public.audit_logs enable row level security;
 alter table public.notifications enable row level security;
-alter table public.financing_weekly_reports enable row level security;
+alter table public.financing_reports enable row level security;
 
 -- profiles ------------------------------------------------------------
 drop policy if exists "profiles_select_authenticated" on public.profiles;
@@ -449,13 +463,13 @@ drop policy if exists "mom_internal_all" on public.meeting_minutes;
 create policy "mom_internal_all" on public.meeting_minutes
   for all using (public.is_internal()) with check (public.is_internal());
 
--- financing weekly performance: baca oleh tim internal, tulis oleh admin/head
-drop policy if exists "fin_weekly_select_internal" on public.financing_weekly_reports;
-create policy "fin_weekly_select_internal" on public.financing_weekly_reports
+-- financing performance reports: baca oleh tim internal, tulis oleh admin/head
+drop policy if exists "fin_reports_select_internal" on public.financing_reports;
+create policy "fin_reports_select_internal" on public.financing_reports
   for select using (public.is_internal());
 
-drop policy if exists "fin_weekly_write_admin" on public.financing_weekly_reports;
-create policy "fin_weekly_write_admin" on public.financing_weekly_reports
+drop policy if exists "fin_reports_write_admin" on public.financing_reports;
+create policy "fin_reports_write_admin" on public.financing_reports
   for all using (public.is_admin_or_head()) with check (public.is_admin_or_head());
 
 -- audit & notifications ---------------------------------------------------

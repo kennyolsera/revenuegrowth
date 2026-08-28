@@ -2,17 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+  Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { Landmark, Wallet, Percent, TrendingDown, FileUp, ShieldAlert, Lock, AlertTriangle, Info } from "lucide-react";
+import { Landmark, Wallet, Percent, Users, FileUp, ShieldAlert, Lock, AlertTriangle, Info } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
@@ -23,20 +15,14 @@ import { WeeklyReportImportDialog } from "@/components/financing/WeeklyReportImp
 import { formatRupiah, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import {
-  aggregate,
-  computeFlags,
-  SAMPLE_WEEKLY,
-  type WeeklyReportRow,
-  type DataFlag,
+  aggregateRow, computeFlags, SAMPLE_REPORTS, type FinancingReportRow, type DataFlag,
 } from "@/lib/financingWeekly";
 
-const MONTH_LABELS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-
-/** Compact Rupiah for chart axes / big KPIs — e.g. "Rp 2,6 M", "Rp 453 jt". */
-function shortRupiah(n: number): string {
-  if (Math.abs(n) >= 1e9) return `Rp ${(n / 1e9).toLocaleString("id-ID", { maximumFractionDigits: 2 })} M`;
-  if (Math.abs(n) >= 1e6) return `Rp ${(n / 1e6).toLocaleString("id-ID", { maximumFractionDigits: 0 })} jt`;
-  return formatRupiah(n);
+function shortRupiah(v: number): string {
+  const x = Math.abs(v);
+  if (x >= 1e9) return `Rp ${(v / 1e9).toLocaleString("id-ID", { maximumFractionDigits: 2 })} M`;
+  if (x >= 1e6) return `Rp ${(v / 1e6).toLocaleString("id-ID", { maximumFractionDigits: 0 })} jt`;
+  return formatRupiah(v);
 }
 
 const FLAG_STYLE: Record<DataFlag["severity"], { chip: string; icon: React.ReactNode; label: string }> = {
@@ -47,7 +33,7 @@ const FLAG_STYLE: Record<DataFlag["severity"], { chip: string; icon: React.React
 
 export default function FinancingPerformancePage() {
   const { t, language } = useLanguage();
-  const [rows, setRows] = useState<WeeklyReportRow[]>([]);
+  const [reports, setReports] = useState<FinancingReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [canManage, setCanManage] = useState(false);
@@ -58,62 +44,36 @@ export default function FinancingPerformancePage() {
     async function load() {
       setLoading(true);
       if (!isSupabaseConfigured) {
-        setAllowed(true);
-        setCanManage(true);
-        setRows(SAMPLE_WEEKLY);
-        setLoading(false);
-        return;
+        setAllowed(true); setCanManage(true); setReports(SAMPLE_REPORTS); setLoading(false); return;
       }
       const supabase = createClient();
       const { data: userRes } = await supabase.auth.getUser();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", userRes.user?.id ?? "")
-        .single();
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", userRes.user?.id ?? "").single();
       const role = profile?.role;
       const isAllowed = role === "super_admin" || role === "head_rg";
-      setAllowed(isAllowed);
-      setCanManage(isAllowed);
-      if (!isAllowed) {
-        setLoading(false);
-        return;
-      }
+      setAllowed(isAllowed); setCanManage(isAllowed);
+      if (!isAllowed) { setLoading(false); return; }
 
-      const { data } = await supabase
-        .from("financing_weekly_reports")
-        .select("*")
-        .order("year", { ascending: false })
-        .order("month", { ascending: false })
-        .order("week_no", { ascending: true });
-
-      const all = (data as WeeklyReportRow[]) ?? [];
-      if (all.length === 0) {
-        setRows([]);
-      } else {
-        // Show the most recent period only
-        const latest = all[0];
-        setRows(all.filter((r) => r.year === latest.year && r.month === latest.month));
-      }
+      const { data } = await supabase.from("financing_reports").select("*").order("sort_key", { ascending: true });
+      setReports((data as FinancingReportRow[]) ?? []);
       setLoading(false);
     }
     load();
   }, [reload]);
 
-  const agg = useMemo(() => aggregate(rows), [rows]);
-  const flags = useMemo(() => computeFlags(rows), [rows]);
-  const period = rows[0] ? `${MONTH_LABELS[rows[0].month - 1]} ${rows[0].year}` : "";
-  const less15 = agg.expectedFee - agg.netFee;
+  const months = useMemo(() => reports.filter((r) => r.period_type === "month"), [reports]);
+  const latest = months.length ? months[months.length - 1] : null;
+  const ltd = reports.find((r) => r.period_type === "ltd") ?? null;
+  const ytd = reports.find((r) => r.period_type === "ytd") ?? null;
+  const agg = useMemo(() => (latest ? aggregateRow(latest) : null), [latest]);
+  const flags = useMemo(() => (latest ? computeFlags(latest) : []), [latest]);
 
-  const chartData = rows.map((r) => ({
-    week: `W${r.week_no}`,
-    disbursed: r.disbursed_amount,
-    completion: r.total_attempts ? Number(((r.application_completed / r.total_attempts) * 100).toFixed(2)) : 0,
+  const chartData = months.slice(-12).map((r) => ({
+    period: r.period_label.replace(/ \d{4}$/, ""),
+    disbursed: r.disbursed_amount ?? 0,
+    completion: r.total_attempts ? Number((((r.application_completed ?? 0) / r.total_attempts) * 100).toFixed(1)) : 0,
   }));
 
-  const funnelMax = Math.max(1, ...agg.funnel.map((f) => f.value));
-
-  // ── Access states ──────────────────────────────────────────────────────
   if (allowed === false) {
     return (
       <div className="space-y-6">
@@ -130,15 +90,18 @@ export default function FinancingPerformancePage() {
     );
   }
 
+  const funnelMax = agg && agg.funnel.length ? Math.max(...agg.funnel.map((f) => f.value)) : 1;
+  const less15 = agg ? agg.expectedFee - agg.netFee : 0;
+
   return (
     <div className="space-y-6">
       <PageHeader
         title={t("finperf_title")}
         description={t("finperf_desc")}
         badge={
-          period ? (
+          latest ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
-              {period}
+              {latest.period_label}
             </span>
           ) : undefined
         }
@@ -152,29 +115,40 @@ export default function FinancingPerformancePage() {
       />
 
       {loading ? (
-        <Card>
-          <CardBody className="py-16">
-            <EmptyState text={t("loading")} />
-          </CardBody>
-        </Card>
-      ) : rows.length === 0 ? (
-        <Card>
-          <CardBody className="py-16">
-            <EmptyState text={t("finperf_no_data")} />
-          </CardBody>
-        </Card>
+        <Card><CardBody className="py-16"><EmptyState text={t("loading")} /></CardBody></Card>
+      ) : !latest || !agg ? (
+        <Card><CardBody className="py-16"><EmptyState text={t("finperf_no_data")} /></CardBody></Card>
       ) : (
         <>
           {/* KPI tiles */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiCard label={t("finperf_kpi_disbursed")} value={shortRupiah(agg.disbursed)} icon={Landmark} color="indigo"
-              trend={rows.length >= 2 ? `${(((rows[rows.length - 1].disbursed_amount - rows[0].disbursed_amount) / (rows[0].disbursed_amount || 1)) * 100).toFixed(0)}% W1→W${rows.length}` : undefined}
-              trendTone="danger" />
+            <KpiCard label={t("finperf_kpi_disbursed")} value={shortRupiah(agg.disbursed)} icon={Landmark} color="indigo" />
             <KpiCard label={t("finperf_kpi_netfee")} value={shortRupiah(agg.netFee)} icon={Wallet} color="emerald" />
             <KpiCard label={t("finperf_kpi_commission")} value={shortRupiah(agg.commission)} icon={Percent} color="blue" />
-            <KpiCard label={t("finperf_kpi_approval")} value={`${agg.approvalPct.toFixed(1)}%`} icon={TrendingDown} color="amber"
-              trend={`${agg.newLoans}/${agg.applications}`} trendTone="neutral" />
+            <KpiCard label={t("finperf_kpi_activation")} value={`${agg.activationPct.toFixed(2)}%`} icon={Users} color="amber"
+              trend={`${agg.newLoans}/${agg.businessOwners.toLocaleString("id-ID")} (D/A)`} trendTone="neutral" />
           </div>
+
+          {/* Summary strip (LTD / YTD) */}
+          {(ltd || ytd) && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {[ltd, ytd].filter(Boolean).map((s) => {
+                const r = s as FinancingReportRow;
+                return (
+                  <Card key={r.period_key}>
+                    <CardBody className="flex flex-wrap items-center justify-between gap-4 py-4">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{r.period_label}</span>
+                      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                        <span className="text-slate-600">{language === "id" ? "Pinjaman" : "Loans"}: <b className="font-mono">{r.new_loan ?? "-"}</b></span>
+                        <span className="text-slate-600">{language === "id" ? "Cair" : "Disbursed"}: <b className="font-mono">{shortRupiah(r.disbursed_amount ?? 0)}</b></span>
+                        <span className="text-slate-600">Net Fee: <b className="font-mono">{shortRupiah(r.net_fee ?? 0)}</b></span>
+                      </div>
+                    </CardBody>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
 
           {/* Trends */}
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
@@ -184,28 +158,22 @@ export default function FinancingPerformancePage() {
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                    <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={44}
-                      tickFormatter={(v) => `${(v / 1e6).toFixed(0)}`} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }}
-                      formatter={(v: any) => [formatRupiah(v), t("fl_col_amount")]}
-                    />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={44} tickFormatter={(v) => `${(v / 1e9).toFixed(1)}`} />
+                    <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [formatRupiah(v), t("fl_col_amount")]} />
                     <Bar dataKey="disbursed" radius={[6, 6, 0, 0]} fill="#4F46E5" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardBody>
             </Card>
-
             <Card>
               <CardHeader title={t("finperf_completion_title")} icon={Percent} />
               <CardBody>
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                    <XAxis dataKey="week" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={40}
-                      tickFormatter={(v) => `${v}%`} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => `${v}%`} />
                     <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [`${v}%`, "B/C"]} />
                     <Line type="monotone" dataKey="completion" stroke="#7C3AED" strokeWidth={2.5} dot={{ r: 3 }} />
                   </LineChart>
@@ -220,20 +188,16 @@ export default function FinancingPerformancePage() {
               <CardHeader title={t("finperf_funnel_title")} description={t("finperf_funnel_note")} />
               <CardBody className="space-y-2.5">
                 {agg.funnel.map((f) => (
-                  <div key={f.key} className="grid grid-cols-[150px_1fr_36px] items-center gap-3">
+                  <div key={f.key} className="grid grid-cols-[150px_1fr_52px] items-center gap-3">
                     <span className="truncate text-xs text-slate-500" title={f.key}>{f.key}</span>
                     <div className="h-5 overflow-hidden rounded-md bg-accent/10">
-                      <div className="h-full rounded-md bg-gradient-to-r from-accent to-accent-violet"
-                        style={{ width: `${(f.value / funnelMax) * 100}%` }} />
+                      <div className="h-full rounded-md bg-gradient-to-r from-accent to-accent-violet" style={{ width: `${(f.value / funnelMax) * 100}%` }} />
                     </div>
-                    <span className={cn("text-right text-xs font-semibold", f.value === 0 && "text-amber-600")}>
-                      {f.value}{f.value === 0 ? " ⚠" : ""}
-                    </span>
+                    <span className="text-right text-xs font-semibold font-mono">{f.value.toLocaleString("id-ID")}</span>
                   </div>
                 ))}
               </CardBody>
             </Card>
-
             <Card>
               <CardHeader title={t("finperf_fee_title")} icon={Wallet} />
               <CardBody className="space-y-3">
@@ -245,7 +209,7 @@ export default function FinancingPerformancePage() {
             </Card>
           </div>
 
-          {/* Data-quality flags */}
+          {/* Flags */}
           {flags.length > 0 && (
             <Card>
               <CardHeader title={t("finperf_flags_title")} icon={ShieldAlert} />
@@ -254,9 +218,7 @@ export default function FinancingPerformancePage() {
                   const s = FLAG_STYLE[f.severity];
                   return (
                     <div key={i} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
-                      <span className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold uppercase", s.chip)}>
-                        {s.icon} {s.label}
-                      </span>
+                      <span className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold uppercase", s.chip)}>{s.icon} {s.label}</span>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-800">{f.title}</p>
                         <p className="mt-0.5 text-xs text-slate-500">{f.detail}</p>
@@ -268,7 +230,7 @@ export default function FinancingPerformancePage() {
             </Card>
           )}
 
-          {/* Weekly table */}
+          {/* Monthly detail table */}
           <Card>
             <CardHeader title={t("finperf_table_title")} />
             <CardBody className="p-0">
@@ -277,19 +239,18 @@ export default function FinancingPerformancePage() {
                   <thead>
                     <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-600">
                       <th className="px-4 py-3 font-bold">Metric</th>
-                      {rows.map((r) => (
-                        <th key={r.week_no} className="px-4 py-3 text-right font-bold">W{r.week_no}</th>
+                      {months.slice(-6).map((r) => (
+                        <th key={r.period_key} className="px-4 py-3 text-right font-bold">{r.period_label.replace(/ \d{4}$/, "")}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 font-mono text-slate-700">
-                    <TableRow label={language === "id" ? "Percobaan unik (C)" : "Unique attempts (C)"} cells={rows.map((r) => String(r.total_attempts))} />
-                    <TableRow label={language === "id" ? "Aplikasi selesai (B)" : "Applications (B)"} cells={rows.map((r) => String(r.application_completed))} />
-                    <TableRow label="% (B/C)" cells={rows.map((r) => r.total_attempts ? `${((r.application_completed / r.total_attempts) * 100).toFixed(1)}%` : "-")} />
-                    <TableRow label={language === "id" ? "Pinjaman baru (D)" : "New loans (D)"} cells={rows.map((r) => String(r.new_loan))} />
-                    <TableRow label={language === "id" ? "Pencairan" : "Disbursed"} cells={rows.map((r) => formatRupiah(r.disbursed_amount))} />
-                    <TableRow label="Net Fee" cells={rows.map((r) => formatRupiah(r.net_fee ?? 0))} />
-                    <TableRow label={language === "id" ? "Komisi 10%" : "Commission 10%"} cells={rows.map((r) => formatRupiah(r.commission_10 ?? 0))} highlight />
+                    <TR label={language === "id" ? "Attempts (C)" : "Attempts (C)"} cells={months.slice(-6).map((r) => String(r.total_attempts ?? "-"))} />
+                    <TR label={language === "id" ? "Aplikasi (B)" : "Applications (B)"} cells={months.slice(-6).map((r) => String(r.application_completed ?? "-"))} />
+                    <TR label={language === "id" ? "Pinjaman (D)" : "New Loans (D)"} cells={months.slice(-6).map((r) => String(r.new_loan ?? "-"))} />
+                    <TR label={language === "id" ? "Cair" : "Disbursed"} cells={months.slice(-6).map((r) => formatRupiah(r.disbursed_amount ?? 0))} />
+                    <TR label="Net Fee" cells={months.slice(-6).map((r) => formatRupiah(r.net_fee ?? 0))} />
+                    <TR label={language === "id" ? "Komisi 10%" : "Commission 10%"} cells={months.slice(-6).map((r) => formatRupiah(r.commission_10 ?? 0))} highlight />
                   </tbody>
                 </table>
               </div>
@@ -323,13 +284,11 @@ function FeeRow({ label, value, pct, tone }: { label: string; value: number; pct
   );
 }
 
-function TableRow({ label, cells, highlight }: { label: string; cells: string[]; highlight?: boolean }) {
+function TR({ label, cells, highlight }: { label: string; cells: string[]; highlight?: boolean }) {
   return (
     <tr className={highlight ? "bg-accent/[0.05]" : undefined}>
       <td className={cn("px-4 py-2.5 font-sans font-semibold text-slate-500", highlight && "text-slate-800")}>{label}</td>
-      {cells.map((c, i) => (
-        <td key={i} className="px-4 py-2.5 text-right">{c}</td>
-      ))}
+      {cells.map((c, i) => (<td key={i} className="px-4 py-2.5 text-right">{c}</td>))}
     </tr>
   );
 }

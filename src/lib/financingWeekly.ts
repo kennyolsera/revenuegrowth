@@ -1,32 +1,49 @@
 // ============================================================================
-// Financing Loan — Weekly Performance domain logic
-// Shared by the import dialog and the board dashboard. Kept framework-free so
-// the parsing / reconciliation rules are easy to reason about and reuse.
+// Financing Loan — Performance report domain logic
+// Handles the GoTyme "Monthly Performance" export (metrics as rows, months as
+// columns) AND the weekly variant (Week N columns). Stored as-is; anomalies are
+// surfaced by computeFlags, never mutated. Validated against the real workbook.
 // ============================================================================
 
-export interface WeeklyReportRow {
+export type PeriodType = "month" | "week" | "ltd" | "yearly" | "ytd";
+
+export interface FinancingReportRow {
   id?: string;
-  period_label: string; // e.g. "Aug"
+  period_type: PeriodType;
+  period_key: string; // unique upsert key
+  period_label: string; // e.g. "Aug 2026", "YTD 2026"
   year: number;
-  month: number; // 1-12
-  week_no: number; // 1..5
-  // Funnel (counts)
-  id_verification: number;
-  facial_verification: number;
-  bank_info_confirmation: number;
-  loan_agreement_opened: number;
-  loan_agreement_review: number;
-  application_completed: number; // B
-  total_attempts: number; // C
+  month: number | null; // 1-12 for month/week
+  week_no: number | null; // 1..6 for week
+  sort_key: number;
+  // Reach / base
+  days: number | null;
+  working_days: number | null;
+  offer_unique_merchants: number | null;
+  business_owner_a: number | null; // A (activation denominator)
+  total_site_visits: number | null;
+  less_active_loan: number | null;
+  new_applicant_visits: number | null;
+  unique_merchant_ids: number | null;
+  // Application journey
+  intro_page: number | null;
+  slider_activity: number | null;
+  otp_verification: number | null;
+  id_verification: number | null;
+  facial_verification: number | null;
+  bank_info_confirmation: number | null;
+  loan_agreement_opened: number | null;
+  loan_agreement_review: number | null;
+  application_completed: number | null; // B
+  total_attempts: number | null; // C
   // Conversion
-  contract_verification_rejected: number;
-  contract_verification_approved: number;
-  new_loan: number; // D
-  loan_dashboard: number;
+  contract_rejected: number | null;
+  contract_approved: number | null;
+  new_loan: number | null; // D
+  loan_dashboard: number | null;
   new_loan_per_working_day: number | null;
-  activation_pct: number | null; // as given in sheet (D/A)
   // Finance (Rp)
-  disbursed_amount: number;
+  disbursed_amount: number | null;
   avg_disbursed_loan_amount: number | null;
   expected_fee: number | null; // F
   less_15: number | null; // G
@@ -34,13 +51,35 @@ export interface WeeklyReportRow {
   commission_10: number | null;
 }
 
-type FieldKey = keyof WeeklyReportRow;
+type MetricKey = Exclude<
+  keyof FinancingReportRow,
+  "id" | "period_type" | "period_key" | "period_label" | "year" | "month" | "week_no" | "sort_key"
+>;
 type CellKind = "count" | "amount" | "decimal";
 
-/** Ordered matchers — first hit wins per row; longer/more specific keys first. */
-const MATCHERS: { needle: string; field: FieldKey; kind: CellKind }[] = [
+/** Ordered label matchers — first hit per row wins; specific needles first. */
+const MATCHERS: { needle: string; field: MetricKey; kind: CellKind }[] = [
   { needle: "average disbursed loan amount", field: "avg_disbursed_loan_amount", kind: "amount" },
   { needle: "disbursed amount", field: "disbursed_amount", kind: "amount" },
+  { needle: "expected fee", field: "expected_fee", kind: "amount" },
+  { needle: "net fee", field: "net_fee", kind: "amount" },
+  { needle: "commission", field: "commission_10", kind: "amount" },
+  { needle: "less 15", field: "less_15", kind: "amount" },
+  { needle: "new loan / working", field: "new_loan_per_working_day", kind: "decimal" },
+  { needle: "working days", field: "working_days", kind: "count" },
+  { needle: "new loan", field: "new_loan", kind: "count" },
+  { needle: "loan dashboard", field: "loan_dashboard", kind: "count" },
+  { needle: "contract verification rejected", field: "contract_rejected", kind: "count" },
+  { needle: "contract verification approved", field: "contract_approved", kind: "count" },
+  { needle: "offer to unique merchants", field: "offer_unique_merchants", kind: "count" },
+  { needle: "business owner", field: "business_owner_a", kind: "count" },
+  { needle: "total site visits", field: "total_site_visits", kind: "count" },
+  { needle: "already has active loan", field: "less_active_loan", kind: "count" },
+  { needle: "new applicant", field: "new_applicant_visits", kind: "count" },
+  { needle: "unique merchant ids", field: "unique_merchant_ids", kind: "count" },
+  { needle: "introduction page", field: "intro_page", kind: "count" },
+  { needle: "slider activity", field: "slider_activity", kind: "count" },
+  { needle: "otp verification", field: "otp_verification", kind: "count" },
   { needle: "id verification", field: "id_verification", kind: "count" },
   { needle: "facial verification", field: "facial_verification", kind: "count" },
   { needle: "bank info", field: "bank_info_confirmation", kind: "count" },
@@ -48,29 +87,21 @@ const MATCHERS: { needle: string; field: FieldKey; kind: CellKind }[] = [
   { needle: "loan agreement review", field: "loan_agreement_review", kind: "count" },
   { needle: "application completed", field: "application_completed", kind: "count" },
   { needle: "total attempts", field: "total_attempts", kind: "count" },
-  { needle: "contract verification rejected", field: "contract_verification_rejected", kind: "count" },
-  { needle: "contract verification approved", field: "contract_verification_approved", kind: "count" },
-  { needle: "new loan / working", field: "new_loan_per_working_day", kind: "decimal" },
-  { needle: "working day", field: "new_loan_per_working_day", kind: "decimal" },
-  { needle: "new loan", field: "new_loan", kind: "count" },
-  { needle: "loan dashboard", field: "loan_dashboard", kind: "count" },
-  { needle: "activation", field: "activation_pct", kind: "decimal" },
-  { needle: "expected fee", field: "expected_fee", kind: "amount" },
-  { needle: "less 15", field: "less_15", kind: "amount" },
-  { needle: "net fee", field: "net_fee", kind: "amount" },
-  { needle: "commission", field: "commission_10", kind: "amount" },
+  { needle: "days", field: "days", kind: "count" }, // last: many labels contain "days"
 ];
+
+const MONTHS_ABBR = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+export const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function normalizeLabel(s: any): string {
   return String(s ?? "")
     .toLowerCase()
-    .replace(/\(.*?\)/g, " ") // drop parentheticals like (B), (non-split payment)
-    .replace(/[#%]/g, " ")
+    .replace(/\(.*?\)/g, " ")
+    .replace(/[#%:]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-/** "1.096.000.000" | 1096000000 → 1096000000 (integer). */
 export function parseAmount(cell: any): number | null {
   if (cell === "" || cell === null || cell === undefined) return null;
   if (typeof cell === "number") return Math.round(cell);
@@ -80,11 +111,6 @@ export function parseAmount(cell: any): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-export function parseCount(cell: any): number {
-  return parseAmount(cell) ?? 0;
-}
-
-/** "1,40" | "0,07%" → 1.4 | 0.07 (comma is the decimal separator). */
 export function parseDecimal(cell: any): number | null {
   if (cell === "" || cell === null || cell === undefined) return null;
   if (typeof cell === "number") return cell;
@@ -95,69 +121,140 @@ export function parseDecimal(cell: any): number | null {
 }
 
 function parseCell(cell: any, kind: CellKind): number | null {
-  if (kind === "amount") return parseAmount(cell);
   if (kind === "decimal") return parseDecimal(cell);
-  return parseCount(cell);
+  return parseAmount(cell); // count + amount both integer-ish
 }
 
-function emptyRow(base: { period_label: string; year: number; month: number; week_no: number }): WeeklyReportRow {
+function blankMetrics(): Record<MetricKey, number | null> {
   return {
-    ...base,
-    id_verification: 0,
-    facial_verification: 0,
-    bank_info_confirmation: 0,
-    loan_agreement_opened: 0,
-    loan_agreement_review: 0,
-    application_completed: 0,
-    total_attempts: 0,
-    contract_verification_rejected: 0,
-    contract_verification_approved: 0,
-    new_loan: 0,
-    loan_dashboard: 0,
-    new_loan_per_working_day: null,
-    activation_pct: null,
-    disbursed_amount: 0,
-    avg_disbursed_loan_amount: null,
-    expected_fee: null,
-    less_15: null,
-    net_fee: null,
-    commission_10: null,
+    days: null, working_days: null, offer_unique_merchants: null, business_owner_a: null,
+    total_site_visits: null, less_active_loan: null, new_applicant_visits: null, unique_merchant_ids: null,
+    intro_page: null, slider_activity: null, otp_verification: null, id_verification: null,
+    facial_verification: null, bank_info_confirmation: null, loan_agreement_opened: null,
+    loan_agreement_review: null, application_completed: null, total_attempts: null,
+    contract_rejected: null, contract_approved: null, new_loan: null, loan_dashboard: null,
+    new_loan_per_working_day: null, disbursed_amount: null, avg_disbursed_loan_amount: null,
+    expected_fee: null, less_15: null, net_fee: null, commission_10: null,
   };
 }
 
+interface ColumnTarget {
+  col: number;
+  period_type: PeriodType;
+  period_label: string;
+  year: number;
+  month: number | null;
+  week_no: number | null;
+  sort_key: number;
+  period_key: string;
+}
+
+export interface ParseResult {
+  rows: FinancingReportRow[];
+  matched: number;
+  format: "monthly" | "weekly" | "unknown";
+  error: string | null;
+}
+
 /**
- * Parse the transposed "Weekly Performance" sheet (array-of-arrays) into one
- * row per week. Locates the "Week N" header to map columns, then reads each
- * known metric row. Values are stored exactly as supplied (import-as-is).
+ * Parse a financing performance workbook (array-of-arrays). Auto-detects the
+ * monthly layout (month-name header) or weekly layout (Week N header), plus the
+ * Launch-to-Date / Yearly / YTD summary columns. `year` seeds the primary block.
  */
-export function parseWeeklySheet(
-  aoa: any[][],
-  meta: { period_label: string; year: number; month: number }
-): { rows: WeeklyReportRow[]; matched: number; error: string | null } {
-  // 1. Find the header row that declares the week columns
-  let weekCols: { col: number; week: number }[] = [];
-  for (const row of aoa) {
-    const found: { col: number; week: number }[] = [];
+export function parseFinancingWorkbook(aoa: any[][], primaryYear: number): ParseResult {
+  const columns: ColumnTarget[] = [];
+
+  // ── Detect month-name header row ──────────────────────────────────────
+  let monthHeaderRow = -1;
+  let monthCols: { col: number; m: number }[] = [];
+  aoa.forEach((row, ri) => {
+    if (monthHeaderRow !== -1) return;
+    const found: { col: number; m: number }[] = [];
     row.forEach((cell, col) => {
-      const m = String(cell ?? "").match(/week\s*([1-9])/i);
-      if (m) found.push({ col, week: Number(m[1]) });
+      const norm = String(cell ?? "").trim().toLowerCase().slice(0, 3);
+      const m = MONTHS_ABBR.indexOf(norm);
+      if (m !== -1) found.push({ col, m: m + 1 });
     });
-    if (found.length >= 2) {
-      weekCols = found;
-      break;
+    if (found.length >= 6) {
+      monthHeaderRow = ri;
+      monthCols = found;
+    }
+  });
+
+  // ── Weekly fallback: Week N header ────────────────────────────────────
+  let weekCols: { col: number; w: number }[] = [];
+  if (monthHeaderRow === -1) {
+    for (const row of aoa) {
+      const found: { col: number; w: number }[] = [];
+      row.forEach((cell, col) => {
+        const m = String(cell ?? "").match(/week\s*([1-9])/i);
+        if (m) found.push({ col, w: Number(m[1]) });
+      });
+      if (found.length >= 2) {
+        weekCols = found;
+        break;
+      }
     }
   }
-  if (weekCols.length === 0) {
-    return { rows: [], matched: 0, error: "Could not find 'Week 1..N' header columns in the sheet." };
+
+  const format: ParseResult["format"] =
+    monthHeaderRow !== -1 ? "monthly" : weekCols.length ? "weekly" : "unknown";
+  if (format === "unknown") {
+    return { rows: [], matched: 0, format, error: "Could not find month or week header columns." };
   }
 
-  // 2. Build one row per week, seeded empty
-  const byWeek = new Map<number, WeeklyReportRow>();
-  for (const { week } of weekCols) {
-    byWeek.set(week, emptyRow({ ...meta, week_no: week }));
+  // ── Summary columns (Launch to Date / Yearly / Year to Date) ──────────
+  const summaryDefs: { needle: string; type: PeriodType; label: string; yearOffset: number }[] = [
+    { needle: "launch to date", type: "ltd", label: "Launch to Date", yearOffset: 0 },
+    { needle: "year to date", type: "ytd", label: "YTD", yearOffset: 0 },
+    { needle: "yearly", type: "yearly", label: "Yearly", yearOffset: -1 },
+  ];
+  for (const row of aoa) {
+    for (let col = 0; col < row.length; col++) {
+      const norm = normalizeLabel(row[col]);
+      for (const s of summaryDefs) {
+        if (norm === s.needle && !columns.some((c) => c.period_type === s.type)) {
+          const y = primaryYear + s.yearOffset;
+          columns.push({
+            col, period_type: s.type, period_label: `${s.label} ${y}`, year: y,
+            month: null, week_no: null, sort_key: 900000 + col, period_key: `${s.type}:${y}`,
+          });
+        }
+      }
+    }
   }
 
-  // 3. Walk metric rows; match label in col 0 (or first non-empty cell)
+  if (format === "monthly") {
+    // First contiguous Jan..Dec run = primary year; a following run = prior year.
+    let blockYear = primaryYear;
+    let prevM = 0;
+    for (const { col, m } of monthCols) {
+      if (m <= prevM) blockYear = primaryYear - 1; // wrapped to a new (older) block
+      prevM = m;
+      const label = `${MONTH_LABELS[m - 1]} ${blockYear}`;
+      columns.push({
+        col, period_type: "month", period_label: label, year: blockYear, month: m, week_no: null,
+        sort_key: blockYear * 100 + m, period_key: `m:${blockYear}-${String(m).padStart(2, "0")}`,
+      });
+    }
+  } else {
+    for (const { col, w } of weekCols) {
+      columns.push({
+        col, period_type: "week", period_label: `${MONTH_LABELS[0]} W${w}`, year: primaryYear,
+        month: null, week_no: w, sort_key: primaryYear * 100 + w, period_key: `w:${primaryYear}-${w}`,
+      });
+    }
+  }
+
+  // ── Seed rows per column, then fill matched metric rows ───────────────
+  const rowByKey = new Map<string, FinancingReportRow>();
+  for (const c of columns) {
+    rowByKey.set(c.period_key, {
+      period_type: c.period_type, period_key: c.period_key, period_label: c.period_label,
+      year: c.year, month: c.month, week_no: c.week_no, sort_key: c.sort_key, ...blankMetrics(),
+    });
+  }
+
   let matched = 0;
   for (const row of aoa) {
     const labelCell = row.find((c) => String(c ?? "").trim() !== "");
@@ -166,66 +263,60 @@ export function parseWeeklySheet(
     const matcher = MATCHERS.find((mt) => label.includes(mt.needle));
     if (!matcher) continue;
     matched++;
-    for (const { col, week } of weekCols) {
-      const parsed = parseCell(row[col], matcher.kind);
-      const target = byWeek.get(week)!;
-      (target as any)[matcher.field] = parsed === null ? (matcher.kind === "count" ? 0 : null) : parsed;
+    for (const c of columns) {
+      const val = parseCell(row[c.col], matcher.kind);
+      (rowByKey.get(c.period_key) as any)[matcher.field] = val;
     }
   }
 
-  const rows = Array.from(byWeek.values()).sort((a, b) => a.week_no - b.week_no);
-  return { rows, matched, error: null };
+  // Keep only records that actually carry data (avoid empty future months)
+  const rows = Array.from(rowByKey.values())
+    .filter((r) => (r.total_attempts ?? 0) > 0 || (r.disbursed_amount ?? 0) > 0 || (r.application_completed ?? 0) > 0)
+    .sort((a, b) => a.sort_key - b.sort_key);
+
+  return { rows, matched, format, error: null };
 }
 
-// ── Aggregation ─────────────────────────────────────────────────────────────
-export interface WeeklyAggregate {
-  attempts: number;
-  applications: number;
-  completionPct: number; // B/C
-  newLoans: number;
-  approved: number;
-  rejected: number;
-  approvalPct: number; // D / B (application → loan)
-  disbursed: number;
-  netFee: number;
-  commission: number;
-  expectedFee: number;
+// ── Aggregation / helpers ────────────────────────────────────────────────────
+export interface Aggregate {
+  attempts: number; applications: number; completionPct: number;
+  newLoans: number; approved: number; rejected: number; approvalPct: number;
+  disbursed: number; netFee: number; commission: number; expectedFee: number;
+  businessOwners: number; activationPct: number;
   funnel: { key: string; value: number }[];
 }
 
-export function aggregate(rows: WeeklyReportRow[]): WeeklyAggregate {
-  const sum = (f: (r: WeeklyReportRow) => number) => rows.reduce((a, r) => a + f(r), 0);
-  const attempts = sum((r) => r.total_attempts);
-  const applications = sum((r) => r.application_completed);
-  const newLoans = sum((r) => r.new_loan);
-  const approved = sum((r) => r.contract_verification_approved);
-  const rejected = sum((r) => r.contract_verification_rejected);
+const n = (v: number | null | undefined) => v ?? 0;
+
+export function aggregateRow(r: FinancingReportRow): Aggregate {
+  const attempts = n(r.total_attempts);
+  const applications = n(r.application_completed);
+  const newLoans = n(r.new_loan);
+  const a = n(r.business_owner_a);
   return {
-    attempts,
-    applications,
+    attempts, applications,
     completionPct: attempts ? (applications / attempts) * 100 : 0,
-    newLoans,
-    approved,
-    rejected,
+    newLoans, approved: n(r.contract_approved), rejected: n(r.contract_rejected),
     approvalPct: applications ? (newLoans / applications) * 100 : 0,
-    disbursed: sum((r) => r.disbursed_amount),
-    netFee: sum((r) => r.net_fee ?? 0),
-    commission: sum((r) => r.commission_10 ?? 0),
-    expectedFee: sum((r) => r.expected_fee ?? 0),
+    disbursed: n(r.disbursed_amount), netFee: n(r.net_fee), commission: n(r.commission_10),
+    expectedFee: n(r.expected_fee), businessOwners: a,
+    activationPct: a ? (newLoans / a) * 100 : 0,
     funnel: [
-      { key: "ID Verification", value: sum((r) => r.id_verification) },
-      { key: "Facial Verification", value: sum((r) => r.facial_verification) },
-      { key: "Bank Info Confirmation", value: sum((r) => r.bank_info_confirmation) },
-      { key: "Loan Agreement Opened", value: sum((r) => r.loan_agreement_opened) },
-      { key: "Loan Agreement Review", value: sum((r) => r.loan_agreement_review) },
+      { key: "Site Visits", value: n(r.total_site_visits) },
+      { key: "New Applicant Visits", value: n(r.new_applicant_visits) },
+      { key: "Introduction", value: n(r.intro_page) },
+      { key: "OTP Verification", value: n(r.otp_verification) },
+      { key: "ID Verification", value: n(r.id_verification) },
+      { key: "Facial Verification", value: n(r.facial_verification) },
+      { key: "Bank Info", value: n(r.bank_info_confirmation) },
+      { key: "Agreement Review", value: n(r.loan_agreement_review) },
       { key: "Application Completed", value: applications },
-      { key: "Contract Approved / New Loan", value: newLoans },
-      { key: "Loan Dashboard (activated)", value: sum((r) => r.loan_dashboard) },
-    ],
+      { key: "New Loan", value: newLoans },
+      { key: "Loan Dashboard", value: n(r.loan_dashboard) },
+    ].filter((f) => f.value > 0),
   };
 }
 
-// ── Reconciliation flags (import-as-is → surface, don't mutate) ──────────────
 export type FlagSeverity = "high" | "med" | "info";
 export interface DataFlag {
   severity: FlagSeverity;
@@ -233,73 +324,51 @@ export interface DataFlag {
   detail: string;
 }
 
-export function computeFlags(rows: WeeklyReportRow[]): DataFlag[] {
+export function computeFlags(r: FinancingReportRow): DataFlag[] {
   const flags: DataFlag[] = [];
-  const fmt = (n: number) => new Intl.NumberFormat("id-ID").format(Math.round(n));
+  const fmt = (x: number) => new Intl.NumberFormat("id-ID").format(Math.round(x));
 
-  // 1. Average disbursed loan amount vs disbursed / new_loan
-  for (const r of rows) {
-    if (r.avg_disbursed_loan_amount && r.new_loan > 0 && r.disbursed_amount > 0) {
-      const expected = r.disbursed_amount / r.new_loan;
-      const diff = Math.abs(r.avg_disbursed_loan_amount - expected) / expected;
-      if (diff > 0.25) {
-        flags.push({
-          severity: "high",
-          title: `Week ${r.week_no}: "Average Disbursed Loan Amount" does not reconcile`,
-          detail: `Reported Rp ${fmt(r.avg_disbursed_loan_amount)}, but Disbursed ÷ New Loan = Rp ${fmt(
-            r.disbursed_amount
-          )} ÷ ${r.new_loan} ≈ Rp ${fmt(expected)}.`,
-        });
-      }
-    }
-  }
-
-  // 2. Effective fee-rate outlier across weeks
-  const rates = rows
-    .filter((r) => r.expected_fee && r.disbursed_amount > 0)
-    .map((r) => ({ week: r.week_no, rate: (r.expected_fee! / r.disbursed_amount) * 100 }));
-  if (rates.length >= 2) {
-    const min = Math.min(...rates.map((x) => x.rate));
-    const max = Math.max(...rates.map((x) => x.rate));
-    if (min > 0 && max / min > 1.5) {
-      const lo = rates.find((x) => x.rate === min)!;
+  if (r.avg_disbursed_loan_amount && n(r.new_loan) > 0 && n(r.disbursed_amount) > 0) {
+    const expected = n(r.disbursed_amount) / n(r.new_loan);
+    if (Math.abs(r.avg_disbursed_loan_amount - expected) / expected > 0.25) {
       flags.push({
-        severity: "med",
-        title: "Effective fee rate is inconsistent across weeks",
-        detail: `Fee ÷ Disbursed ranges from ${min.toFixed(1)}% (Week ${lo.week}) to ${max.toFixed(
-          1
-        )}%. Confirm whether a week's disbursement or fee is misstated.`,
+        severity: "high",
+        title: '"Average Disbursed Loan Amount" does not reconcile',
+        detail: `Reported Rp ${fmt(r.avg_disbursed_loan_amount)}, but Disbursed ÷ New Loan ≈ Rp ${fmt(expected)}.`,
       });
     }
   }
-
-  // 3. Loan agreement opened = 0 but review > 0
-  const openedTotal = rows.reduce((a, r) => a + r.loan_agreement_opened, 0);
-  const reviewTotal = rows.reduce((a, r) => a + r.loan_agreement_review, 0);
-  if (openedTotal === 0 && reviewTotal > 0) {
+  if (n(r.loan_agreement_opened) === 0 && n(r.loan_agreement_review) > 0) {
     flags.push({
       severity: "med",
-      title: 'Pipeline logging gap: "Loan Agreement Opened" is 0 every week',
-      detail: `Yet "Loan Agreement Review" totals ${reviewTotal}. An agreement cannot be reviewed before it is opened — an event is likely not being tracked.`,
+      title: '"Loan Agreement Opened" is 0 while Review > 0',
+      detail: `Review shows ${n(r.loan_agreement_review)} — an agreement cannot be reviewed before it is opened. Likely an untracked event.`,
     });
   }
-
-  // 4. Activation base undefined
-  if (rows.some((r) => r.activation_pct != null)) {
-    flags.push({
-      severity: "info",
-      title: '"% Activation (D/A)" denominator is undefined',
-      detail: "The active-merchant base A is not present in the report. Define A explicitly so the metric is auditable.",
-    });
+  if (r.expected_fee && n(r.disbursed_amount) > 0) {
+    const rate = (r.expected_fee / n(r.disbursed_amount)) * 100;
+    if (rate < 5 || rate > 40) {
+      flags.push({
+        severity: "info",
+        title: "Effective fee rate is outside the usual band",
+        detail: `Expected Fee ÷ Disbursed = ${rate.toFixed(1)}% (typically ~20–25%). Worth a sanity check.`,
+      });
+    }
   }
-
   return flags;
 }
 
-/** The user's August 2026 sample, used when Supabase has no data yet. */
-export const SAMPLE_WEEKLY: WeeklyReportRow[] = [
-  { period_label: "Aug", year: 2026, month: 8, week_no: 1, id_verification: 17, facial_verification: 9, bank_info_confirmation: 1, loan_agreement_opened: 0, loan_agreement_review: 0, application_completed: 8, total_attempts: 53, contract_verification_rejected: 1, contract_verification_approved: 7, new_loan: 7, loan_dashboard: 6, new_loan_per_working_day: 1.4, activation_pct: 0.07, disbursed_amount: 1096000000, avg_disbursed_loan_amount: 1045500000, expected_fee: 153105000, less_15: 22965750, net_fee: 130139250, commission_10: 13013925 },
-  { period_label: "Aug", year: 2026, month: 8, week_no: 2, id_verification: 10, facial_verification: 5, bank_info_confirmation: 5, loan_agreement_opened: 0, loan_agreement_review: 4, application_completed: 12, total_attempts: 52, contract_verification_rejected: 0, contract_verification_approved: 12, new_loan: 12, loan_dashboard: 13, new_loan_per_working_day: 2.4, activation_pct: 0.11, disbursed_amount: 688000000, avg_disbursed_loan_amount: 148300000, expected_fee: 175316000, less_15: 26297400, net_fee: 149018600, commission_10: 14901860 },
-  { period_label: "Aug", year: 2026, month: 8, week_no: 3, id_verification: 13, facial_verification: 8, bank_info_confirmation: 10, loan_agreement_opened: 0, loan_agreement_review: 1, application_completed: 18, total_attempts: 75, contract_verification_rejected: 5, contract_verification_approved: 13, new_loan: 13, loan_dashboard: 4, new_loan_per_working_day: 2.4, activation_pct: 0.12, disbursed_amount: 574000000, avg_disbursed_loan_amount: 295150000, expected_fee: 135149000, less_15: 20272350, net_fee: 114876650, commission_10: 11487665 },
-  { period_label: "Aug", year: 2026, month: 8, week_no: 4, id_verification: 11, facial_verification: 7, bank_info_confirmation: 2, loan_agreement_opened: 0, loan_agreement_review: 1, application_completed: 11, total_attempts: 60, contract_verification_rejected: 2, contract_verification_approved: 9, new_loan: 9, loan_dashboard: 6, new_loan_per_working_day: 1.8, activation_pct: 0.09, disbursed_amount: 265000000, avg_disbursed_loan_amount: 148000000, expected_fee: 69409000, less_15: 10411350, net_fee: 58997650, commission_10: 5899765 },
+/** August 2026 from the real GoTyme workbook — sample when Supabase is empty. */
+export const SAMPLE_REPORTS: FinancingReportRow[] = [
+  {
+    period_type: "month", period_key: "m:2026-08", period_label: "Aug 2026", year: 2026, month: 8,
+    week_no: null, sort_key: 202608,
+    days: 31, working_days: 21, offer_unique_merchants: 12346, business_owner_a: 8641,
+    total_site_visits: 920, less_active_loan: -405, new_applicant_visits: 515, unique_merchant_ids: 363,
+    intro_page: 94, slider_activity: 86, otp_verification: 40, id_verification: 33, facial_verification: 15,
+    bank_info_confirmation: 6, loan_agreement_opened: 10, loan_agreement_review: 11, application_completed: 68,
+    total_attempts: 363, contract_rejected: 23, contract_approved: 45, new_loan: 45, loan_dashboard: 300,
+    new_loan_per_working_day: 2.14, disbursed_amount: 3252000000, avg_disbursed_loan_amount: 72266667,
+    expected_fee: 689385000, less_15: 103407750, net_fee: 585977250, commission_10: 58597725,
+  },
 ];
