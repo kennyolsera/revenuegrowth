@@ -122,10 +122,10 @@ export default function FinancingPerformancePage() {
         <>
           {/* KPI readout strip */}
           <KpiStrip>
-            <KpiCard label={t("finperf_kpi_disbursed")} value={shortRupiah(agg.disbursed)} icon={Landmark} />
-            <KpiCard label={t("finperf_kpi_netfee")} value={shortRupiah(agg.netFee)} icon={Wallet} />
-            <KpiCard label={t("finperf_kpi_commission")} value={shortRupiah(agg.commission)} icon={Percent} />
-            <KpiCard label={t("finperf_kpi_activation")} value={`${agg.activationPct.toFixed(2)}%`} icon={Users}
+            <KpiCard label={t("finperf_kpi_disbursed")} value={shortRupiah(agg.disbursed)} animateTo={agg.disbursed} format={shortRupiah} icon={Landmark} />
+            <KpiCard label={t("finperf_kpi_netfee")} value={shortRupiah(agg.netFee)} animateTo={agg.netFee} format={shortRupiah} icon={Wallet} />
+            <KpiCard label={t("finperf_kpi_commission")} value={shortRupiah(agg.commission)} animateTo={agg.commission} format={shortRupiah} icon={Percent} />
+            <KpiCard label={t("finperf_kpi_activation")} value={`${agg.activationPct.toFixed(2)}%`} animateTo={agg.activationPct} format={(n) => `${n.toFixed(2)}%`} icon={Users}
               trend={`${agg.newLoans}/${agg.businessOwners.toLocaleString("id-ID")} (D/A)`} trendTone="neutral" />
           </KpiStrip>
 
@@ -161,7 +161,7 @@ export default function FinancingPerformancePage() {
                     <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={44} tickFormatter={(v) => `${(v / 1e9).toFixed(1)}`} />
                     <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [formatRupiah(v), t("fl_col_amount")]} />
-                    <Bar dataKey="disbursed" radius={[3, 3, 0, 0]} fill="#134E7A" />
+                    <Bar dataKey="disbursed" radius={[4, 4, 0, 0]} fill="#1657A0" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardBody>

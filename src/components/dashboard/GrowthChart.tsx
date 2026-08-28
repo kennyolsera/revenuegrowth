@@ -41,8 +41,8 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
             <AreaChart data={data} margin={{ top: 12, right: 12, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorQris" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#134E7A" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#134E7A" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#1657A0" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#1657A0" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorOO" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10B981" stopOpacity={0.35} />
@@ -81,7 +81,7 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
                 type="monotone"
                 dataKey="qris"
                 name="QRIS"
-                stroke="#134E7A"
+                stroke="#1657A0"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorQris)"

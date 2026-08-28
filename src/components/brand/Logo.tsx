@@ -17,7 +17,13 @@ export function LogoMark({ className, size = 34 }: { className?: string; size?: 
       role="img"
       aria-label="Revenue Growth"
     >
-      <rect x="1" y="1" width="30" height="30" rx="6" fill="#134E7A" />
+      <defs>
+        <linearGradient id="rg-mark" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#1657A0" />
+          <stop offset="1" stopColor="#2E7BD6" />
+        </linearGradient>
+      </defs>
+      <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#rg-mark)" />
       {/* base ledger line */}
       <rect x="7" y="22" width="18" height="2.2" rx="1.1" fill="#7FA8C9" />
       {/* ascending steps */}

@@ -173,7 +173,7 @@ export default function DashboardPage() {
   }, [language]);
 
   return (
-    <div className="space-y-6">
+    <div className="stagger-children space-y-6">
       <PageHeader
         title={t("dash_header_title")}
         description={t("dash_header_desc")}
@@ -191,36 +191,37 @@ export default function DashboardPage() {
         <KpiCard
           label={t("dash_kpi_merchants")}
           value={String(data.merchantCount)}
+          animateTo={data.merchantCount}
           loading={loading}
           icon={Users}
           trend={isSupabaseConfigured ? undefined : "+14.2% MoM"}
           trendTone="success"
-          color="indigo"
         />
         <KpiCard
           label={t("dash_kpi_loans")}
           value={formatRupiah(data.loanDisbursed)}
+          animateTo={data.loanDisbursed}
+          format={formatRupiah}
           loading={loading}
           icon={Landmark}
           trend={isSupabaseConfigured ? undefined : "+22.8% YTD"}
           trendTone="success"
-          color="emerald"
         />
         <KpiCard
           label={t("dash_kpi_requests")}
           value={String(data.openRequests)}
+          animateTo={data.openRequests}
           loading={loading}
           icon={Inbox}
-          color="amber"
         />
         <KpiCard
           label={t("dash_kpi_qris_active")}
           value={String(data.qrisActive)}
+          animateTo={data.qrisActive}
           loading={loading}
           icon={QrCode}
           trend={isSupabaseConfigured ? undefined : "+18.4% growth"}
           trendTone="success"
-          color="blue"
         />
       </KpiStrip>
 

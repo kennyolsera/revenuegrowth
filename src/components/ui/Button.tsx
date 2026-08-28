@@ -15,15 +15,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-ink text-white hover:bg-ink-body disabled:opacity-50",
+    "bg-ink text-white shadow-xs hover:bg-ink-body hover:shadow-card active:translate-y-px disabled:opacity-50",
   accent:
-    "bg-accent text-white hover:bg-accent-strong disabled:opacity-50",
+    "bg-brand-gradient text-white shadow-card hover:shadow-lift hover:brightness-[1.05] active:translate-y-px active:brightness-95 disabled:opacity-50 disabled:shadow-none",
   secondary:
-    "bg-surface text-ink-body border border-surface-border hover:bg-surface-muted hover:text-ink disabled:opacity-50",
+    "bg-surface text-ink-body border border-surface-border shadow-xs hover:bg-surface-muted hover:text-ink hover:border-accent-line disabled:opacity-50",
   ghost:
     "bg-transparent text-ink-body hover:bg-surface-muted hover:text-ink disabled:opacity-40",
   danger:
-    "bg-status-danger text-white hover:brightness-110 disabled:opacity-50",
+    "bg-status-danger text-white shadow-card hover:brightness-110 hover:shadow-lift active:translate-y-px disabled:opacity-50",
 };
 
 const sizeClasses: Record<Size, string> = {

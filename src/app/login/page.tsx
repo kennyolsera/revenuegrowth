@@ -71,6 +71,36 @@ function LoginPageInner() {
 
       {/* Left Panel — Console rail */}
       <div className="relative hidden w-[44%] flex-col justify-between overflow-hidden bg-rail p-12 text-white lg:flex border-r border-rail-line">
+        {/* Ambient brand wash + animated growth-line graphic */}
+        <div className="pointer-events-none absolute inset-0 bg-hero-soft opacity-70" />
+        <svg
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-56 w-full"
+          viewBox="0 0 600 200"
+          preserveAspectRatio="none"
+          fill="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#2E7BD6" stopOpacity="0.22" />
+              <stop offset="100%" stopColor="#2E7BD6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0 170 L90 150 L170 158 L250 120 L330 132 L420 78 L500 96 L600 40 L600 200 L0 200 Z"
+            fill="url(#heroFill)"
+          />
+          <path
+            className="animate-draw"
+            pathLength={1}
+            d="M0 170 L90 150 L170 158 L250 120 L330 132 L420 78 L500 96 L600 40"
+            stroke="#2E7BD6"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+
         <div className="relative z-10">
           <Logo tone="light" size={36} />
         </div>

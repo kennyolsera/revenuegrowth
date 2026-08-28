@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/shared/SupabaseNotice";
 import { PieChart as PieIcon } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 
-const COLORS = ["#134E7A", "#15803D", "#B45309", "#0E7C86", "#6B7280", "#9A3412"];
+const COLORS = ["#1657A0", "#0EA5C9", "#15803D", "#B45309", "#6B7280", "#9A3412"];
 
 export function PipelineChart({ data }: { data: { name: string; value: number }[] }) {
   const { t } = useLanguage();
