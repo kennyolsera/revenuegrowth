@@ -27,11 +27,11 @@ export function DataTable<T extends { id: string | number }>({
   const resolvedEmptyText = emptyText ?? t("no_data");
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/95 backdrop-blur-sm shadow-card">
       <div className="scrollbar-thin overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200/80 bg-slate-50/80">
+            <tr className="border-b border-slate-200/80 bg-gradient-to-b from-slate-50 to-slate-50/40">
               {columns.map((col) => (
                 <th
                   key={col.key}
@@ -66,7 +66,7 @@ export function DataTable<T extends { id: string | number }>({
                   className={cn(
                     "group transition-colors duration-150",
                     idx % 2 === 1 ? "bg-slate-50/40" : "bg-white",
-                    "hover:bg-blue-50/50",
+                    "hover:bg-accent/[0.045]",
                     onRowClick && "cursor-pointer"
                   )}
                 >

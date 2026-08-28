@@ -27,6 +27,12 @@ export function Dialog({
   const titleId = useId();
   const descId = useId();
 
+  // Keep the latest onClose in a ref so the open-effect never re-subscribes
+  // (parents pass a fresh arrow each render — depending on it would re-run the
+  // effect on every keystroke and steal focus back to the first field).
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!open) return;
 
@@ -34,14 +40,14 @@ export function Dialog({
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     document.body.style.overflow = "hidden";
 
-    // Move focus into the dialog (first field, else the panel itself).
+    // Move focus into the dialog once, on open (first field, else the panel).
     const panel = panelRef.current;
     const first = panel?.querySelector<HTMLElement>(FOCUSABLE);
     (first ?? panel)?.focus();
 
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !panel) return;
@@ -75,13 +81,15 @@ export function Dialog({
       // Restore focus to whatever triggered the dialog.
       previouslyFocused.current?.focus?.();
     };
-  }, [open, onClose]);
+    // Intentionally depends ONLY on `open` — see onCloseRef note above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm sm:items-center animate-fade-in">
-      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0" onClick={() => onCloseRef.current()} aria-hidden="true" />
       <div
         ref={panelRef}
         role="dialog"
@@ -91,7 +99,7 @@ export function Dialog({
         tabIndex={-1}
         className={`relative z-10 w-full ${width} overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl transition-all focus:outline-none`}
       >
-        <div className="h-1 w-full bg-gradient-to-r from-accent via-blue-500 to-indigo-500" />
+        <div className="h-1 w-full bg-gradient-to-r from-accent via-accent-bright to-accent-violet" />
         <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
           <div>
             <h3 id={titleId} className="text-base font-bold tracking-tight text-slate-900">
@@ -104,7 +112,7 @@ export function Dialog({
             )}
           </div>
           <button
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
             className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
             aria-label="Tutup"
           >
