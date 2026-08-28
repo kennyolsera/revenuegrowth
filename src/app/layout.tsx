@@ -1,24 +1,28 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
 import { ToastProvider } from "@/lib/ToastContext";
 
-const inter = Inter({
+// "Ledger" type system — IBM Plex: engineered, technical, credible for finance.
+const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const plexDisplay = IBM_Plex_Sans({
   subsets: ["latin"],
+  weight: ["600", "700"],
   variable: "--font-display",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--font-mono",
   display: "swap",
 });
@@ -32,9 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable}`}
+      className={`${plexSans.variable} ${plexDisplay.variable} ${plexMono.variable}`}
     >
-      <body className="font-sans antialiased bg-surface-canvas text-slate-900 selection:bg-accent/20 selection:text-accent">
+      <body className="font-sans antialiased bg-surface-canvas text-ink selection:bg-accent/15 selection:text-accent-strong">
         <LanguageProvider>
           <ToastProvider>
             <SidebarProvider>{children}</SidebarProvider>

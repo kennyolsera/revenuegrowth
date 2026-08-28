@@ -279,7 +279,7 @@ export function ResourceManager<T extends { id: string }>({
       />
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200/80 bg-white/90 py-16 shadow-sm">
+        <div className="rounded-lg border border-surface-border bg-surface py-16 shadow-xs">
           <EmptyState text={t("loading")} />
         </div>
       ) : (
@@ -292,16 +292,18 @@ export function ResourceManager<T extends { id: string }>({
               {extraRowActions?.(row, fetchRows)}
               <button
                 onClick={() => openEdit(row)}
-                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-accent"
+                className="rounded-md p-1.5 text-ink-faint transition-colors hover:bg-surface-muted hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 title={t("edit")}
+                aria-label={t("edit")}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
               {!disableDelete && (
                 <button
                   onClick={() => requestDelete(row)}
-                  className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-status-danger"
+                  className="rounded-md p-1.5 text-ink-faint transition-colors hover:bg-red-50 hover:text-status-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-status-danger/40"
                   title={t("delete")}
+                  aria-label={t("delete")}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

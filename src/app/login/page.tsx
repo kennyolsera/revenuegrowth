@@ -5,14 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";
-import {
-  AlertTriangle,
-  Lock,
-  Mail,
-  Sparkles,
-  TrendingUp,
-  ShieldCheck,
-} from "lucide-react";
+import { AlertTriangle, Lock, Mail, TrendingUp, ShieldCheck } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useLanguage } from "@/lib/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -76,70 +69,47 @@ function LoginPageInner() {
         </div>
       </div>
 
-      {/* Left Panel — Premium Visual Graphic Hero */}
-      <div className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-slate-950 p-12 text-white lg:flex border-r border-slate-800/60">
-        {/* Layered background graphics */}
-        <div className="pointer-events-none absolute inset-0 bg-mesh-dark" />
-        <div className="pointer-events-none absolute inset-0 bg-grid opacity-[0.15]" />
-        <div className="pointer-events-none absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-accent-violet/20 blur-3xl animate-float" />
-
+      {/* Left Panel — Console rail */}
+      <div className="relative hidden w-[44%] flex-col justify-between overflow-hidden bg-rail p-12 text-white lg:flex border-r border-rail-line">
         <div className="relative z-10">
-          <Logo tone="light" size={44} />
+          <Logo tone="light" size={36} />
         </div>
 
-        <div className="relative z-10 my-auto space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3.5 py-1 text-xs font-semibold text-accent">
-            <Sparkles className="h-3.5 w-3.5" /> Enterprise Operations Suite
+        <div className="relative z-10 my-auto max-w-md space-y-6">
+          <div className="label-mono inline-flex items-center gap-2 border-l-2 border-accent-bright pl-3 text-slate-400">
+            <ShieldCheck className="h-3.5 w-3.5 text-accent-bright" /> Enterprise Operations Suite
           </div>
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl leading-tight">
-            {language === "id" ? (
-              <>
-                Akselerasi Pertumbuhan <br />
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-teal-300 bg-clip-text text-transparent">
-                  Layanan Value-Added
-                </span>
-              </>
-            ) : (
-              <>
-                Accelerate Growth for <br />
-                <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-teal-300 bg-clip-text text-transparent">
-                  Value-Added Services
-                </span>
-              </>
-            )}
+          <h1 className="font-display text-[32px] font-semibold leading-[1.15] tracking-tight text-white sm:text-[38px]">
+            {language === "id" ? "Akselerasi Pertumbuhan Layanan Value-Added" : "Accelerate Growth for Value-Added Services"}
           </h1>
 
-          <p className="max-w-md text-sm text-slate-300/80 leading-relaxed">
-            {t("login_hero_desc")}
-          </p>
+          <p className="text-sm leading-relaxed text-slate-400">{t("login_hero_desc")}</p>
 
-          <div className="grid grid-cols-2 gap-3.5 pt-2 max-w-md">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-md shadow-sm">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
-                <TrendingUp className="h-4 w-4" /> +22.8% YTD
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="rounded-md border border-rail-line bg-rail-soft p-3.5">
+              <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
+                <TrendingUp className="h-4 w-4 text-accent-bright" /> 12 Modules
               </div>
-              <p className="mt-1 text-xs text-slate-400">Financing Growth</p>
+              <p className="label-mono mt-1.5 text-slate-500">Integrated Pipeline</p>
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-3.5 backdrop-blur-md shadow-sm">
-              <div className="flex items-center gap-2 text-xs font-semibold text-blue-400">
-                <ShieldCheck className="h-4 w-4" /> 12 Modules
+            <div className="rounded-md border border-rail-line bg-rail-soft p-3.5">
+              <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
+                <ShieldCheck className="h-4 w-4 text-accent-bright" /> Role-based
               </div>
-              <p className="mt-1 text-xs text-slate-400">Integrated Pipeline</p>
+              <p className="label-mono mt-1.5 text-slate-500">Access Control</p>
             </div>
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center justify-between text-xs text-slate-500">
-          <span>© {new Date().getFullYear()} Revenue Growth (VAS)</span>
-          <span className="font-mono">v1.0 Production</span>
+        <div className="label-mono relative z-10 flex items-center justify-between text-slate-500">
+          <span>© {new Date().getFullYear()} Revenue Growth · VAS</span>
+          <span>v1.0</span>
         </div>
       </div>
 
       {/* Right Panel — Login Form */}
-      <div className="relative flex w-full items-center justify-center bg-surface-canvas p-6 lg:w-1/2">
-        <div className="pointer-events-none absolute inset-0 bg-dots opacity-60" />
-        <div className="pointer-events-none absolute inset-0 bg-aurora" />
+      <div className="relative flex w-full items-center justify-center bg-surface p-6 lg:flex-1">
         <div className="relative w-full max-w-md space-y-6">
           <div className="lg:hidden">
             <Logo tone="dark" size={38} />

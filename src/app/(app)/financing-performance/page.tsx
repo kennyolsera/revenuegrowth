@@ -161,7 +161,7 @@ export default function FinancingPerformancePage() {
                     <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={44} tickFormatter={(v) => `${(v / 1e9).toFixed(1)}`} />
                     <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [formatRupiah(v), t("fl_col_amount")]} />
-                    <Bar dataKey="disbursed" radius={[6, 6, 0, 0]} fill="#4F46E5" />
+                    <Bar dataKey="disbursed" radius={[3, 3, 0, 0]} fill="#134E7A" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardBody>
@@ -175,7 +175,7 @@ export default function FinancingPerformancePage() {
                     <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
                     <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => `${v}%`} />
                     <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [`${v}%`, "B/C"]} />
-                    <Line type="monotone" dataKey="completion" stroke="#7C3AED" strokeWidth={2.5} dot={{ r: 3 }} />
+                    <Line type="monotone" dataKey="completion" stroke="#B45309" strokeWidth={2} dot={{ r: 2.5 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </CardBody>
@@ -191,7 +191,7 @@ export default function FinancingPerformancePage() {
                   <div key={f.key} className="grid grid-cols-[150px_1fr_52px] items-center gap-3">
                     <span className="truncate text-xs text-slate-500" title={f.key}>{f.key}</span>
                     <div className="h-5 overflow-hidden rounded-md bg-accent/10">
-                      <div className="h-full rounded-md bg-gradient-to-r from-accent to-accent-violet" style={{ width: `${(f.value / funnelMax) * 100}%` }} />
+                      <div className="h-full rounded bg-accent" style={{ width: `${(f.value / funnelMax) * 100}%` }} />
                     </div>
                     <span className="text-right text-xs font-semibold font-mono">{f.value.toLocaleString("id-ID")}</span>
                   </div>
@@ -266,10 +266,10 @@ export default function FinancingPerformancePage() {
 
 function FeeRow({ label, value, pct, tone }: { label: string; value: number; pct: number; tone: "pos" | "cut" | "net" | "take" }) {
   const bar: Record<string, string> = {
-    pos: "bg-gradient-to-r from-accent to-accent-violet",
-    cut: "bg-rose-400",
-    net: "bg-gradient-to-r from-emerald-500 to-emerald-400",
-    take: "bg-gradient-to-r from-accent-violet to-accent",
+    pos: "bg-accent",
+    cut: "bg-status-danger/70",
+    net: "bg-status-success",
+    take: "bg-accent-bright",
   };
   return (
     <div className="grid grid-cols-[150px_1fr_130px] items-center gap-3">

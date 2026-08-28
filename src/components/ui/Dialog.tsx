@@ -97,10 +97,9 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className={`relative z-10 w-full ${width} overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-2xl transition-all focus:outline-none`}
+        className={`relative z-10 w-full ${width} overflow-hidden rounded-lg border border-surface-border bg-surface shadow-elevated transition-all focus:outline-none`}
       >
-        <div className="h-1 w-full bg-gradient-to-r from-accent via-accent-bright to-accent-violet" />
-        <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+        <div className="flex items-start justify-between border-b border-surface-border px-5 py-4">
           <div>
             <h3 id={titleId} className="text-base font-bold tracking-tight text-slate-900">
               {title}

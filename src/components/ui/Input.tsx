@@ -6,8 +6,8 @@ export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputE
     <input
       ref={ref}
       className={cn(
-        "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-800 shadow-xs transition-all",
-        "placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent focus:bg-white",
+        "w-full rounded-md border border-surface-border bg-white px-3.5 py-2 text-sm text-ink shadow-xs transition-colors",
+        "placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent focus:bg-white",
         "disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed",
         className
       )}
@@ -22,8 +22,8 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
     <textarea
       ref={ref}
       className={cn(
-        "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-xs transition-all",
-        "placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent focus:bg-white",
+        "w-full rounded-md border border-surface-border bg-white px-3.5 py-2.5 text-sm text-ink shadow-xs transition-colors",
+        "placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent focus:bg-white",
         "min-h-[96px] leading-relaxed",
         "disabled:bg-slate-50 disabled:text-slate-400",
         className
@@ -58,8 +58,8 @@ export const CurrencyInput = forwardRef<
         value={display}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
         className={cn(
-          "w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3.5 py-2 text-sm text-slate-800 shadow-xs transition-all",
-          "placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent",
+          "w-full rounded-md border border-surface-border bg-white pl-9 pr-3.5 py-2 text-sm text-ink shadow-xs transition-colors",
+          "placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent",
           "disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed",
           className
         )}
@@ -75,8 +75,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSel
     <select
       ref={ref}
       className={cn(
-        "w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-sm text-slate-800 shadow-xs transition-all cursor-pointer",
-        "focus:outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent",
+        "w-full rounded-md border border-surface-border bg-white px-3.5 py-2 text-sm text-ink shadow-xs transition-colors cursor-pointer",
+        "focus:outline-none focus:ring-2 focus:ring-accent/25 focus:border-accent",
         "disabled:bg-slate-50 disabled:text-slate-400",
         className
       )}
@@ -100,7 +100,7 @@ export function Label({
   return (
     <label
       htmlFor={htmlFor}
-      className={cn("mb-1.5 block text-xs font-semibold text-slate-700 tracking-tight", className)}
+      className={cn("mb-1.5 block text-xs font-semibold text-ink-body tracking-tight", className)}
     >
       {children}
     </label>

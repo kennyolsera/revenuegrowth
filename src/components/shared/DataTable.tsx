@@ -27,16 +27,16 @@ export function DataTable<T extends { id: string | number }>({
   const resolvedEmptyText = emptyText ?? t("no_data");
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/95 backdrop-blur-sm shadow-card">
+    <div className="overflow-hidden rounded-lg border border-surface-border bg-surface shadow-xs">
       <div className="scrollbar-thin overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-200/80 bg-gradient-to-b from-slate-50 to-slate-50/40">
+            <tr className="border-b border-surface-border bg-surface-canvas">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "whitespace-nowrap px-4 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-600",
+                    "label-mono whitespace-nowrap px-4 py-3 text-ink-muted",
                     col.align === "right" && "text-right",
                     col.align === "center" && "text-center"
                   )}
@@ -45,13 +45,11 @@ export function DataTable<T extends { id: string | number }>({
                 </th>
               ))}
               {actions && (
-                <th className="px-4 py-3.5 text-right text-xs font-bold uppercase tracking-wider text-slate-600">
-                  {t("actions")}
-                </th>
+                <th className="label-mono px-4 py-3 text-right text-ink-muted">{t("actions")}</th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-surface-border">
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + (actions ? 1 : 0)} className="px-4 py-12">
@@ -59,14 +57,12 @@ export function DataTable<T extends { id: string | number }>({
                 </td>
               </tr>
             ) : (
-              rows.map((row, idx) => (
+              rows.map((row) => (
                 <tr
                   key={row.id}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "group transition-colors duration-150",
-                    idx % 2 === 1 ? "bg-slate-50/40" : "bg-white",
-                    "hover:bg-accent/[0.045]",
+                    "group bg-surface transition-colors hover:bg-accent-soft/50",
                     onRowClick && "cursor-pointer"
                   )}
                 >
@@ -74,7 +70,7 @@ export function DataTable<T extends { id: string | number }>({
                     <td
                       key={col.key}
                       className={cn(
-                        "whitespace-nowrap px-4 py-3 text-sm text-slate-700 font-medium",
+                        "whitespace-nowrap px-4 py-2.5 text-[13px] text-ink-body",
                         col.align === "right" && "text-right font-mono",
                         col.align === "center" && "text-center",
                         col.className

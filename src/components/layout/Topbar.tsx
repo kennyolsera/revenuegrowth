@@ -40,7 +40,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   return (
-    <header className="glass sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/70 px-4 transition-all sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-surface-border bg-surface px-4 sm:px-6">
       {/* Left section: Collapse Toggle & Breadcrumb / Title */}
       <div className="flex items-center gap-3">
         <button
@@ -64,14 +64,12 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </button>
 
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-accent/15 to-accent-violet/15 text-accent ring-1 ring-accent/10">
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent-soft text-accent">
             {current?.icon ? <current.icon className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
           </div>
-          <div>
-            <h1 className="text-sm font-semibold tracking-tight text-slate-900 sm:text-base">
-              {current ? t(current.translationKey) : t("app_title")}
-            </h1>
-          </div>
+          <h1 className="text-sm font-semibold tracking-tight text-ink sm:text-[15px]">
+            {current ? t(current.translationKey) : t("app_title")}
+          </h1>
         </div>
       </div>
 
@@ -111,7 +109,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         </div>
 
         <div className="hidden items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 sm:flex">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-accent to-accent-violet text-[11px] font-bold text-white shadow-sm">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
             {email ? email[0].toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
           </div>
           <span className="max-w-[140px] truncate text-xs font-medium text-slate-700">

@@ -3,45 +3,12 @@ import { TrendingUp, TrendingDown, Minus, type LucideIcon } from "lucide-react";
 
 type Tone = "blue" | "emerald" | "amber" | "indigo" | "rose";
 
-const toneStyles: Record<
-  Tone,
-  {
-    iconBg: string;
-    iconText: string;
-    glow: string;
-    border: string;
-  }
-> = {
-  blue: {
-    iconBg: "bg-gradient-to-tr from-blue-600 to-sky-400",
-    iconText: "text-white",
-    glow: "group-hover:shadow-blue-500/10",
-    border: "hover:border-blue-300",
-  },
-  emerald: {
-    iconBg: "bg-gradient-to-tr from-emerald-600 to-teal-400",
-    iconText: "text-white",
-    glow: "group-hover:shadow-emerald-500/10",
-    border: "hover:border-emerald-300",
-  },
-  amber: {
-    iconBg: "bg-gradient-to-tr from-amber-600 to-yellow-400",
-    iconText: "text-white",
-    glow: "group-hover:shadow-amber-500/10",
-    border: "hover:border-amber-300",
-  },
-  indigo: {
-    iconBg: "bg-gradient-to-tr from-indigo-600 to-purple-400",
-    iconText: "text-white",
-    glow: "group-hover:shadow-indigo-500/10",
-    border: "hover:border-indigo-300",
-  },
-  rose: {
-    iconBg: "bg-gradient-to-tr from-rose-600 to-pink-400",
-    iconText: "text-white",
-    glow: "group-hover:shadow-rose-500/10",
-    border: "hover:border-rose-300",
-  },
+const toneStyles: Record<Tone, { iconBg: string; iconText: string; accent: string }> = {
+  blue: { iconBg: "bg-accent-soft", iconText: "text-accent", accent: "bg-accent" },
+  emerald: { iconBg: "bg-emerald-50", iconText: "text-status-success", accent: "bg-status-success" },
+  amber: { iconBg: "bg-amber-50", iconText: "text-status-warning", accent: "bg-status-warning" },
+  indigo: { iconBg: "bg-accent-soft", iconText: "text-accent", accent: "bg-accent" },
+  rose: { iconBg: "bg-rose-50", iconText: "text-status-danger", accent: "bg-status-danger" },
 };
 
 export function KpiCard({
@@ -64,42 +31,31 @@ export function KpiCard({
   const currentTone = toneStyles[color] ?? toneStyles.blue;
 
   return (
-    <div
-      className={cn(
-        "group relative overflow-hidden rounded-2xl border border-slate-200/70 bg-white/95 p-5 backdrop-blur-sm shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-elevated",
-        currentTone.glow,
-        currentTone.border
-      )}
-    >
-      <div className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-slate-100/60 blur-xl group-hover:bg-slate-200/50 transition-colors" />
+    <div className="group relative overflow-hidden rounded-lg border border-surface-border bg-surface p-4 transition-colors hover:border-accent-line">
+      {/* left accent tick */}
+      <span className={cn("absolute left-0 top-4 h-6 w-[3px] rounded-r", currentTone.accent)} />
 
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</span>
-        <div
-          className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md transition-transform duration-200 group-hover:scale-110",
-            currentTone.iconBg,
-            currentTone.iconText
-          )}
-        >
-          <Icon className="h-5 w-5" />
+      <div className="flex items-center justify-between pl-2">
+        <span className="label-mono text-ink-muted">{label}</span>
+        <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-md", currentTone.iconBg, currentTone.iconText)}>
+          <Icon className="h-4 w-4" />
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 pl-2">
         {loading ? (
-          <div className="skeleton h-8 w-24 rounded-lg sm:h-9" />
+          <div className="skeleton h-8 w-24 rounded sm:h-9" />
         ) : (
-          <div className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl font-mono">{value}</div>
+          <div className="font-mono text-[26px] font-semibold tracking-tight text-ink sm:text-[28px]">{value}</div>
         )}
         {!loading && trend && (
-          <div className="mt-2 flex items-center gap-1.5">
+          <div className="mt-1.5 flex items-center gap-1.5">
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold",
-                trendTone === "success" && "bg-emerald-50 text-emerald-700 border border-emerald-200/80",
-                trendTone === "danger" && "bg-rose-50 text-rose-700 border border-rose-200/80",
-                trendTone === "neutral" && "bg-slate-100 text-slate-600 border border-slate-200"
+                "inline-flex items-center gap-1 text-xs font-semibold",
+                trendTone === "success" && "text-status-success",
+                trendTone === "danger" && "text-status-danger",
+                trendTone === "neutral" && "text-ink-muted"
               )}
             >
               {trendTone === "success" && <TrendingUp className="h-3 w-3" />}

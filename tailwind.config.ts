@@ -1,36 +1,54 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * "Ledger" — a financial operations console.
+ * Single petrol-blue accent, graphite neutrals, semantic colors kept distinct
+ * from brand. Flat surfaces, hairline borders, small radii. No gradients/glow.
+ */
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        navy: {
-          DEFAULT: "#1E293B",
-          light: "#334155",
-          soft: "#E9ECF1",
+        ink: {
+          DEFAULT: "#171A1F", // primary text
+          body: "#3A404A", // secondary text
+          muted: "#697280", // tertiary / captions
+          faint: "#98A0AC",
         },
-        // Electric Cobalt brand ramp — indigo core with a violet lean
+        rail: {
+          DEFAULT: "#171A20", // sidebar ground
+          soft: "#1E232C",
+          line: "#2A3039",
+        },
+        // Petrol-blue brand accent (kept legacy keys mapped so nothing breaks)
         accent: {
-          DEFAULT: "#4F46E5",
-          light: "#EEF0FF",
-          soft: "#E0E7FF",
-          bright: "#6366F1",
-          dark: "#4338CA",
-          violet: "#7C3AED",
+          DEFAULT: "#134E7A",
+          strong: "#0E3D61",
+          bright: "#1B5E8C",
+          dark: "#0E3D61",
+          soft: "#E8EEF4",
+          light: "#EEF3F8",
+          line: "#CBD8E6",
+          violet: "#1B5E8C", // legacy alias → stays in-hue, never purple
         },
         surface: {
           DEFAULT: "#FFFFFF",
-          canvas: "#F7F8FC",
-          muted: "#F1F3F9",
-          border: "#E5E8F0",
+          canvas: "#F4F5F6",
+          muted: "#EFF1F3",
+          border: "#E4E6EB",
+        },
+        navy: {
+          DEFAULT: "#171A1F",
+          light: "#3A404A",
+          soft: "#EFF1F3",
         },
         status: {
           draft: "#8A919C",
-          progress: "#4F46E5",
-          success: "#0F9D6B",
-          danger: "#DC2626",
-          warning: "#D97706",
+          progress: "#134E7A",
+          success: "#15803D",
+          danger: "#B42318",
+          warning: "#B45309",
         },
       },
       fontFamily: {
@@ -39,31 +57,28 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       boxShadow: {
-        xs: "0 1px 2px rgba(15, 23, 42, 0.05)",
-        card: "0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 16px -4px rgba(15, 23, 42, 0.06)",
-        elevated: "0 8px 30px -8px rgba(30, 41, 59, 0.16)",
-        glow: "0 0 0 1px rgba(79, 70, 229, 0.12), 0 8px 24px -6px rgba(79, 70, 229, 0.35)",
+        // Flat console: shadows are barely-there, borders do the work
+        xs: "0 1px 1px rgba(23, 26, 31, 0.04)",
+        card: "0 1px 2px rgba(23, 26, 31, 0.05)",
+        elevated: "0 6px 20px -8px rgba(23, 26, 31, 0.20)",
+        glow: "0 1px 2px rgba(23, 26, 31, 0.06)", // legacy alias → no colored glow
       },
       borderRadius: {
-        xl: "0.875rem",
-        "2xl": "1.125rem",
+        DEFAULT: "0.375rem",
+        md: "0.375rem",
+        lg: "0.4375rem",
+        xl: "0.5rem",
+        "2xl": "0.625rem",
       },
       keyframes: {
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(4px)" },
+          from: { opacity: "0", transform: "translateY(3px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-8px)" },
-        },
-        shimmer: {
-          "100%": { transform: "translateX(100%)" },
-        },
+        shimmer: { "100%": { transform: "translateX(100%)" } },
       },
       animation: {
-        "fade-in": "fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards",
-        float: "float 6s ease-in-out infinite",
+        "fade-in": "fade-in 0.18s ease-out forwards",
       },
     },
   },

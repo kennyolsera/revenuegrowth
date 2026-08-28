@@ -9,64 +9,32 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-surface-canvas text-slate-800 selection:bg-accent/20 selection:text-accent;
+    @apply bg-surface-canvas text-ink;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display), var(--font-sans), sans-serif;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.014em;
   }
-  /* Tabular figures for all numeric/mono readouts */
+  /* Tabular figures everywhere numbers line up */
   .font-mono {
     font-feature-settings: "tnum" 1, "zero" 1;
   }
 }
 
 @layer utilities {
-  /* ── Background graphics ────────────────────────────────────────── */
-
-  /* Fine technical grid */
-  .bg-grid {
-    background-image:
-      linear-gradient(to right, rgba(79, 70, 229, 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(79, 70, 229, 0.045) 1px, transparent 1px);
-    background-size: 34px 34px;
+  /* Hairline top border used as a subtle console accent on panels */
+  .rule-top {
+    box-shadow: inset 0 1px 0 var(--tw-shadow-color, rgba(228, 230, 235, 1));
   }
 
-  /* Dotted texture */
-  .bg-dots {
-    background-image: radial-gradient(rgba(79, 70, 229, 0.08) 1px, transparent 1px);
-    background-size: 22px 22px;
+  /* Uppercase micro-label — the console's structural voice */
+  .label-mono {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
-  /* Soft aurora mesh — layered brand-hue radials for the app canvas */
-  .bg-aurora {
-    background-image:
-      radial-gradient(60% 55% at 15% 0%, rgba(99, 102, 241, 0.10), transparent 60%),
-      radial-gradient(50% 50% at 90% 5%, rgba(124, 58, 237, 0.08), transparent 55%),
-      radial-gradient(45% 45% at 60% 100%, rgba(56, 189, 248, 0.06), transparent 60%);
-  }
-
-  /* Vivid mesh for dark hero surfaces (login) */
-  .bg-mesh-dark {
-    background-image:
-      radial-gradient(45% 45% at 12% 8%, rgba(99, 102, 241, 0.45), transparent 60%),
-      radial-gradient(40% 40% at 88% 12%, rgba(124, 58, 237, 0.38), transparent 60%),
-      radial-gradient(50% 50% at 70% 95%, rgba(56, 189, 248, 0.22), transparent 60%);
-  }
-
-  /* Radial fade mask helper */
-  .mask-fade-b {
-    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-  }
-
-  /* Frosted glass panel */
-  .glass {
-    background: rgba(255, 255, 255, 0.72);
-    backdrop-filter: saturate(180%) blur(12px);
-  }
-
-  /* ── Scrollbar ──────────────────────────────────────────────────── */
   .scrollbar-thin::-webkit-scrollbar {
     height: 6px;
     width: 6px;
@@ -75,60 +43,46 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-slate-300/70 rounded-full hover:bg-slate-400/80 transition-colors;
+    @apply bg-surface-border rounded-full;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-ink-faint;
   }
 
-  /* Shimmering skeleton fill */
+  /* Shimmering skeleton */
   .skeleton {
     position: relative;
     overflow: hidden;
-    @apply bg-slate-200/70;
+    @apply bg-surface-muted;
   }
   .skeleton::after {
     content: "";
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.55),
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
     animation: shimmer 1.6s infinite;
   }
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideRight {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 @keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+  100% { transform: translateX(100%); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.18s ease-out forwards;
 }
 
 .animate-slide-right {
-  animation: slideRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideRight 0.2s ease-out forwards;
 }
