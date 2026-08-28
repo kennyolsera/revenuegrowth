@@ -168,8 +168,8 @@ export function parseWeeklySheet(
     matched++;
     for (const { col, week } of weekCols) {
       const parsed = parseCell(row[col], matcher.kind);
-      const target = byWeek.get(week)! as Record<string, number | null>;
-      target[matcher.field] = parsed === null ? (matcher.kind === "count" ? 0 : null) : parsed;
+      const target = byWeek.get(week)!;
+      (target as any)[matcher.field] = parsed === null ? (matcher.kind === "count" ? 0 : null) : parsed;
     }
   }
 
