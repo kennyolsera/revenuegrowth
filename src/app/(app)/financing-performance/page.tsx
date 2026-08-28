@@ -9,7 +9,7 @@ import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { KpiCard } from "@/components/dashboard/KpiCard";
+import { KpiCard, KpiStrip } from "@/components/dashboard/KpiCard";
 import { Button } from "@/components/ui/Button";
 import { WeeklyReportImportDialog } from "@/components/financing/WeeklyReportImportDialog";
 import { formatRupiah, cn } from "@/lib/utils";
@@ -120,14 +120,14 @@ export default function FinancingPerformancePage() {
         <Card><CardBody className="py-16"><EmptyState text={t("finperf_no_data")} /></CardBody></Card>
       ) : (
         <>
-          {/* KPI tiles */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <KpiCard label={t("finperf_kpi_disbursed")} value={shortRupiah(agg.disbursed)} icon={Landmark} color="indigo" />
-            <KpiCard label={t("finperf_kpi_netfee")} value={shortRupiah(agg.netFee)} icon={Wallet} color="emerald" />
-            <KpiCard label={t("finperf_kpi_commission")} value={shortRupiah(agg.commission)} icon={Percent} color="blue" />
-            <KpiCard label={t("finperf_kpi_activation")} value={`${agg.activationPct.toFixed(2)}%`} icon={Users} color="amber"
+          {/* KPI readout strip */}
+          <KpiStrip>
+            <KpiCard label={t("finperf_kpi_disbursed")} value={shortRupiah(agg.disbursed)} icon={Landmark} />
+            <KpiCard label={t("finperf_kpi_netfee")} value={shortRupiah(agg.netFee)} icon={Wallet} />
+            <KpiCard label={t("finperf_kpi_commission")} value={shortRupiah(agg.commission)} icon={Percent} />
+            <KpiCard label={t("finperf_kpi_activation")} value={`${agg.activationPct.toFixed(2)}%`} icon={Users}
               trend={`${agg.newLoans}/${agg.businessOwners.toLocaleString("id-ID")} (D/A)`} trendTone="neutral" />
-          </div>
+          </KpiStrip>
 
           {/* Summary strip (LTD / YTD) */}
           {(ltd || ytd) && (

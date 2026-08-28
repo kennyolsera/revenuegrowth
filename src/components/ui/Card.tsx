@@ -26,16 +26,14 @@ export function CardHeader({
 }) {
   return (
     <div className="flex items-start justify-between gap-4 border-b border-surface-border px-5 py-3.5">
-      <div className="flex items-start gap-2.5">
-        {Icon && (
-          <div className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-md bg-accent-soft text-accent">
-            <Icon className="h-4 w-4" />
-          </div>
+      <div className="min-w-0">
+        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-ink">
+          {Icon && <Icon className="h-4 w-4 shrink-0 text-ink-faint" />}
+          {title}
+        </h3>
+        {description && (
+          <p className={cn("mt-0.5 text-xs text-ink-muted leading-relaxed", Icon && "pl-6")}>{description}</p>
         )}
-        <div>
-          <h3 className="text-sm font-semibold tracking-tight text-ink">{title}</h3>
-          {description && <p className="mt-0.5 text-xs text-ink-muted leading-relaxed">{description}</p>}
-        </div>
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>

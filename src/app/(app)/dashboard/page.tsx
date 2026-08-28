@@ -5,7 +5,7 @@ import { Users, QrCode, Landmark, Inbox, CalendarClock, ListChecks, ArrowUpRight
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, EmptyState } from "@/components/shared/SupabaseNotice";
-import { KpiCard } from "@/components/dashboard/KpiCard";
+import { KpiCard, KpiStrip } from "@/components/dashboard/KpiCard";
 import { GrowthChart, type GrowthPoint } from "@/components/dashboard/GrowthChart";
 import { PipelineChart } from "@/components/dashboard/PipelineChart";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -186,8 +186,8 @@ export default function DashboardPage() {
 
       {!isSupabaseConfigured && <SupabaseNotice />}
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* KPI readout strip */}
+      <KpiStrip>
         <KpiCard
           label={t("dash_kpi_merchants")}
           value={String(data.merchantCount)}
@@ -222,7 +222,7 @@ export default function DashboardPage() {
           trendTone="success"
           color="blue"
         />
-      </div>
+      </KpiStrip>
 
       {/* Analytics Charts Grid */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
