@@ -168,13 +168,12 @@ export function parseWeeklySheet(
     matched++;
     for (const { col, week } of weekCols) {
       const parsed = parseCell(row[col], matcher.kind);
-      const target = byWeek.get(week)!;
-      // @ts-expect-error index by resolved field key
+      const target = byWeek.get(week)! as Record<string, number | null>;
       target[matcher.field] = parsed === null ? (matcher.kind === "count" ? 0 : null) : parsed;
     }
   }
 
-  const rows = [...byWeek.values()].sort((a, b) => a.week_no - b.week_no);
+  const rows = Array.from(byWeek.values()).sort((a, b) => a.week_no - b.week_no);
   return { rows, matched, error: null };
 }
 
