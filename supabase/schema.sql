@@ -208,6 +208,45 @@ create table if not exists public.meeting_minutes (
 );
 
 -- ---------------------------------------------------------------------
+-- 11b. FINANCING WEEKLY PERFORMANCE (laporan agregat mingguan)
+--      Disimpan apa adanya dari file ("import as-is"); anomali ditandai
+--      di aplikasi, bukan diubah di sini.
+-- ---------------------------------------------------------------------
+create table if not exists public.financing_weekly_reports (
+  id uuid primary key default gen_random_uuid(),
+  period_label text not null,
+  year int not null,
+  month int not null check (month between 1 and 12),
+  week_no int not null check (week_no between 1 and 6),
+  -- Funnel (counts)
+  id_verification int not null default 0,
+  facial_verification int not null default 0,
+  bank_info_confirmation int not null default 0,
+  loan_agreement_opened int not null default 0,
+  loan_agreement_review int not null default 0,
+  application_completed int not null default 0,   -- B
+  total_attempts int not null default 0,          -- C
+  -- Conversion
+  contract_verification_rejected int not null default 0,
+  contract_verification_approved int not null default 0,
+  new_loan int not null default 0,                -- D
+  loan_dashboard int not null default 0,
+  new_loan_per_working_day numeric,
+  activation_pct numeric,                          -- D/A as given in the sheet
+  -- Finance (Rp)
+  disbursed_amount numeric not null default 0,
+  avg_disbursed_loan_amount numeric,
+  expected_fee numeric,                            -- F
+  less_15 numeric,                                 -- G
+  net_fee numeric,                                 -- F - G
+  commission_10 numeric,
+  source_file text,
+  imported_by text,
+  created_at timestamptz not null default now(),
+  unique (year, month, week_no)
+);
+
+-- ---------------------------------------------------------------------
 -- 12. AUDIT LOG & NOTIFICATIONS (disiapkan untuk pengembangan lanjutan)
 -- ---------------------------------------------------------------------
 create table if not exists public.audit_logs (
@@ -305,6 +344,7 @@ alter table public.calendar_events enable row level security;
 alter table public.meeting_minutes enable row level security;
 alter table public.audit_logs enable row level security;
 alter table public.notifications enable row level security;
+alter table public.financing_weekly_reports enable row level security;
 
 -- profiles ------------------------------------------------------------
 drop policy if exists "profiles_select_authenticated" on public.profiles;
@@ -408,6 +448,15 @@ create policy "calendar_internal_all" on public.calendar_events
 drop policy if exists "mom_internal_all" on public.meeting_minutes;
 create policy "mom_internal_all" on public.meeting_minutes
   for all using (public.is_internal()) with check (public.is_internal());
+
+-- financing weekly performance: baca oleh tim internal, tulis oleh admin/head
+drop policy if exists "fin_weekly_select_internal" on public.financing_weekly_reports;
+create policy "fin_weekly_select_internal" on public.financing_weekly_reports
+  for select using (public.is_internal());
+
+drop policy if exists "fin_weekly_write_admin" on public.financing_weekly_reports;
+create policy "fin_weekly_write_admin" on public.financing_weekly_reports
+  for all using (public.is_admin_or_head()) with check (public.is_admin_or_head());
 
 -- audit & notifications ---------------------------------------------------
 drop policy if exists "audit_select_admin" on public.audit_logs;
