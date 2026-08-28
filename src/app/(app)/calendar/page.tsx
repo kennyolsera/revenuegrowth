@@ -14,6 +14,7 @@ import { MerchantSelectField, resolveMerchantId } from "@/components/shared/Merc
 import { EVENT_TYPE_COLORS, getMonthGrid, isSameDay, toDateInputValue } from "@/components/calendar/calendar-utils";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/ToastContext";
 
 const MONTH_NAMES_ID = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -44,6 +45,7 @@ const emptyForm = {
 export default function CalendarPage() {
   const router = useRouter();
   const { t, language } = useLanguage();
+  const toast = useToast();
   const merchantOptions = useMerchantOptions();
 
   const EVENT_TYPES = [
@@ -152,9 +154,10 @@ export default function CalendarPage() {
       const { error } = await query;
       if (error) throw error;
       setDialogOpen(false);
+      toast.success(editingId ? t("toast_updated") : t("toast_created"));
       fetchEvents();
     } catch (err: any) {
-      alert(`Gagal menyimpan jadwal: ${err.message}`);
+      toast.error(`${t("save_error")}: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -163,8 +166,13 @@ export default function CalendarPage() {
   async function handleDelete() {
     if (!editingId || !confirm(t("confirm_delete"))) return;
     const supabase = createClient();
-    await supabase.from("calendar_events").delete().eq("id", editingId);
+    const { error } = await supabase.from("calendar_events").delete().eq("id", editingId);
     setDialogOpen(false);
+    if (error) {
+      toast.error(`${t("delete_error")}: ${error.message}`);
+      return;
+    }
+    toast.success(t("toast_deleted"));
     fetchEvents();
   }
 

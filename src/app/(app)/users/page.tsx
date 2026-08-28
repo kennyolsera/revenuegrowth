@@ -13,6 +13,7 @@ import { Field, Input, Label, Select } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/ToastContext";
 
 interface AuditLogRow {
   id: string;
@@ -60,6 +61,7 @@ const SAMPLE_LOGS: AuditLogRow[] = [
 
 export default function UsersPage() {
   const { t, language } = useLanguage();
+  const toast = useToast();
 
   const ROLE_OPTIONS = [
     { value: "super_admin", label: "Super Admin" },
@@ -147,7 +149,9 @@ export default function UsersPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Gagal mengundang pengguna");
-      setInviteMsg(language === "id" ? "Undangan berhasil dikirim." : "Invitation sent successfully.");
+      const okMsg = language === "id" ? "Undangan berhasil dikirim." : "Invitation sent successfully.";
+      setInviteMsg(okMsg);
+      toast.success(okMsg);
       setInviteForm({ email: "", full_name: "", role: "team_rg", division: "" });
       fetchRows();
     } catch (err: any) {
@@ -159,7 +163,12 @@ export default function UsersPage() {
 
   async function toggleActive(row: any) {
     const supabase = createClient();
-    await supabase.from("profiles").update({ is_active: !row.is_active }).eq("id", row.id);
+    const { error } = await supabase.from("profiles").update({ is_active: !row.is_active }).eq("id", row.id);
+    if (error) {
+      toast.error(`${t("save_error")}: ${error.message}`);
+      return;
+    }
+    toast.success(t("toast_updated"));
     fetchRows();
   }
 
@@ -174,9 +183,10 @@ export default function UsersPage() {
         .eq("id", editing.id);
       if (error) throw error;
       setEditing(null);
+      toast.success(t("toast_updated"));
       fetchRows();
     } catch (err: any) {
-      alert(`${t("save_error")}: ${err.message}`);
+      toast.error(`${t("save_error")}: ${err.message}`);
     } finally {
       setSaving(false);
     }

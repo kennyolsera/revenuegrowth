@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
+import { ToastProvider } from "@/lib/ToastContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,7 +36,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="font-sans antialiased bg-surface-canvas text-slate-900 selection:bg-accent/20 selection:text-accent">
         <LanguageProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <ToastProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </ToastProvider>
         </LanguageProvider>
       </body>
     </html>

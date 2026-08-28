@@ -98,12 +98,12 @@ export default function FinancingLoanPage() {
           </Button>
         }
         formFields={[
-          { key: "merchant_id", label: t("fl_col_merchant"), type: "select", required: true, options: merchantOptions },
-          { key: "loan_amount", label: t("fl_col_amount"), type: "number", required: true },
+          { key: "merchant_id", label: t("fl_col_merchant"), type: "merchant_select", required: true, options: merchantOptions },
+          { key: "loan_amount", label: t("fl_col_amount"), type: "currency", required: true },
           { key: "disbursed_at", label: t("fl_col_disbursed"), type: "date" },
           { key: "status", label: t("fl_col_status"), type: "select", required: true, options: STATUS_OPTIONS },
-          { key: "revenue_before", label: t("fl_col_rev_before"), type: "number" },
-          { key: "revenue_after", label: t("fl_col_rev_after"), type: "number" },
+          { key: "revenue_before", label: t("fl_col_rev_before"), type: "currency" },
+          { key: "revenue_after", label: t("fl_col_rev_after"), type: "currency" },
         ]}
       />
 

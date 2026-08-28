@@ -56,6 +56,13 @@ export const translations = {
     live_operations: "Operasional Live",
     sample_data: "Data Contoh",
     confirm_delete_title: "Hapus Data",
+    toast_created: "Data berhasil ditambahkan.",
+    toast_updated: "Data berhasil diperbarui.",
+    toast_deleted: "Data berhasil dihapus.",
+    toast_status_updated: "Status berhasil diperbarui.",
+    merchant_field_placeholder: "Ketik nama merchant...",
+    merchant_pick_existing: "Merchant terdaftar — pilih untuk menautkan",
+    merchant_will_create: "Merchant baru akan dibuat",
 
     // Common CRUD & Actions
     add: "Tambah Data",
@@ -288,6 +295,13 @@ export const translations = {
     live_operations: "Live Operations",
     sample_data: "Sample Data",
     confirm_delete_title: "Delete Record",
+    toast_created: "Record created successfully.",
+    toast_updated: "Record updated successfully.",
+    toast_deleted: "Record deleted successfully.",
+    toast_status_updated: "Status updated successfully.",
+    merchant_field_placeholder: "Type a merchant name...",
+    merchant_pick_existing: "Registered merchant — select to link",
+    merchant_will_create: "A new merchant will be created",
 
     // Common CRUD & Actions
     add: "Add Data",

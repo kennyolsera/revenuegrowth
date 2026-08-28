@@ -5,18 +5,19 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
-import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
+import { CurrencyInput, Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { DataTable, type ColumnDef } from "./DataTable";
 import { Toolbar, type FilterDef } from "./Toolbar";
 import { SupabaseNotice, ErrorNotice, EmptyState } from "./SupabaseNotice";
 import { PageHeader } from "./PageHeader";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/ToastContext";
 import { MerchantSelectField, resolveMerchantId } from "./MerchantSelectField";
 
 export interface FormFieldDef {
   key: string;
   label: string;
-  type?: "text" | "textarea" | "number" | "date" | "datetime-local" | "select" | "merchant_select";
+  type?: "text" | "textarea" | "number" | "currency" | "date" | "datetime-local" | "select" | "merchant_select";
   options?: { value: string; label: string }[];
   required?: boolean;
   placeholder?: string;
@@ -82,6 +83,7 @@ export function ResourceManager<T extends { id: string }>({
   reloadSignal,
 }: ResourceManagerProps<T> & { extraHeaderAction?: React.ReactNode; reloadSignal?: number }) {
   const { t, language } = useLanguage();
+  const toast = useToast();
   const effectiveAddLabel = addLabel ?? t("add");
   const effectiveSearchPlaceholder = searchPlaceholder ?? t("search");
 
@@ -188,6 +190,7 @@ export function ResourceManager<T extends { id: string }>({
     await logActivity("DELETE", deleteTarget.id, sanitizePayload(deleteTarget as any));
     setDeleting(false);
     setDeleteTarget(null);
+    toast.success(t("toast_deleted"));
     fetchRows();
   }
 
@@ -212,6 +215,16 @@ export function ResourceManager<T extends { id: string }>({
             currentValues[f.key] = resolvedId;
           }
         }
+        // Coerce numeric fields: empty → null, otherwise a real number
+        if (f.type === "currency" || f.type === "number") {
+          const v = currentValues[f.key];
+          if (v === "" || v === null || v === undefined) {
+            currentValues[f.key] = null;
+          } else {
+            const n = Number(String(v).replace(/\D/g, ""));
+            currentValues[f.key] = Number.isNaN(n) ? null : n;
+          }
+        }
       }
 
       // Sanitize payload — remove any nested join objects
@@ -222,10 +235,12 @@ export function ResourceManager<T extends { id: string }>({
         const { error } = await supabase.from(table).update(payload).eq("id", editing.id);
         if (error) throw error;
         await logActivity("UPDATE", editing.id, sanitizePayload(editing as any), payload);
+        toast.success(t("toast_updated"));
       } else {
         const { data: inserted, error } = await supabase.from(table).insert(payload).select().single();
         if (error) throw error;
         await logActivity("CREATE", inserted?.id, null, payload);
+        toast.success(t("toast_created"));
       }
       setDialogOpen(false);
       fetchRows();
@@ -325,6 +340,13 @@ export function ResourceManager<T extends { id: string }>({
                         placeholder={f.placeholder}
                         value={formValues[f.key] ?? ""}
                         onChange={(e) => setFormValues((p) => ({ ...p, [f.key]: e.target.value }))}
+                      />
+                    ) : f.type === "currency" ? (
+                      <CurrencyInput
+                        id={f.key}
+                        required={f.required}
+                        value={formValues[f.key] ?? ""}
+                        onChange={(digits) => setFormValues((p) => ({ ...p, [f.key]: digits }))}
                       />
                     ) : f.type === "select" ? (
                       <Select

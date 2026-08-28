@@ -14,11 +14,13 @@ import { Field, Label, Select } from "@/components/ui/Input";
 import { StatusBadge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/ToastContext";
 
 const BUCKET = "leads-raw";
 
 export default function LeadsPage() {
   const { t, language } = useLanguage();
+  const toast = useToast();
 
   const FEATURE_OPTIONS = [
     { value: "qris", label: "QRIS" },
@@ -104,6 +106,7 @@ export default function LeadsPage() {
 
       setUploadOpen(false);
       setFile(null);
+      toast.success(t("toast_created"));
       fetchRows();
     } catch (err: any) {
       setUploadError(err?.message ?? "Failed to upload file.");
@@ -114,7 +117,12 @@ export default function LeadsPage() {
 
   async function markProcessed(row: any) {
     const supabase = createClient();
-    await supabase.from("leads_raw_data").update({ status: "diproses" }).eq("id", row.id);
+    const { error } = await supabase.from("leads_raw_data").update({ status: "diproses" }).eq("id", row.id);
+    if (error) {
+      toast.error(`${t("save_error")}: ${error.message}`);
+      return;
+    }
+    toast.success(t("toast_status_updated"));
     fetchRows();
   }
 
@@ -122,7 +130,7 @@ export default function LeadsPage() {
     const supabase = createClient();
     const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(row.storage_path, 60);
     if (error || !data) {
-      alert("Gagal membuat link unduhan.");
+      toast.error(language === "id" ? "Gagal membuat link unduhan." : "Failed to create download link.");
       return;
     }
     window.open(data.signedUrl, "_blank");

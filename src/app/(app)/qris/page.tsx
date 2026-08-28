@@ -1,15 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import { ResourceManager } from "@/components/shared/ResourceManager";
-import { StatusBadge } from "@/components/ui/Badge";
+import { InlineStatusSelect } from "@/components/shared/InlineStatusSelect";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatRupiah } from "@/lib/utils";
 import type { ColumnDef } from "@/components/shared/DataTable";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export default function QrisPage() {
   const { t, language } = useLanguage();
   const merchantOptions = useMerchantOptions();
+  const [reload, setReload] = useState(0);
 
   const STATUS_OPTIONS = [
     { value: "diajukan", label: language === "id" ? "Diajukan" : "Submitted" },
@@ -22,8 +24,24 @@ export default function QrisPage() {
   const columns: ColumnDef<any>[] = [
     { key: "merchant", label: t("qris_col_merchant"), render: (r) => r.merchant?.name ?? "-" },
     { key: "region", label: t("qris_col_region") },
-    { key: "status", label: t("qris_col_status"), render: (r) => <StatusBadge status={r.status} /> },
-    { key: "transaction_volume", label: t("qris_col_volume"), align: "right" },
+    {
+      key: "status",
+      label: t("qris_col_status"),
+      render: (r) => (
+        <InlineStatusSelect
+          table="qris_acquisitions"
+          row={r}
+          options={STATUS_OPTIONS}
+          onChanged={() => setReload((n) => n + 1)}
+        />
+      ),
+    },
+    {
+      key: "transaction_volume",
+      label: t("qris_col_volume"),
+      align: "right",
+      render: (r) => formatRupiah(r.transaction_volume),
+    },
     { key: "pic", label: t("qris_col_pic") },
     { key: "submitted_at", label: t("qris_col_date"), render: (r) => formatDate(r.submitted_at) },
   ];
@@ -38,13 +56,14 @@ export default function QrisPage() {
       searchKeys={["region", "pic", "notes"]}
       filters={[{ key: "status", label: t("qris_col_status"), options: STATUS_OPTIONS }]}
       defaultValues={{ status: "diajukan" }}
+      reloadSignal={reload}
       columns={columns}
       formFields={[
-        { key: "merchant_id", label: t("qris_col_merchant"), type: "select", required: true, options: merchantOptions },
+        { key: "merchant_id", label: t("qris_col_merchant"), type: "merchant_select", required: true, options: merchantOptions },
         { key: "region", label: t("qris_col_region"), required: true },
         { key: "pic", label: t("qris_col_pic"), required: true },
         { key: "status", label: t("qris_col_status"), type: "select", required: true, options: STATUS_OPTIONS },
-        { key: "transaction_volume", label: t("qris_col_volume"), type: "number" },
+        { key: "transaction_volume", label: t("qris_col_volume"), type: "currency" },
         { key: "submitted_at", label: t("qris_col_date"), type: "date", required: true },
         { key: "notes", label: language === "id" ? "Catatan" : "Notes", type: "textarea", colSpan: 2 },
       ]}

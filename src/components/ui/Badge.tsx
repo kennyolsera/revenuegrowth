@@ -86,6 +86,13 @@ const STATUS_TONE_MAP: Record<string, Tone> = {
   lainnya: "draft",
 };
 
+/** Resolve a raw status string to its badge tone + color classes (shared with inline editors). */
+export function statusTone(status: string) {
+  const normalizedKey = status.toLowerCase().replaceAll(" ", "_");
+  const tone = STATUS_TONE_MAP[normalizedKey] ?? "neutral";
+  return toneClasses[tone];
+}
+
 export function StatusBadge({ status }: { status: string }) {
   const normalizedKey = status.toLowerCase().replaceAll(" ", "_");
   const tone = STATUS_TONE_MAP[normalizedKey] ?? "neutral";

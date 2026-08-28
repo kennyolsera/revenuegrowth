@@ -15,6 +15,7 @@ import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
 import { MerchantSelectField, resolveMerchantId } from "@/components/shared/MerchantSelectField";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/ToastContext";
 
 const CATEGORY_OPTIONS = ["Demo", "Onboarding", "Support", "Internal", "Lainnya"];
 
@@ -36,6 +37,7 @@ const emptyForm = {
 
 function MomPageInner() {
   const { t, language } = useLanguage();
+  const toast = useToast();
   const params = useSearchParams();
   const merchantOptions = useMerchantOptions();
 
@@ -123,9 +125,10 @@ function MomPageInner() {
       });
       if (error) throw error;
       setDialogOpen(false);
+      toast.success(t("toast_created"));
       fetchRows();
     } catch (err: any) {
-      alert(`${t("save_error")}: ${err.message}`);
+      toast.error(`${t("save_error")}: ${err.message}`);
     } finally {
       setSaving(false);
     }

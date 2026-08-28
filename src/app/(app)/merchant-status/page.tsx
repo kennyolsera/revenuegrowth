@@ -9,17 +9,19 @@ import { Toolbar } from "@/components/shared/Toolbar";
 import { DataTable, type ColumnDef } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
-import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
+import { CurrencyInput, Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { StatusBadge } from "@/components/ui/Badge";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
 import { MerchantSelectField, resolveMerchantId } from "@/components/shared/MerchantSelectField";
 import { formatDate, formatRupiah } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { useToast } from "@/lib/ToastContext";
 
 const FEATURE_OPTIONS = ["QRIS", "Network Partner", "Online Order", "Financing Loan"];
 
 export default function MerchantStatusPage() {
   const { t, language } = useLanguage();
+  const toast = useToast();
   const merchantOptions = useMerchantOptions();
 
   const DEFAULT_CHECKLIST = [
@@ -122,9 +124,10 @@ export default function MerchantStatusPage() {
       if (error) throw error;
       setCreateOpen(false);
       setNewClaim({ feature: FEATURE_OPTIONS[0] });
+      toast.success(t("toast_created"));
       fetchRows();
     } catch (err: any) {
-      alert(`${t("save_error")}: ${err.message}`);
+      toast.error(`${t("save_error")}: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -168,10 +171,11 @@ export default function MerchantStatusPage() {
       })
       .eq("id", detail.id);
     if (error) {
-      alert(`${t("save_error")}: ${error.message}`);
+      toast.error(`${t("save_error")}: ${error.message}`);
       return;
     }
     setDetail(null);
+    toast.success(t("toast_updated"));
     fetchRows();
   }
 
@@ -317,12 +321,10 @@ export default function MerchantStatusPage() {
           </div>
 
           <Field>
-            <Label>{t("ms_col_commission")} (Rp)</Label>
-            <Input
-              type="number"
+            <Label>{t("ms_col_commission")}</Label>
+            <CurrencyInput
               value={commissionEstimate}
-              onChange={(e) => setCommissionEstimate(e.target.value)}
-              placeholder="0"
+              onChange={(digits) => setCommissionEstimate(digits)}
             />
           </Field>
           <Field>
