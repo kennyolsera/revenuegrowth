@@ -7,8 +7,8 @@ import { useCountUp } from "@/lib/hooks/useCountUp";
 type Tone = "blue" | "emerald" | "amber" | "indigo" | "rose";
 
 /**
- * A stat cell in a premium readout strip. Numbers count up on mount; the label
- * icon sits in a soft brand-tinted chip. Wrap several in KpiStrip.
+ * Soft, self-contained KPI card (Pollinate-style): icon chip + label, a large
+ * animated number, and a trend line. Wrap several in KpiStrip.
  */
 export function KpiCard({
   label,
@@ -27,7 +27,6 @@ export function KpiCard({
   trendTone?: "success" | "danger" | "neutral";
   color?: Tone; // accepted for API compatibility
   loading?: boolean;
-  /** When provided, the number animates 0→animateTo and is rendered via `format`. */
   animateTo?: number;
   format?: (n: number) => string;
 }) {
@@ -36,35 +35,33 @@ export function KpiCard({
     animateTo != null ? (format ? format(animated) : Math.round(animated).toLocaleString("id-ID")) : value;
 
   return (
-    <div className="group relative flex flex-1 flex-col justify-between px-5 py-4 transition-colors hover:bg-accent-soft/30">
+    <div className="rounded-2xl border border-surface-border bg-surface p-5 shadow-card transition-shadow duration-200 hover:shadow-lift">
       <div className="flex items-center gap-2 text-ink-muted">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-accent-soft text-accent transition-colors group-hover:bg-accent group-hover:text-white">
-          <Icon className="h-3.5 w-3.5" />
+        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent-soft text-accent">
+          <Icon className="h-4 w-4" />
         </span>
-        <span className="label-mono">{label}</span>
+        <span className="text-xs font-medium">{label}</span>
       </div>
 
       {loading ? (
-        <div className="skeleton mt-3 h-8 w-24 rounded-md" />
+        <div className="skeleton mt-3.5 h-8 w-28 rounded-md" />
       ) : (
-        <div className="mt-3 font-mono text-[27px] font-semibold leading-none tracking-tight text-ink tabular-nums">
-          {display}
-        </div>
+        <div className="mt-3.5 text-[28px] font-bold leading-none tracking-tight text-ink tabular-nums">{display}</div>
       )}
 
       {!loading && trend && (
-        <div className="mt-2">
+        <div className="mt-2.5">
           <span
             className={cn(
-              "inline-flex items-center gap-1 text-xs font-medium",
+              "inline-flex items-center gap-1 text-xs font-semibold",
               trendTone === "success" && "text-status-success",
               trendTone === "danger" && "text-status-danger",
               trendTone === "neutral" && "text-ink-muted"
             )}
           >
-            {trendTone === "success" && <TrendingUp className="h-3 w-3" />}
-            {trendTone === "danger" && <TrendingDown className="h-3 w-3" />}
-            {trendTone === "neutral" && <Minus className="h-3 w-3" />}
+            {trendTone === "success" && <TrendingUp className="h-3.5 w-3.5" />}
+            {trendTone === "danger" && <TrendingDown className="h-3.5 w-3.5" />}
+            {trendTone === "neutral" && <Minus className="h-3.5 w-3.5" />}
             {trend}
           </span>
         </div>
@@ -73,11 +70,9 @@ export function KpiCard({
   );
 }
 
-/** Bordered strip binding KPI cells into one hairline-divided readout. */
+/** Responsive grid of KPI cards with a staggered entrance. */
 export function KpiStrip({ children }: { children: React.ReactNode }) {
   return (
-    <div className="stagger-children flex flex-col divide-y divide-surface-border overflow-hidden rounded-xl border border-surface-border bg-surface shadow-card sm:flex-row sm:divide-x sm:divide-y-0">
-      {children}
-    </div>
+    <div className="stagger-children grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
   );
 }

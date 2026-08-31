@@ -45,12 +45,12 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
                   <stop offset="95%" stopColor="#1657A0" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorOO" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorFin" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#F97316" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#F97316" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
@@ -90,7 +90,7 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
                 type="monotone"
                 dataKey="onlineOrder"
                 name="Online Order"
-                stroke="#10B981"
+                stroke="#14B8A6"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorOO)"
@@ -99,7 +99,7 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
                 type="monotone"
                 dataKey="financing"
                 name="Financing Loan"
-                stroke="#F59E0B"
+                stroke="#F97316"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorFin)"
