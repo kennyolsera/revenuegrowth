@@ -20,8 +20,20 @@ interface ParsedRow {
   bank_account_holder: string | null;
   address: string | null;
   submitted_at: string | null;
+  status: string | null; // resolved enum, or null → DB default
+  provider_id: string | null; // resolved from provider name, or null
+  provider_name: string | null; // raw name for preview
   error: string | null;
 }
+
+/** Accepts enum values and common ID/EN labels for status. */
+const STATUS_ALIASES: Record<string, string> = {
+  diajukan: "diajukan", submitted: "diajukan",
+  verifikasi: "verifikasi", "verifikasi dokumen": "verifikasi", verification: "verifikasi", "doc verification": "verifikasi",
+  aktivasi: "aktivasi", activation: "aktivasi",
+  aktif: "aktif", active: "aktif", "aktif bertransaksi": "aktif", "active transacting": "aktif",
+  tidak_lanjut: "tidak_lanjut", "tidak lanjut": "tidak_lanjut", dropped: "tidak_lanjut",
+};
 
 /** Normalize a header cell → lowercase, single-spaced, no punctuation. */
 function norm(s: any): string {
@@ -43,6 +55,9 @@ const HEADER_MAP: Record<string, keyof ParsedRow> = {
   "bank account holder": "bank_account_holder",
   "account holder": "bank_account_holder",
   "address": "address",
+  "status": "status",
+  "qris provider": "provider_name",
+  "provider": "provider_name",
 };
 
 function excelDateToISO(value: any): string | null {
@@ -86,6 +101,11 @@ export function QrisImportDialog({
         return;
       }
 
+      // Load providers to resolve "qris provider" name → id (case-insensitive)
+      const supabase = createClient();
+      const { data: provs } = await supabase.from("qris_providers").select("id, name");
+      const providerMap = new Map((provs ?? []).map((p: any) => [String(p.name).trim().toLowerCase(), p.id]));
+
       const parsed: ParsedRow[] = json.map((raw) => {
         // Re-key each row by normalized header → target field
         const v: Record<string, any> = {};
@@ -98,8 +118,14 @@ export function QrisImportDialog({
           const s = String(x ?? "").trim();
           return s === "" ? null : s;
         };
+        // Status: map alias → enum; blank/unknown → null (DB default applies)
+        const rawStatus = norm(v.status);
+        const status = rawStatus ? STATUS_ALIASES[rawStatus] ?? null : null;
+        // Provider: match name → id; blank/unknown → null
+        const provider_name = str(v.provider_name);
+        const provider_id = provider_name ? providerMap.get(provider_name.toLowerCase()) ?? null : null;
         // Only QRIS Name is mandatory. Everything else (invalid date, missing
-        // MID, blank bank fields…) imports as-is and can be fixed in-dashboard.
+        // MID, blank bank fields, status, provider…) imports as-is.
         return {
           qris_name,
           phone: str(v.phone),
@@ -110,6 +136,9 @@ export function QrisImportDialog({
           bank_account_holder: str(v.bank_account_holder),
           address: str(v.address),
           submitted_at: excelDateToISO(v.submitted_at),
+          status,
+          provider_id,
+          provider_name,
           error: qris_name ? null : language === "id" ? "Nama QRIS kosong" : "QRIS Name is empty",
         };
       });
@@ -129,10 +158,10 @@ export function QrisImportDialog({
     setParseError(null);
     try {
       const supabase = createClient();
-      // Blank/invalid dates fall back to today so the not-null column is
-      // satisfied on every row (a bulk insert unifies the column list, so a
-      // missing key would become NULL and bypass the default). status &
-      // provider_id are never sent, so their defaults apply cleanly.
+      // Blank/invalid dates fall back to today, and blank status falls back to
+      // 'diajukan' — both are not-null columns, and a bulk insert unifies the
+      // column list (a missing key becomes NULL, bypassing the default).
+      // provider_id is nullable, so null is fine.
       const today = new Date().toISOString().slice(0, 10);
       const payload = validRows.map((r) => ({
         qris_name: r.qris_name,
@@ -145,6 +174,8 @@ export function QrisImportDialog({
         address: r.address,
         submitted_at: r.submitted_at ?? today,
         date_estimated: r.submitted_at == null, // flag defaulted dates for review
+        status: r.status ?? "diajukan",
+        provider_id: r.provider_id,
       }));
       const { error } = await supabase.from("qris_acquisitions").insert(payload);
       if (error) throw error;
@@ -197,8 +228,8 @@ export function QrisImportDialog({
         </label>
         <p className="mt-1.5 text-xs text-ink-muted">
           {language === "id"
-            ? "Kolom: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address (opsional)."
-            : "Columns: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address (optional)."}
+            ? "Kolom: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address, status, qris provider — hanya QRIS Name yang wajib; status & provider boleh kosong."
+            : "Columns: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address, status, qris provider — only QRIS Name is required; status & provider may be blank."}
         </p>
         {fileName && <p className="mt-2 text-xs font-semibold text-ink-body">File: {fileName}</p>}
       </div>
@@ -225,8 +256,9 @@ export function QrisImportDialog({
                 <tr>
                   <th className="px-3 py-2.5 font-bold text-ink-body">{t("qris_col_qris_name")}</th>
                   <th className="px-3 py-2.5 font-bold text-ink-body">{t("qris_col_mid")}</th>
-                  <th className="px-3 py-2.5 font-bold text-ink-body">{t("qris_col_bank_name")}</th>
                   <th className="px-3 py-2.5 font-bold text-ink-body">{t("qris_col_date")}</th>
+                  <th className="px-3 py-2.5 font-bold text-ink-body">{t("qris_col_status")}</th>
+                  <th className="px-3 py-2.5 font-bold text-ink-body">{t("qris_col_provider")}</th>
                   <th className="px-3 py-2.5 font-bold text-ink-body">{language === "id" ? "Keterangan" : "Note"}</th>
                 </tr>
               </thead>
@@ -235,8 +267,21 @@ export function QrisImportDialog({
                   <tr key={i} className={r.error ? "bg-red-50/50" : "bg-surface"}>
                     <td className="px-3 py-2 font-medium">{r.qris_name || "-"}</td>
                     <td className="px-3 py-2 font-mono">{r.mid ?? "-"}</td>
-                    <td className="px-3 py-2">{r.bank_name ?? "-"}</td>
                     <td className="px-3 py-2 font-mono">{r.submitted_at ? formatDate(r.submitted_at) : "-"}</td>
+                    <td className="px-3 py-2 capitalize">{r.status ?? "-"}</td>
+                    <td className="px-3 py-2">
+                      {r.provider_name ? (
+                        r.provider_id ? (
+                          r.provider_name
+                        ) : (
+                          <span className="text-amber-600" title={language === "id" ? "Provider tidak dikenal" : "Unknown provider"}>
+                            {r.provider_name} ⚠
+                          </span>
+                        )
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                     <td className="px-3 py-2">
                       {r.error ? (
                         <span className="font-medium text-rose-600">{r.error}</span>
