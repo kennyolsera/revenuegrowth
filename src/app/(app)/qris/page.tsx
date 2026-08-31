@@ -29,18 +29,20 @@ export default function QrisPage() {
     {
       key: "qris_name",
       label: t("qris_col_qris_name"),
+      className: "min-w-[200px]",
       render: (r) => (
         <span className="block max-w-[260px] truncate font-medium" title={r.qris_name ?? ""}>
           {r.qris_name ?? "-"}
         </span>
       ),
     },
-    { key: "provider", label: t("qris_col_provider"), render: (r) => r.provider?.name ?? "-" },
-    { key: "mid", label: t("qris_col_mid"), render: (r) => r.mid ?? "-" },
-    { key: "phone", label: t("qris_col_phone"), render: (r) => r.phone ?? "-" },
+    { key: "provider", label: t("qris_col_provider"), width: "w-36", render: (r) => r.provider?.name ?? "-" },
+    { key: "mid", label: t("qris_col_mid"), width: "w-44", render: (r) => r.mid ?? "-" },
+    { key: "phone", label: t("qris_col_phone"), width: "w-40", render: (r) => r.phone ?? "-" },
     {
       key: "status",
       label: t("qris_col_status"),
+      width: "w-52",
       render: (r) => (
         <InlineStatusSelect
           table="qris_acquisitions"
@@ -53,6 +55,7 @@ export default function QrisPage() {
     {
       key: "submitted_at",
       label: t("qris_col_date"),
+      width: "w-48",
       render: (r) => (
         <span className="inline-flex items-center gap-1.5">
           {formatDate(r.submitted_at)}
@@ -77,7 +80,7 @@ export default function QrisPage() {
         description={t("qris_desc")}
         addLabel={t("qris_add")}
         selectQuery="*, provider:qris_providers(name)"
-        orderBy="created_at"
+        orderBy="submitted_at"
         ascending={false}
         searchKeys={["qris_name", "mid", "phone", "email", "bank_name", "bank_account_holder", "notes"]}
         filters={[

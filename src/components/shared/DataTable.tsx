@@ -8,6 +8,8 @@ export interface ColumnDef<T> {
   align?: "left" | "right" | "center";
   render?: (row: T) => React.ReactNode;
   className?: string;
+  /** Tailwind width class (e.g. "w-40") applied to header + cells for consistent columns. */
+  width?: string;
 }
 
 export function DataTable<T extends { id: string | number }>({
@@ -38,7 +40,8 @@ export function DataTable<T extends { id: string | number }>({
                   className={cn(
                     "label-mono whitespace-nowrap px-4 py-3 text-ink-muted",
                     col.align === "right" && "text-right",
-                    col.align === "center" && "text-center"
+                    col.align === "center" && "text-center",
+                    col.width
                   )}
                 >
                   {col.label}
@@ -73,6 +76,7 @@ export function DataTable<T extends { id: string | number }>({
                         "whitespace-nowrap px-4 py-2.5 text-[13px] text-ink-body",
                         col.align === "right" && "text-right font-mono",
                         col.align === "center" && "text-center",
+                        col.width,
                         col.className
                       )}
                     >
