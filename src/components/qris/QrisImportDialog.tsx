@@ -98,6 +98,14 @@ export function QrisImportDialog({
           const s = String(x ?? "").trim();
           return s === "" ? null : s;
         };
+        const submitted_at = excelDateToISO(v.submitted_at);
+        const dateProvided = String(v.submitted_at ?? "").trim() !== "";
+
+        let error: string | null = null;
+        if (!qris_name) error = language === "id" ? "Nama QRIS kosong" : "QRIS Name is empty";
+        else if (!dateProvided) error = language === "id" ? "Tanggal kosong" : "Date is empty";
+        else if (!submitted_at) error = language === "id" ? "Tanggal tidak valid" : "Invalid date";
+
         return {
           qris_name,
           phone: str(v.phone),
@@ -107,8 +115,8 @@ export function QrisImportDialog({
           bank_account_number: str(v.bank_account_number),
           bank_account_holder: str(v.bank_account_holder),
           address: str(v.address),
-          submitted_at: excelDateToISO(v.submitted_at),
-          error: qris_name ? null : language === "id" ? "Nama QRIS kosong" : "QRIS Name is empty",
+          submitted_at,
+          error,
         };
       });
       setRows(parsed);
@@ -127,22 +135,20 @@ export function QrisImportDialog({
     setParseError(null);
     try {
       const supabase = createClient();
-      // Omit null submitted_at so the DB default (current_date) applies;
-      // status & provider_id are left to DB defaults / later edit.
-      const payload = validRows.map((r) => {
-        const row: Record<string, any> = {
-          qris_name: r.qris_name,
-          phone: r.phone,
-          mid: r.mid,
-          email: r.email,
-          bank_name: r.bank_name,
-          bank_account_number: r.bank_account_number,
-          bank_account_holder: r.bank_account_holder,
-          address: r.address,
-        };
-        if (r.submitted_at) row.submitted_at = r.submitted_at;
-        return row;
-      });
+      // Valid rows are guaranteed a date (blank/invalid dates are rejected in
+      // the preview). status & provider_id are never sent, so their defaults
+      // apply cleanly.
+      const payload = validRows.map((r) => ({
+        qris_name: r.qris_name,
+        phone: r.phone,
+        mid: r.mid,
+        email: r.email,
+        bank_name: r.bank_name,
+        bank_account_number: r.bank_account_number,
+        bank_account_holder: r.bank_account_holder,
+        address: r.address,
+        submitted_at: r.submitted_at,
+      }));
       const { error } = await supabase.from("qris_acquisitions").insert(payload);
       if (error) throw error;
       toast.success(t("qimport_success"));
