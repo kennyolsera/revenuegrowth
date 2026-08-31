@@ -26,7 +26,15 @@ export default function QrisPage() {
   ];
 
   const columns: ColumnDef<any>[] = [
-    { key: "qris_name", label: t("qris_col_qris_name"), render: (r) => r.qris_name ?? "-" },
+    {
+      key: "qris_name",
+      label: t("qris_col_qris_name"),
+      render: (r) => (
+        <span className="block max-w-[260px] truncate font-medium" title={r.qris_name ?? ""}>
+          {r.qris_name ?? "-"}
+        </span>
+      ),
+    },
     { key: "provider", label: t("qris_col_provider"), render: (r) => r.provider?.name ?? "-" },
     { key: "mid", label: t("qris_col_mid"), render: (r) => r.mid ?? "-" },
     { key: "phone", label: t("qris_col_phone"), render: (r) => r.phone ?? "-" },
@@ -69,6 +77,8 @@ export default function QrisPage() {
         description={t("qris_desc")}
         addLabel={t("qris_add")}
         selectQuery="*, provider:qris_providers(name)"
+        orderBy="created_at"
+        ascending={false}
         searchKeys={["qris_name", "mid", "phone", "email", "bank_name", "bank_account_holder", "notes"]}
         filters={[
           { key: "status", label: t("qris_col_status"), options: STATUS_OPTIONS },
