@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileUp } from "lucide-react";
+import { FileUp, AlertTriangle } from "lucide-react";
 import { ResourceManager } from "@/components/shared/ResourceManager";
 import { InlineStatusSelect } from "@/components/shared/InlineStatusSelect";
 import { QrisImportDialog } from "@/components/qris/QrisImportDialog";
@@ -42,7 +42,23 @@ export default function QrisPage() {
         />
       ),
     },
-    { key: "submitted_at", label: t("qris_col_date"), render: (r) => formatDate(r.submitted_at) },
+    {
+      key: "submitted_at",
+      label: t("qris_col_date"),
+      render: (r) => (
+        <span className="inline-flex items-center gap-1.5">
+          {formatDate(r.submitted_at)}
+          {r.date_estimated && (
+            <span
+              title={t("qris_date_review")}
+              className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-status-warning"
+            >
+              <AlertTriangle className="h-3 w-3" /> {t("qris_date_review")}
+            </span>
+          )}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -59,6 +75,7 @@ export default function QrisPage() {
           { key: "provider_id", label: t("qris_col_provider"), options: providerOptions },
         ]}
         defaultValues={{ status: "diajukan", submitted_at: new Date().toISOString().slice(0, 10) }}
+        onBeforeSave={(v) => ({ ...v, date_estimated: false })}
         reloadSignal={reload}
         columns={columns}
         extraHeaderAction={

@@ -56,6 +56,7 @@ create table if not exists public.qris_acquisitions (
     check (status in ('diajukan', 'verifikasi', 'aktivasi', 'aktif', 'tidak_lanjut')),
   transaction_volume numeric,     -- deprecated (removed from UI)
   submitted_at date not null default current_date,
+  date_estimated boolean not null default false, -- true = date was missing on import
   pic text,
   notes text,
   created_at timestamptz not null default now()
@@ -87,7 +88,8 @@ alter table public.qris_acquisitions
   add column if not exists bank_name text,
   add column if not exists bank_account_number text,
   add column if not exists bank_account_holder text,
-  add column if not exists address text;
+  add column if not exists address text,
+  add column if not exists date_estimated boolean not null default false;
 
 -- ---------------------------------------------------------------------
 -- 4. AKUISISI NETWORK PARTNER

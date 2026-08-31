@@ -98,14 +98,8 @@ export function QrisImportDialog({
           const s = String(x ?? "").trim();
           return s === "" ? null : s;
         };
-        const submitted_at = excelDateToISO(v.submitted_at);
-        const dateProvided = String(v.submitted_at ?? "").trim() !== "";
-
-        let error: string | null = null;
-        if (!qris_name) error = language === "id" ? "Nama QRIS kosong" : "QRIS Name is empty";
-        else if (!dateProvided) error = language === "id" ? "Tanggal kosong" : "Date is empty";
-        else if (!submitted_at) error = language === "id" ? "Tanggal tidak valid" : "Invalid date";
-
+        // Only QRIS Name is mandatory. Everything else (invalid date, missing
+        // MID, blank bank fields…) imports as-is and can be fixed in-dashboard.
         return {
           qris_name,
           phone: str(v.phone),
@@ -115,8 +109,8 @@ export function QrisImportDialog({
           bank_account_number: str(v.bank_account_number),
           bank_account_holder: str(v.bank_account_holder),
           address: str(v.address),
-          submitted_at,
-          error,
+          submitted_at: excelDateToISO(v.submitted_at),
+          error: qris_name ? null : language === "id" ? "Nama QRIS kosong" : "QRIS Name is empty",
         };
       });
       setRows(parsed);
@@ -135,9 +129,11 @@ export function QrisImportDialog({
     setParseError(null);
     try {
       const supabase = createClient();
-      // Valid rows are guaranteed a date (blank/invalid dates are rejected in
-      // the preview). status & provider_id are never sent, so their defaults
-      // apply cleanly.
+      // Blank/invalid dates fall back to today so the not-null column is
+      // satisfied on every row (a bulk insert unifies the column list, so a
+      // missing key would become NULL and bypass the default). status &
+      // provider_id are never sent, so their defaults apply cleanly.
+      const today = new Date().toISOString().slice(0, 10);
       const payload = validRows.map((r) => ({
         qris_name: r.qris_name,
         phone: r.phone,
@@ -147,7 +143,8 @@ export function QrisImportDialog({
         bank_account_number: r.bank_account_number,
         bank_account_holder: r.bank_account_holder,
         address: r.address,
-        submitted_at: r.submitted_at,
+        submitted_at: r.submitted_at ?? today,
+        date_estimated: r.submitted_at == null, // flag defaulted dates for review
       }));
       const { error } = await supabase.from("qris_acquisitions").insert(payload);
       if (error) throw error;
