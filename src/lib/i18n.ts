@@ -258,6 +258,14 @@ export const translations = {
     mom_upload: "Unggah Dokumen",
     mom_uploading: "Mengunggah...",
     mom_partner_ph: "Ketik nama merchant / partner",
+    mom_drop: "Tarik & lepas file di sini, atau klik untuk unggah",
+    mom_any_format: "PDF, Word, Excel, PPT, gambar — semua format",
+    mom_edit_title: "Edit MOM / Notulen",
+    mom_view_participants: "Peserta",
+    mom_view_discussion: "Poin Pembahasan",
+    mom_view_actions: "Action Item",
+    mom_view_docs: "Dokumen Terlampir",
+    mom_no_docs: "Tidak ada dokumen.",
 
     // Users & Logs
     users_title: "User & Role Management",
@@ -554,6 +562,14 @@ export const translations = {
     mom_upload: "Upload Document",
     mom_uploading: "Uploading...",
     mom_partner_ph: "Type merchant / partner name",
+    mom_drop: "Drag & drop files here, or click to upload",
+    mom_any_format: "PDF, Word, Excel, PPT, images — any format",
+    mom_edit_title: "Edit Meeting Minutes",
+    mom_view_participants: "Participants",
+    mom_view_discussion: "Discussion Points",
+    mom_view_actions: "Action Items",
+    mom_view_docs: "Attached Documents",
+    mom_no_docs: "No documents.",
 
     // Users & Logs
     users_title: "User & Role Management",

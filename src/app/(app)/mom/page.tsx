@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, Trash2, CheckCircle2, Paperclip, Upload, X } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Circle, Paperclip, Upload, X, Pencil } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -11,13 +11,12 @@ import { DataTable, type ColumnDef } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
-import { formatDate } from "@/lib/utils";
+import { formatDate, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 
 const CATEGORY_OPTIONS = ["Demo", "Onboarding", "Support", "Internal", "Lainnya"];
 const ATTACH_BUCKET = "mom-attachments";
-const ACCEPT = ".pdf,.xls,.xlsx,.csv,.jpg,.jpeg,.png";
 
 interface ActionItem {
   label: string;
@@ -52,10 +51,13 @@ function MomPageInner() {
   const [search, setSearch] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<any | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [actionItems, setActionItems] = useState<ActionItem[]>([{ label: "", pic: "", due_date: "", done: false }]);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function fetchRows() {
@@ -81,15 +83,15 @@ function MomPageInner() {
   }, []);
 
   useEffect(() => {
-    const eventId = params.get("event_id");
-    if (eventId) {
+    if (params.get("event_id")) {
+      openCreate();
       setForm((p) => ({
         ...p,
         title: params.get("title") ?? "",
         meeting_date: new Date().toISOString().slice(0, 10),
       }));
-      setDialogOpen(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   const filtered = rows.filter(
@@ -104,21 +106,41 @@ function MomPageInner() {
   }
 
   function openCreate() {
+    setEditingId(null);
     setForm(emptyForm);
     setActionItems([{ label: "", pic: "", due_date: "", done: false }]);
     setAttachments([]);
     setDialogOpen(true);
   }
 
-  async function handleUpload(files: FileList | null) {
-    if (!files || files.length === 0) return;
+  function openEdit(row: any) {
+    setEditingId(row.id);
+    setForm({
+      title: row.title ?? "",
+      meeting_date: row.meeting_date ? String(row.meeting_date).slice(0, 10) : "",
+      category: row.category ?? "Demo",
+      merchant_partner: row.merchant_partner ?? "",
+      participants: row.participants ?? "",
+      discussion_points: row.discussion_points ?? "",
+    });
+    const items: ActionItem[] = row.action_items ?? [];
+    setActionItems(items.length ? items : [{ label: "", pic: "", due_date: "", done: false }]);
+    setAttachments(row.attachments ?? []);
+    setDetail(null);
+    setDialogOpen(true);
+  }
+
+  async function uploadFiles(files: FileList | File[] | null) {
+    if (!files) return;
+    const list = Array.from(files);
+    if (list.length === 0) return;
     if (!isSupabaseConfigured) {
       toast.error(language === "id" ? "Supabase belum terhubung." : "Supabase is not connected.");
       return;
     }
     setUploading(true);
     const supabase = createClient();
-    for (const file of Array.from(files)) {
+    for (const file of list) {
       const safe = file.name.replace(/[^\w.\-]+/g, "_");
       const path = `${Date.now()}-${safe}`;
       const { error } = await supabase.storage.from(ATTACH_BUCKET).upload(path, file);
@@ -146,8 +168,7 @@ function MomPageInner() {
     setSaving(true);
     try {
       const supabase = createClient();
-      const { data: userData } = await supabase.auth.getUser();
-      const { error } = await supabase.from("meeting_minutes").insert({
+      const payload = {
         title: form.title,
         meeting_date: form.meeting_date,
         category: form.category,
@@ -156,11 +177,20 @@ function MomPageInner() {
         discussion_points: form.discussion_points,
         action_items: actionItems.filter((a) => a.label.trim() !== ""),
         attachments,
-        created_by: userData.user?.email ?? null,
-      });
-      if (error) throw error;
+      };
+      if (editingId) {
+        const { error } = await supabase.from("meeting_minutes").update(payload).eq("id", editingId);
+        if (error) throw error;
+        toast.success(t("toast_updated"));
+      } else {
+        const { data: userData } = await supabase.auth.getUser();
+        const { error } = await supabase
+          .from("meeting_minutes")
+          .insert({ ...payload, created_by: userData.user?.email ?? null });
+        if (error) throw error;
+        toast.success(t("toast_created"));
+      }
       setDialogOpen(false);
-      toast.success(t("toast_created"));
       fetchRows();
     } catch (err: any) {
       toast.error(`${t("save_error")}: ${err.message}`);
@@ -195,23 +225,10 @@ function MomPageInner() {
         const atts: Attachment[] = r.attachments ?? [];
         if (atts.length === 0) return <span className="text-ink-faint">-</span>;
         return (
-          <div className="flex flex-wrap gap-1">
-            {atts.map((a, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openAttachment(a.path);
-                }}
-                title={a.name}
-                className="inline-flex max-w-[140px] items-center gap-1 rounded-md border border-surface-border bg-surface-canvas px-2 py-0.5 text-xs text-ink-body transition-colors hover:border-accent-line hover:text-accent"
-              >
-                <Paperclip className="h-3 w-3 shrink-0" />
-                <span className="truncate">{a.name}</span>
-              </button>
-            ))}
-          </div>
+          <span className="inline-flex items-center gap-1 text-ink-body">
+            <Paperclip className="h-3.5 w-3.5 text-ink-muted" />
+            {atts.length}
+          </span>
         );
       },
     },
@@ -238,12 +255,100 @@ function MomPageInner() {
         searchPlaceholder={language === "id" ? "Cari judul / partner..." : "Search title / partner..."}
       />
 
-      <DataTable columns={columns} rows={filtered} emptyText={loading ? t("loading") : t("no_data")} />
+      <DataTable columns={columns} rows={filtered} emptyText={loading ? t("loading") : t("no_data")} onRowClick={setDetail} />
 
+      {/* ── Detail view modal ─────────────────────────────────────── */}
+      {detail && (
+        <Dialog
+          open={!!detail}
+          onClose={() => setDetail(null)}
+          title={detail.title}
+          description={`${formatDate(detail.meeting_date)}${detail.category ? ` · ${detail.category}` : ""}${
+            detail.merchant_partner ? ` · ${detail.merchant_partner}` : ""
+          }`}
+          width="max-w-2xl"
+        >
+          <div className="space-y-5">
+            {detail.participants && (
+              <section>
+                <p className="label-mono mb-1 text-ink-muted">{t("mom_view_participants")}</p>
+                <p className="text-sm text-ink-body">{detail.participants}</p>
+              </section>
+            )}
+
+            {detail.discussion_points && (
+              <section>
+                <p className="label-mono mb-1 text-ink-muted">{t("mom_view_discussion")}</p>
+                <p className="whitespace-pre-wrap break-words text-sm text-ink-body">{detail.discussion_points}</p>
+              </section>
+            )}
+
+            <section>
+              <p className="label-mono mb-2 text-ink-muted">{t("mom_view_actions")}</p>
+              {(detail.action_items ?? []).length === 0 ? (
+                <p className="text-sm text-ink-muted">-</p>
+              ) : (
+                <ul className="space-y-2">
+                  {(detail.action_items as ActionItem[]).map((a, i) => (
+                    <li key={i} className="flex items-start gap-2.5 rounded-md border border-surface-border bg-surface-canvas p-2.5">
+                      {a.done ? (
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-status-success" />
+                      ) : (
+                        <Circle className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="whitespace-pre-wrap break-words text-sm text-ink-body">{a.label}</p>
+                        <p className="mt-0.5 text-xs text-ink-muted">
+                          {a.pic ? `PIC: ${a.pic}` : ""}
+                          {a.pic && a.due_date ? " · " : ""}
+                          {a.due_date ? formatDate(a.due_date) : ""}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section>
+              <p className="label-mono mb-2 text-ink-muted">{t("mom_view_docs")}</p>
+              {(detail.attachments ?? []).length === 0 ? (
+                <p className="text-sm text-ink-muted">{t("mom_no_docs")}</p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {(detail.attachments as Attachment[]).map((a, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => openAttachment(a.path)}
+                      title={a.name}
+                      className="inline-flex max-w-[220px] items-center gap-1.5 rounded-md border border-surface-border bg-surface px-2.5 py-1 text-xs text-ink-body transition-colors hover:border-accent-line hover:text-accent"
+                    >
+                      <Paperclip className="h-3.5 w-3.5 shrink-0" />
+                      <span className="truncate">{a.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-2.5 border-t border-surface-border pt-4">
+            <Button type="button" variant="secondary" onClick={() => setDetail(null)}>
+              {t("close")}
+            </Button>
+            <Button type="button" variant="accent" onClick={() => openEdit(detail)}>
+              <Pencil className="h-4 w-4" /> {t("edit")}
+            </Button>
+          </div>
+        </Dialog>
+      )}
+
+      {/* ── Create / edit form ────────────────────────────────────── */}
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title={language === "id" ? "Form MOM / Notulen Meeting" : "Minutes of Meeting Form"}
+        title={editingId ? t("mom_edit_title") : language === "id" ? "Form MOM / Notulen Meeting" : "Minutes of Meeting Form"}
         width="max-w-2xl"
       >
         <form onSubmit={handleSubmit}>
@@ -295,37 +400,54 @@ function MomPageInner() {
             />
           </Field>
 
-          {/* Attachments */}
+          {/* Attachments — drag & drop, any format */}
           <Field>
             <Label>{t("mom_col_docs")}</Label>
-            <div className="rounded-lg border border-surface-border bg-surface-canvas p-3">
-              {attachments.length > 0 && (
-                <ul className="mb-2 space-y-1.5">
-                  {attachments.map((a, i) => (
-                    <li key={i} className="flex items-center justify-between gap-2 rounded-md border border-surface-border bg-surface px-2.5 py-1.5 text-xs">
-                      <span className="flex min-w-0 items-center gap-1.5 text-ink-body">
-                        <Paperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
-                        <span className="truncate">{a.name}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setAttachments((prev) => prev.filter((_, x) => x !== i))}
-                        aria-label={language === "id" ? "Hapus dokumen" : "Remove document"}
-                        className="rounded p-1 text-ink-faint transition-colors hover:bg-red-50 hover:text-status-danger"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+            {attachments.length > 0 && (
+              <ul className="mb-2 space-y-1.5">
+                {attachments.map((a, i) => (
+                  <li key={i} className="flex items-center justify-between gap-2 rounded-md border border-surface-border bg-surface px-2.5 py-1.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => openAttachment(a.path)}
+                      className="flex min-w-0 items-center gap-1.5 text-ink-body hover:text-accent"
+                    >
+                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+                      <span className="truncate">{a.name}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAttachments((prev) => prev.filter((_, x) => x !== i))}
+                      aria-label={language === "id" ? "Hapus dokumen" : "Remove document"}
+                      className="rounded p-1 text-ink-faint transition-colors hover:bg-red-50 hover:text-status-danger"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <label
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragActive(true);
+              }}
+              onDragLeave={() => setDragActive(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragActive(false);
+                uploadFiles(e.dataTransfer.files);
+              }}
+              className={cn(
+                "flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border-2 border-dashed p-5 text-center transition-colors",
+                dragActive ? "border-accent bg-accent-soft" : "border-surface-border bg-surface-canvas hover:border-accent-line"
               )}
-              <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-accent-soft">
-                <input type="file" accept={ACCEPT} multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
-                <Upload className="h-3.5 w-3.5" />
-                {uploading ? t("mom_uploading") : t("mom_upload")}
-              </label>
-              <p className="mt-1.5 text-[11px] text-ink-muted">PDF, Excel, JPG/PNG</p>
-            </div>
+            >
+              <input type="file" multiple className="hidden" onChange={(e) => uploadFiles(e.target.files)} />
+              <Upload className="h-5 w-5 text-accent" />
+              <span className="text-xs font-semibold text-ink-body">{uploading ? t("mom_uploading") : t("mom_drop")}</span>
+              <span className="text-[11px] text-ink-muted">{t("mom_any_format")}</span>
+            </label>
           </Field>
 
           <Label>{language === "id" ? "Action Item & PIC" : "Action Items & Assigned PIC"}</Label>
@@ -334,12 +456,21 @@ function MomPageInner() {
               <div key={idx} className="rounded-md border border-surface-border bg-surface p-2.5 space-y-2">
                 <Textarea
                   className="min-h-[52px] leading-normal"
-                  placeholder={language === "id" ? "Deskripsi tugas (bisa panjang, teks akan turun ke bawah)" : "Task description (long text wraps to the next line)"}
+                  placeholder={language === "id" ? "Deskripsi tugas (teks panjang akan turun ke bawah)" : "Task description (long text wraps to the next line)"}
                   value={item.label}
                   onChange={(e) => updateActionItem(idx, { label: e.target.value })}
                 />
                 <div className="flex flex-wrap items-center gap-2">
-                  <Input className="w-28 sm:w-36" placeholder="PIC" value={item.pic} onChange={(e) => updateActionItem(idx, { pic: e.target.value })} />
+                  <label className="flex items-center gap-1.5 text-xs font-medium text-ink-body">
+                    <input
+                      type="checkbox"
+                      checked={item.done}
+                      onChange={(e) => updateActionItem(idx, { done: e.target.checked })}
+                      className="h-4 w-4 rounded accent-accent"
+                    />
+                    {language === "id" ? "Selesai" : "Done"}
+                  </label>
+                  <Input className="w-24 sm:w-32" placeholder="PIC" value={item.pic} onChange={(e) => updateActionItem(idx, { pic: e.target.value })} />
                   <Input type="date" className="w-36 sm:w-40" value={item.due_date} onChange={(e) => updateActionItem(idx, { due_date: e.target.value })} />
                   <button
                     type="button"
