@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ResourceManager } from "@/components/shared/ResourceManager";
 import { InlineStatusSelect } from "@/components/shared/InlineStatusSelect";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
+import { useTableOptions } from "@/lib/hooks/useTableOptions";
 import { formatDate, formatRupiah } from "@/lib/utils";
 import type { ColumnDef } from "@/components/shared/DataTable";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -11,6 +12,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 export default function QrisPage() {
   const { t, language } = useLanguage();
   const merchantOptions = useMerchantOptions();
+  const providerOptions = useTableOptions("qris_providers");
   const [reload, setReload] = useState(0);
 
   const STATUS_OPTIONS = [
@@ -24,6 +26,7 @@ export default function QrisPage() {
   const columns: ColumnDef<any>[] = [
     { key: "merchant", label: t("qris_col_merchant"), render: (r) => r.merchant?.name ?? "-" },
     { key: "region", label: t("qris_col_region") },
+    { key: "provider", label: t("qris_col_provider"), render: (r) => r.provider?.name ?? "-" },
     {
       key: "status",
       label: t("qris_col_status"),
@@ -52,14 +55,18 @@ export default function QrisPage() {
       title={t("qris_title")}
       description={t("qris_desc")}
       addLabel={t("qris_add")}
-      selectQuery="*, merchant:merchants(name)"
+      selectQuery="*, merchant:merchants(name), provider:qris_providers(name)"
       searchKeys={["region", "pic", "notes"]}
-      filters={[{ key: "status", label: t("qris_col_status"), options: STATUS_OPTIONS }]}
+      filters={[
+        { key: "status", label: t("qris_col_status"), options: STATUS_OPTIONS },
+        { key: "provider_id", label: t("qris_col_provider"), options: providerOptions },
+      ]}
       defaultValues={{ status: "diajukan" }}
       reloadSignal={reload}
       columns={columns}
       formFields={[
         { key: "merchant_id", label: t("qris_col_merchant"), type: "merchant_select", required: true, options: merchantOptions },
+        { key: "provider_id", label: t("qris_col_provider"), type: "select", required: true, options: providerOptions },
         { key: "region", label: t("qris_col_region"), required: true },
         { key: "pic", label: t("qris_col_pic"), required: true },
         { key: "status", label: t("qris_col_status"), type: "select", required: true, options: STATUS_OPTIONS },

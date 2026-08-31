@@ -54,6 +54,22 @@ create table if not exists public.qris_acquisitions (
 );
 
 -- ---------------------------------------------------------------------
+-- 3b. QRIS PROVIDERS (master, dikelola Super Admin di menu Settings)
+-- ---------------------------------------------------------------------
+create table if not exists public.qris_providers (
+  id uuid primary key default gen_random_uuid(),
+  name text not null unique,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+-- Link QRIS acquisitions to a provider (nullable; historical rows stay valid)
+alter table public.qris_acquisitions
+  add column if not exists provider_id uuid references public.qris_providers (id) on delete set null;
+
+create index if not exists idx_qris_acq_provider on public.qris_acquisitions (provider_id);
+
+-- ---------------------------------------------------------------------
 -- 4. AKUISISI NETWORK PARTNER
 -- ---------------------------------------------------------------------
 create table if not exists public.network_partner_handovers (
@@ -345,6 +361,7 @@ create trigger on_auth_user_created
 alter table public.profiles enable row level security;
 alter table public.merchants enable row level security;
 alter table public.qris_acquisitions enable row level security;
+alter table public.qris_providers enable row level security;
 alter table public.network_partner_handovers enable row level security;
 alter table public.online_order_activities enable row level security;
 alter table public.import_batches enable row level security;
@@ -386,6 +403,16 @@ create policy "merchants_write_internal" on public.merchants
 drop policy if exists "qris_internal_all" on public.qris_acquisitions;
 create policy "qris_internal_all" on public.qris_acquisitions
   for all using (public.is_internal()) with check (public.is_internal());
+
+-- qris providers: baca oleh tim internal, tulis HANYA super admin ------
+drop policy if exists "qris_providers_select_internal" on public.qris_providers;
+create policy "qris_providers_select_internal" on public.qris_providers
+  for select using (public.is_internal());
+
+drop policy if exists "qris_providers_write_super" on public.qris_providers;
+create policy "qris_providers_write_super" on public.qris_providers
+  for all using (public.current_profile_role() = 'super_admin')
+  with check (public.current_profile_role() = 'super_admin');
 
 drop policy if exists "network_partner_internal_all" on public.network_partner_handovers;
 create policy "network_partner_internal_all" on public.network_partner_handovers
@@ -509,6 +536,11 @@ create policy "mom_attachments_storage_internal" on storage.objects
 -- =====================================================================
 -- SEED DATA
 -- =====================================================================
+insert into public.qris_providers (name) values
+  ('Netzme'),
+  ('BCA')
+on conflict (name) do nothing;
+
 insert into public.request_categories (name, description) values
   ('Demo Produk', 'Permintaan demo fitur VAS ke merchant/klien'),
   ('Onboarding Merchant', 'Bantuan proses onboarding merchant baru'),

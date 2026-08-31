@@ -34,6 +34,7 @@ export const translations = {
     nav_leads: "Data Leads",
     nav_users: "User Management",
     nav_logs: "Activity Log",
+    nav_qris_providers: "QRIS Provider",
 
     // Dashboard
     dash_header_title: "Dashboard Operasional",
@@ -131,10 +132,18 @@ export const translations = {
     qris_add: "Tambah Merchant QRIS",
     qris_col_merchant: "Merchant",
     qris_col_region: "Wilayah",
+    qris_col_provider: "Provider QRIS",
     qris_col_status: "Status",
     qris_col_volume: "Volume Transaksi",
     qris_col_pic: "PIC",
     qris_col_date: "Tanggal Submit",
+    qpv_title: "Provider QRIS",
+    qpv_desc: "Kelola daftar penyedia QRIS (mis. Netzme, BCA). Hanya Super Admin.",
+    qpv_add: "Tambah Provider",
+    qpv_col_name: "Nama Provider",
+    qpv_col_status: "Status",
+    qpv_col_created: "Ditambahkan",
+    qpv_restricted: "Halaman ini khusus untuk Super Admin.",
 
     // Network Partner
     np_title: "Akuisisi Network Partner",
@@ -304,6 +313,7 @@ export const translations = {
     nav_leads: "Leads Data",
     nav_users: "User Management",
     nav_logs: "Activity Log",
+    nav_qris_providers: "QRIS Providers",
 
     // Dashboard
     dash_header_title: "Operations Dashboard",
@@ -401,10 +411,18 @@ export const translations = {
     qris_add: "Add QRIS Merchant",
     qris_col_merchant: "Merchant",
     qris_col_region: "Region",
+    qris_col_provider: "QRIS Provider",
     qris_col_status: "Status",
     qris_col_volume: "Transaction Volume",
     qris_col_pic: "PIC",
     qris_col_date: "Submission Date",
+    qpv_title: "QRIS Providers",
+    qpv_desc: "Manage the list of QRIS providers (e.g. Netzme, BCA). Super Admin only.",
+    qpv_add: "Add Provider",
+    qpv_col_name: "Provider Name",
+    qpv_col_status: "Status",
+    qpv_col_created: "Added",
+    qpv_restricted: "This page is restricted to Super Admin.",
 
     // Network Partner
     np_title: "Network Partner Acquisition",

@@ -4,7 +4,6 @@ import {
   NotebookPen,
   QrCode,
   ShoppingCart,
-  Landmark,
   LineChart,
   Network,
   BadgeCheck,
@@ -13,6 +12,7 @@ import {
   Database,
   Users,
   Activity,
+  CreditCard,
   type LucideIcon,
 } from "lucide-react";
 import type { TranslationKey } from "@/lib/i18n";
@@ -47,7 +47,6 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/qris", label: "QRIS", translationKey: "nav_qris", icon: QrCode },
       { href: "/online-order", label: "Online Order", translationKey: "nav_online_order", icon: ShoppingCart },
-      { href: "/financing-loan", label: "Financing Loan", translationKey: "nav_financing_loan", icon: Landmark },
       { href: "/financing-performance", label: "Financing Performance", translationKey: "nav_financing_perf", icon: LineChart },
       { href: "/network-partner", label: "Network Partner", translationKey: "nav_network_partner", icon: Network },
     ],
@@ -66,6 +65,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: "settings",
     titleKey: "nav_group_settings",
     items: [
+      { href: "/qris-providers", label: "QRIS Providers", translationKey: "nav_qris_providers", icon: CreditCard },
       { href: "/users", label: "User Management", translationKey: "nav_users", icon: Users },
       { href: "/logs", label: "Activity Log", translationKey: "nav_logs", icon: Activity },
     ],
