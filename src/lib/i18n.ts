@@ -254,6 +254,10 @@ export const translations = {
     mom_col_category: "Kategori",
     mom_col_date: "Tanggal Meeting",
     mom_col_actions: "Action Item",
+    mom_col_docs: "Dokumen",
+    mom_upload: "Unggah Dokumen",
+    mom_uploading: "Mengunggah...",
+    mom_partner_ph: "Ketik nama merchant / partner",
 
     // Users & Logs
     users_title: "User & Role Management",
@@ -546,6 +550,10 @@ export const translations = {
     mom_col_category: "Category",
     mom_col_date: "Meeting Date",
     mom_col_actions: "Action Items",
+    mom_col_docs: "Documents",
+    mom_upload: "Upload Document",
+    mom_uploading: "Uploading...",
+    mom_partner_ph: "Type merchant / partner name",
 
     // Users & Logs
     users_title: "User & Role Management",

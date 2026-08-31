@@ -235,13 +235,20 @@ create table if not exists public.meeting_minutes (
   title text not null,
   meeting_date date not null default current_date,
   category text,
-  merchant_id uuid references public.merchants (id) on delete set null,
+  merchant_id uuid references public.merchants (id) on delete set null, -- legacy
+  merchant_partner text,                       -- free-text merchant/partner
   participants text,
   discussion_points text,
   action_items jsonb not null default '[]',
+  attachments jsonb not null default '[]',     -- [{ name, path, type }]
   created_by text,
   created_at timestamptz not null default now()
 );
+
+-- Migration for existing DBs
+alter table public.meeting_minutes
+  add column if not exists merchant_partner text,
+  add column if not exists attachments jsonb not null default '[]';
 
 -- ---------------------------------------------------------------------
 -- 11b. FINANCING PERFORMANCE REPORTS (agregat dari export GoTyme)
