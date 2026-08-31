@@ -42,11 +42,19 @@ create table if not exists public.merchants (
 -- ---------------------------------------------------------------------
 create table if not exists public.qris_acquisitions (
   id uuid primary key default gen_random_uuid(),
-  merchant_id uuid not null references public.merchants (id) on delete cascade,
-  region text,
+  merchant_id uuid references public.merchants (id) on delete cascade, -- legacy, nullable
+  qris_name text,                 -- registrant / QRIS name (from import)
+  phone text,
+  mid text,                       -- Merchant ID
+  email text,
+  bank_name text,
+  bank_account_number text,
+  bank_account_holder text,
+  address text,
+  region text,                    -- legacy, kept for existing rows
   status text not null default 'diajukan'
     check (status in ('diajukan', 'verifikasi', 'aktivasi', 'aktif', 'tidak_lanjut')),
-  transaction_volume numeric,
+  transaction_volume numeric,     -- deprecated (removed from UI)
   submitted_at date not null default current_date,
   pic text,
   notes text,
@@ -68,6 +76,18 @@ alter table public.qris_acquisitions
   add column if not exists provider_id uuid references public.qris_providers (id) on delete set null;
 
 create index if not exists idx_qris_acq_provider on public.qris_acquisitions (provider_id);
+
+-- Migration for existing DBs: new import fields + relax legacy merchant_id
+alter table public.qris_acquisitions alter column merchant_id drop not null;
+alter table public.qris_acquisitions
+  add column if not exists qris_name text,
+  add column if not exists phone text,
+  add column if not exists mid text,
+  add column if not exists email text,
+  add column if not exists bank_name text,
+  add column if not exists bank_account_number text,
+  add column if not exists bank_account_holder text,
+  add column if not exists address text;
 
 -- ---------------------------------------------------------------------
 -- 4. AKUISISI NETWORK PARTNER
