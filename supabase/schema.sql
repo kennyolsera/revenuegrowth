@@ -122,6 +122,39 @@ create table if not exists public.online_order_activities (
 );
 
 -- ---------------------------------------------------------------------
+-- 5b. ONLINE ORDER REPORTS (rekap transaksi per store; import/export)
+-- ---------------------------------------------------------------------
+create table if not exists public.online_order_reports (
+  id uuid primary key default gen_random_uuid(),
+  store text not null,
+  url text,
+  last_trans_date date,
+  amount_pos_order numeric,
+  amount_online_order numeric,
+  total_online_order numeric,
+  count_delivery numeric,
+  amount_delivery numeric,
+  total_delivery numeric,
+  count_takeaway numeric,
+  amount_takeaway numeric,
+  total_takeaway numeric,
+  count_dinein numeric,
+  amount_dinein numeric,
+  total_dinein numeric,
+  count_reservation numeric,
+  amount_reservation numeric,
+  total_reservation numeric,
+  trans_fee_delivery numeric,
+  trans_fee_takeaway numeric,
+  trans_fee_dinein numeric,
+  trans_fee_reservation numeric,
+  total_fee numeric,
+  source_file text,
+  imported_by text,
+  created_at timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------
 -- 6. FINANCING LOAN + IMPORT BATCHES
 -- ---------------------------------------------------------------------
 create table if not exists public.import_batches (
@@ -393,6 +426,7 @@ alter table public.qris_acquisitions enable row level security;
 alter table public.qris_providers enable row level security;
 alter table public.network_partner_handovers enable row level security;
 alter table public.online_order_activities enable row level security;
+alter table public.online_order_reports enable row level security;
 alter table public.import_batches enable row level security;
 alter table public.financing_loans enable row level security;
 alter table public.merchant_status_claims enable row level security;
@@ -449,6 +483,10 @@ create policy "network_partner_internal_all" on public.network_partner_handovers
 
 drop policy if exists "online_order_internal_all" on public.online_order_activities;
 create policy "online_order_internal_all" on public.online_order_activities
+  for all using (public.is_internal()) with check (public.is_internal());
+
+drop policy if exists "online_order_reports_internal_all" on public.online_order_reports;
+create policy "online_order_reports_internal_all" on public.online_order_reports
   for all using (public.is_internal()) with check (public.is_internal());
 
 drop policy if exists "import_batches_internal_all" on public.import_batches;

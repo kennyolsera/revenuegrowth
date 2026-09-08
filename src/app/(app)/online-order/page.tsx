@@ -1,70 +1,84 @@
 "use client";
 
+import { useState } from "react";
+import { FileUp } from "lucide-react";
 import { ResourceManager } from "@/components/shared/ResourceManager";
-import { StatusBadge } from "@/components/ui/Badge";
-import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
-import { formatDate } from "@/lib/utils";
+import { OnlineOrderImportDialog } from "@/components/online-order/OnlineOrderImportDialog";
+import { Button } from "@/components/ui/Button";
+import { formatDate, formatRupiah } from "@/lib/utils";
 import type { ColumnDef } from "@/components/shared/DataTable";
+import { OO_FIELDS } from "@/lib/onlineOrderFields";
 import { useLanguage } from "@/lib/LanguageContext";
+import type { FormFieldDef } from "@/components/shared/ResourceManager";
+
+const KIND_TO_TYPE: Record<string, FormFieldDef["type"]> = {
+  text: "text",
+  date: "date",
+  count: "number",
+  amount: "currency",
+};
 
 export default function OnlineOrderPage() {
   const { t, language } = useLanguage();
-  const merchantOptions = useMerchantOptions();
-
-  const TYPE_OPTIONS = [
-    { value: "demo", label: "Demo" },
-    { value: "onboarding", label: "Onboarding" },
-    { value: "support", label: "Support" },
-    { value: "upgrade", label: "Upgrade" },
-  ];
-
-  const STATUS_OPTIONS = [
-    { value: "baru", label: language === "id" ? "Baru" : "New" },
-    { value: "dijadwalkan", label: language === "id" ? "Dijadwalkan" : "Scheduled" },
-    { value: "diproses", label: language === "id" ? "Diproses" : "In Progress" },
-    { value: "selesai", label: language === "id" ? "Selesai" : "Completed" },
-    { value: "batal", label: language === "id" ? "Batal" : "Cancelled" },
-  ];
-
-  const PRIORITY_OPTIONS = [
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-    { value: "urgent", label: "Urgent" },
-  ];
+  const [reload, setReload] = useState(0);
+  const [importOpen, setImportOpen] = useState(false);
 
   const columns: ColumnDef<any>[] = [
-    { key: "merchant", label: t("oo_col_merchant"), render: (r) => r.merchant?.name ?? "-" },
-    { key: "activity_type", label: t("oo_col_type"), render: (r) => <StatusBadge status={r.activity_type} /> },
-    { key: "priority", label: t("oo_col_priority"), render: (r) => <StatusBadge status={r.priority} /> },
-    { key: "status", label: t("oo_col_status"), render: (r) => <StatusBadge status={r.status} /> },
-    { key: "pic", label: t("oo_col_pic") },
-    { key: "scheduled_at", label: t("oo_col_schedule"), render: (r) => formatDate(r.scheduled_at, true) },
+    {
+      key: "store",
+      label: "Store",
+      render: (r) => (
+        <span className="block max-w-[220px] truncate font-medium" title={r.store ?? ""}>
+          {r.store ?? "-"}
+        </span>
+      ),
+    },
+    { key: "last_trans_date", label: "Last Trans", render: (r) => formatDate(r.last_trans_date) },
+    { key: "total_online_order", label: "Online Order", align: "right", render: (r) => formatRupiah(r.total_online_order) },
+    { key: "total_delivery", label: "Delivery", align: "right", render: (r) => formatRupiah(r.total_delivery) },
+    { key: "total_takeaway", label: "Takeaway", align: "right", render: (r) => formatRupiah(r.total_takeaway) },
+    { key: "total_dinein", label: "Dine-in", align: "right", render: (r) => formatRupiah(r.total_dinein) },
+    { key: "total_reservation", label: "Reservation", align: "right", render: (r) => formatRupiah(r.total_reservation) },
+    { key: "total_fee", label: "Total Fee", align: "right", render: (r) => formatRupiah(r.total_fee) },
   ];
 
+  const formFields: FormFieldDef[] = OO_FIELDS.map((f) => ({
+    key: f.key,
+    label: f.label,
+    type: KIND_TO_TYPE[f.kind],
+    required: f.key === "store",
+    colSpan: f.key === "store" || f.key === "url" ? 2 : 1,
+  }));
+
   return (
-    <ResourceManager
-      table="online_order_activities"
-      title={t("oo_title")}
-      description={t("oo_desc")}
-      addLabel={t("oo_add")}
-      selectQuery="*, merchant:merchants(name)"
-      searchKeys={["pic"]}
-      filters={[
-        { key: "activity_type", label: t("oo_col_type"), options: TYPE_OPTIONS },
-        { key: "status", label: t("oo_col_status"), options: STATUS_OPTIONS },
-      ]}
-      defaultValues={{ status: "baru", priority: "medium", activity_type: "demo" }}
-      columns={columns}
-      formFields={[
-        { key: "merchant_id", label: t("oo_col_merchant"), type: "select", required: true, options: merchantOptions },
-        { key: "activity_type", label: t("oo_col_type"), type: "select", required: true, options: TYPE_OPTIONS },
-        { key: "priority", label: t("oo_col_priority"), type: "select", required: true, options: PRIORITY_OPTIONS },
-        { key: "status", label: t("oo_col_status"), type: "select", required: true, options: STATUS_OPTIONS },
-        { key: "pic", label: t("oo_col_pic"), required: true },
-        { key: "scheduled_at", label: t("oo_col_schedule"), type: "datetime-local" },
-        { key: "notes", label: language === "id" ? "Catatan" : "Notes", type: "textarea", colSpan: 2 },
-      ]}
-    />
+    <>
+      <ResourceManager
+        table="online_order_reports"
+        title={t("oo_title")}
+        description={t("oo_desc")}
+        addLabel={t("oo_add")}
+        searchKeys={["store", "url"]}
+        searchPlaceholder={language === "id" ? "Cari store / URL..." : "Search store / URL..."}
+        orderBy="created_at"
+        ascending={false}
+        reloadSignal={reload}
+        columns={columns}
+        formFields={formFields}
+        enableExport
+        exportKeys={OO_FIELDS.map((f) => f.key)}
+        exportFileName="online-order"
+        extraHeaderAction={
+          <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+            <FileUp className="h-4 w-4" /> {t("oo_import_btn")}
+          </Button>
+        }
+      />
+
+      <OnlineOrderImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={() => setReload((n) => n + 1)}
+      />
+    </>
   );
 }

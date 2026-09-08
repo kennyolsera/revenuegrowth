@@ -104,6 +104,7 @@ export const translations = {
     cancel: "Batal",
     upload: "Unggah File",
     download: "Unduh",
+    export: "Export",
     filter: "Filter",
     all: "Semua",
     actions: "Aksi",
@@ -180,6 +181,10 @@ export const translations = {
     oo_col_status: "Status",
     oo_col_pic: "PIC",
     oo_col_schedule: "Jadwal",
+    oo_import_btn: "Import",
+    ooimport_title: "Import Data Online Order",
+    ooimport_desc: "Unggah Excel/CSV rekap transaksi per store. Hanya kolom Store yang wajib.",
+    ooimport_success: "Data online order berhasil diimport.",
 
     // Financing Loan
     fl_title: "Akuisisi Financing Loan",
@@ -409,6 +414,7 @@ export const translations = {
     cancel: "Cancel",
     upload: "Upload File",
     download: "Download",
+    export: "Export",
     filter: "Filter",
     all: "All",
     actions: "Actions",
@@ -485,6 +491,10 @@ export const translations = {
     oo_col_status: "Status",
     oo_col_pic: "PIC",
     oo_col_schedule: "Schedule",
+    oo_import_btn: "Import",
+    ooimport_title: "Import Online Order Data",
+    ooimport_desc: "Upload an Excel/CSV of per-store transaction totals. Only the Store column is required.",
+    ooimport_success: "Online order data imported successfully.",
 
     // Financing Loan
     fl_title: "Financing Loan Acquisition",

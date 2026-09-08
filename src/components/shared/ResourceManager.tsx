@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Download } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -41,6 +41,11 @@ export interface ResourceManagerProps<T extends { id: string }> {
   onBeforeSave?: (values: Record<string, any>) => Record<string, any> | Promise<Record<string, any>>;
   disableDelete?: boolean;
   extraRowActions?: (row: T, refresh: () => void) => React.ReactNode;
+  /** Show an Export button that downloads the current (filtered) rows as CSV. */
+  enableExport?: boolean;
+  /** Column keys to export, in order. Defaults to all scalar fields. */
+  exportKeys?: string[];
+  exportFileName?: string;
 }
 
 /**
@@ -79,6 +84,9 @@ export function ResourceManager<T extends { id: string }>({
   onBeforeSave,
   disableDelete,
   extraRowActions,
+  enableExport,
+  exportKeys,
+  exportFileName,
   extraHeaderAction,
   reloadSignal,
 }: ResourceManagerProps<T> & { extraHeaderAction?: React.ReactNode; reloadSignal?: number }) {
@@ -176,6 +184,31 @@ export function ResourceManager<T extends { id: string }>({
     setDeleteTarget(row);
   }
 
+  function exportCsv() {
+    const source = filteredRows;
+    const keys =
+      exportKeys ??
+      (source[0]
+        ? Object.keys(source[0]).filter((k) => {
+            const val = (source[0] as any)[k];
+            return val === null || typeof val !== "object";
+          })
+        : []);
+    const cell = (val: any) => {
+      if (val === null || val === undefined) return "";
+      const s = String(val);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const csv = [keys.join(","), ...source.map((r) => keys.map((k) => cell((r as any)[k]).trim()).join(","))].join("\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${exportFileName ?? table}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -224,6 +257,10 @@ export function ResourceManager<T extends { id: string }>({
             const n = Number(String(v).replace(/\D/g, ""));
             currentValues[f.key] = Number.isNaN(n) ? null : n;
           }
+        } else if (currentValues[f.key] === "") {
+          // Empty optional dates / selects (incl. FK uuids) / text → null,
+          // so Postgres never receives "" for a date/uuid column.
+          currentValues[f.key] = null;
         }
       }
 
@@ -259,6 +296,11 @@ export function ResourceManager<T extends { id: string }>({
         action={
           <div className="flex items-center gap-2.5">
             {extraHeaderAction}
+            {enableExport && (
+              <Button onClick={exportCsv} size="sm" variant="secondary" disabled={filteredRows.length === 0}>
+                <Download className="h-4 w-4" /> {t("export")}
+              </Button>
+            )}
             <Button onClick={openCreate} size="sm" variant="accent">
               <Plus className="h-4 w-4" /> {effectiveAddLabel}
             </Button>

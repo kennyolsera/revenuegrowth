@@ -1,0 +1,3 @@
+store,url,last_trans_date,amount_pos_order,amount_online_order,total_online_order,count_delivery,amount_delivery,total_delivery,count_takeaway,amount_takeaway,total_takeaway,count_dinein,amount_dinein,total_dinein,count_reservation,amount_reservation,total_reservation,trans_fee_delivery,trans_fee_takeaway,trans_fee_dinein,trans_fee_reservation,total_fee
+Kopi Kenangan Grand Indonesia,https://order.example.com/kopi-gi,2026-08-25,15000000,8000000,23000000,120,4500000,4500000,80,2000000,2000000,200,9000000,9000000,10,1500000,1500000,90000,40000,180000,30000,340000
+Warung Padang Sederhana,https://order.example.com/padang,2026-08-24,9000000,3000000,12000000,60,1800000,1800000,40,900000,900000,110,4200000,4200000,5,600000,600000,36000,18000,84000,12000,150000
