@@ -7,6 +7,22 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password", "/auth/"];
 
 export async function middleware(request: NextRequest) {
+  // Email links can land on the wrong page: when the requested redirect URL isn't on
+  // Supabase's allowlist, Supabase falls back to the Site URL root (e.g. "/?code=…").
+  // Forward any such link to /auth/confirm instead of letting "/" bounce it to the
+  // dashboard and lose the code. The only PKCE links this app emails are password
+  // resets, so they continue to /reset-password unless the link says otherwise.
+  const { pathname, searchParams } = request.nextUrl;
+  if (
+    !pathname.startsWith("/auth/") &&
+    (searchParams.has("code") || (searchParams.has("token_hash") && searchParams.has("type")))
+  ) {
+    const confirm = new URL("/auth/confirm", request.url);
+    searchParams.forEach((value, key) => confirm.searchParams.set(key, value));
+    if (!confirm.searchParams.has("next")) confirm.searchParams.set("next", "/reset-password");
+    return NextResponse.redirect(confirm);
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
