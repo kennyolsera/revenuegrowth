@@ -799,3 +799,8 @@ alter table public.kanban_projects enable row level security;
 drop policy if exists "kanban_projects_internal_all" on public.kanban_projects;
 create policy "kanban_projects_internal_all" on public.kanban_projects
   for all using (public.is_internal()) with check (public.is_internal());
+
+-- Trigger functions: not callable via the API (same as migrations/20261026_kanban_trigger_fn_hardening.sql)
+revoke execute on function public.kanban_tasks_track() from public, anon, authenticated;
+revoke execute on function public.kanban_tasks_log_created() from public, anon, authenticated;
+revoke execute on function public.kanban_projects_touch() from public, anon, authenticated;
