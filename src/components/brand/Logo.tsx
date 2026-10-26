@@ -1,63 +1,115 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Brand mark: a flat "ledger + ascending step" glyph on the accent colour. No gradients or glow: it reads
- * as an instrument, not a marketing logo.
+ * ESMM brand mark (Ecosystem Solution & Merchant Monetization).
+ *
+ * Nine nodes on a 40-unit grid are the ecosystem; four links climb in steps to
+ * one filled node — revenue captured. Open rings are the ecosystem still to win.
+ * At 32 px and below the rings drop out and the strokes thicken (brand kit › Sizes).
+ *
+ * `tone`:
+ *  - "dark"  → dark mark for the page background: follows the theme
+ *              (Ink + Deep Mint in light mode, Paper + Signal Mint in dark mode).
+ *  - "light" → light mark for the Forest sidebar/rail (Paper + Signal Mint).
  */
-export function LogoMark({ className, size = 34 }: { className?: string; size?: number }) {
+type Tone = "light" | "dark";
+
+const COLORS: Record<Tone, { ink: string; node: string }> = {
+  dark: { ink: "rgb(var(--c-text))", node: "rgb(var(--c-accent))" },
+  light: { ink: "rgb(var(--c-rail-text))", node: "rgb(var(--c-rail-node))" },
+};
+
+export function LogoMark({
+  className,
+  size = 34,
+  tone = "dark",
+}: {
+  className?: string;
+  size?: number;
+  tone?: Tone;
+}) {
+  const { ink, node } = COLORS[tone];
+  const compact = size <= 32;
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 32 32"
+      viewBox="0 0 120 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={cn("shrink-0", className)}
       role="img"
-      aria-label="Revenue Growth"
+      aria-label="ESMM"
     >
-      {/* Flat accent tile (no gradient): follows the user's accent choice and theme */}
-      <rect x="1" y="1" width="30" height="30" rx="7" style={{ fill: "rgb(var(--c-accent))" }} />
-      {/* base ledger line */}
-      <rect x="7" y="22" width="18" height="2.2" rx="1.1" style={{ fill: "rgb(var(--c-on-accent) / 0.55)" }} />
-      {/* ascending steps */}
-      <rect x="8" y="16" width="4" height="6" rx="1" style={{ fill: "rgb(var(--c-on-accent) / 0.75)" }} />
-      <rect x="14" y="12" width="4" height="10" rx="1" style={{ fill: "rgb(var(--c-on-accent) / 0.75)" }} />
-      <rect x="20" y="7.5" width="4" height="14.5" rx="1" style={{ fill: "rgb(var(--c-on-accent))" }} />
+      {compact ? (
+        <>
+          <path
+            d="M20 100 H60 V60 H100 V24"
+            style={{ stroke: ink }}
+            strokeWidth={13}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="100" cy="20" r="19" style={{ fill: node }} />
+        </>
+      ) : (
+        <>
+          <g style={{ stroke: ink }} strokeOpacity={0.32} strokeWidth={3}>
+            <circle cx="20" cy="20" r="6" />
+            <circle cx="60" cy="20" r="6" />
+            <circle cx="20" cy="60" r="6" />
+            <circle cx="100" cy="100" r="6" />
+          </g>
+          <path
+            d="M20 100 H60 V60 H100 V24"
+            style={{ stroke: ink }}
+            strokeWidth={9}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="20" cy="100" r="9" style={{ fill: ink }} />
+          <circle cx="60" cy="100" r="7" style={{ fill: ink }} />
+          <circle cx="60" cy="60" r="7" style={{ fill: ink }} />
+          <circle cx="100" cy="60" r="7" style={{ fill: ink }} />
+          <circle cx="100" cy="20" r="15" style={{ fill: node }} />
+        </>
+      )}
     </svg>
   );
 }
 
-/** Full lockup: mark + wordmark. `tone` adapts text color to light/dark surfaces. */
+/** Full lockup: mark + "ESMM" wordmark + optional subtitle. */
 export function Logo({
   className,
   size = 32,
   tone = "dark",
-  subtitle = "VAS Operations",
+  subtitle = "Revenue Growth · VAS",
 }: {
   className?: string;
   size?: number;
-  tone?: "light" | "dark";
+  tone?: Tone;
   subtitle?: string | false;
 }) {
   return (
     <span className={cn("flex items-center gap-2.5", className)}>
-      <LogoMark size={size} />
+      <LogoMark size={size} tone={tone} />
       <span className="min-w-0 leading-tight">
         <span
           className={cn(
-            "block font-semibold tracking-tight",
-            size >= 36 ? "text-[15px]" : "text-[13.5px]",
-            tone === "light" ? "text-white" : "text-ink"
+            "block font-semibold",
+            size >= 36 ? "text-[19px]" : "text-[15px]",
+            tone === "light" ? "text-rail-text" : "text-text"
           )}
+          style={{ letterSpacing: "-0.04em" }}
         >
-          Revenue&nbsp;Growth
+          ESMM
         </span>
         {subtitle && (
           <span
             className={cn(
-              "label-mono block",
-              tone === "light" ? "text-slate-400" : "text-ink-muted"
+              "block font-mono text-[10.5px] tracking-[0.04em]",
+              tone === "light" ? "text-rail-muted" : "text-text-3"
             )}
           >
             {subtitle}

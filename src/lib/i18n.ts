@@ -3,7 +3,7 @@ export type Language = "id" | "en";
 export const translations = {
   id: {
     // Topbar & Layout
-    app_title: "Revenue Growth Dashboard",
+    app_title: "ESMM Dashboard",
     app_subtitle: "VAS Division Operations",
     search_placeholder: "Cari data, merchant, atau menu...",
     switch_language: "Bahasa",
@@ -348,7 +348,7 @@ export const translations = {
   },
   en: {
     // Topbar & Layout
-    app_title: "Revenue Growth Dashboard",
+    app_title: "ESMM Dashboard",
     app_subtitle: "VAS Division Operations",
     search_placeholder: "Search data, merchants, or menus...",
     switch_language: "Language",

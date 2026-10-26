@@ -27,22 +27,22 @@ export function Sidebar({
   };
 
   const content = (
-    <div className="relative flex h-full flex-col overflow-hidden bg-side text-text-2 border-r border-border">
+    <div className="relative flex h-full flex-col overflow-hidden bg-rail text-rail-text-2 border-r border-rail-line">
       {/* Brand Header */}
       <div
         className={cn(
-          "relative flex h-[46px] items-center px-3 transition-all",
+          "relative flex h-14 items-center px-3 transition-all",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
         <Link href="/dashboard" className={cn("flex items-center", isCollapsed && "justify-center")}>
-          {isCollapsed ? <LogoMark size={24} /> : <Logo tone="dark" size={24} subtitle={false} />}
+          {isCollapsed ? <LogoMark size={26} tone="light" /> : <Logo tone="light" size={26} subtitle="Revenue Growth · VAS" />}
         </Link>
 
         {/* Mobile close button */}
         <button
           onClick={handleClose}
-          className="rounded-md p-1.5 text-text-3 hover:bg-surface-3 hover:text-text lg:hidden"
+          className="rounded-md p-1.5 text-rail-muted hover:bg-rail-hover hover:text-rail-text lg:hidden"
           aria-label="Close menu"
         >
           <X className="h-4 w-4" />
@@ -58,9 +58,9 @@ export function Sidebar({
             <div key={group.id} className="space-y-px">
               {/* Group Section Header */}
               {!isCollapsed ? (
-                <div className="label-mono px-2 pb-1 pt-1 text-text-4">{groupTitle}</div>
+                <div className="label-mono px-2 pb-1 pt-1 text-rail-muted">{groupTitle}</div>
               ) : groupIdx > 0 ? (
-                <div className="mx-2 my-2 border-t border-border" />
+                <div className="mx-2 my-2 border-t border-rail-line" />
               ) : null}
 
               {/* Group Items */}
@@ -80,15 +80,15 @@ export function Sidebar({
                     className={cn(
                       "group relative flex h-[30px] items-center rounded-md px-2 text-sm transition-colors",
                       active
-                        ? "bg-surface text-text shadow-sm"
-                        : "text-text-2 hover:bg-surface-3 hover:text-text",
+                        ? "bg-rail-active text-rail-text"
+                        : "text-rail-text-2 hover:bg-rail-hover hover:text-rail-text",
                       isCollapsed && "h-9 justify-center px-2"
                     )}
                   >
                     <Icon
                       className={cn(
                         "shrink-0",
-                        active ? "text-text" : "text-text-3 group-hover:text-text-2",
+                        active ? "text-rail-node" : "text-rail-muted group-hover:text-rail-text-2",
                         isCollapsed ? "h-[18px] w-[18px]" : "mr-2 h-[15px] w-[15px]"
                       )}
                     />
@@ -115,20 +115,20 @@ export function Sidebar({
       {/* Footer Branding & Collapse Button */}
       <div
         className={cn(
-          "border-t border-border px-3 py-2 flex items-center",
+          "border-t border-rail-line px-3 py-2 flex items-center",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
         {!isCollapsed && (
           <div className="flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-status-success" />
-            <span className="text-xs text-text-3">v1.0 · VAS Live</span>
+            <span className="inline-block h-1.5 w-1.5 rounded-full bg-rail-node" />
+            <span className="text-xs text-rail-muted">v1.0 · VAS Live</span>
           </div>
         )}
         <button
           onClick={toggleCollapsed}
           title={isCollapsed ? t("expand_sidebar") : t("collapse_sidebar")}
-          className="hidden rounded-md p-1.5 text-text-3 transition-colors hover:bg-surface-3 hover:text-text lg:flex items-center justify-center"
+          className="hidden rounded-md p-1.5 text-rail-muted transition-colors hover:bg-rail-hover hover:text-rail-text lg:flex items-center justify-center"
         >
           {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
         </button>
