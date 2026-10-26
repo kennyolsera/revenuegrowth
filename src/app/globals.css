@@ -195,3 +195,13 @@
   transform: none !important;
   stroke-dashoffset: 0 !important;
 }
+
+/* Word preview (docx-preview, Data Leads): pages on the app's sunken ground */
+.docx-preview-host .docx-wrapper {
+  background: rgb(var(--c-sunken));
+  padding: 16px;
+}
+.docx-preview-host .docx-wrapper > section.docx {
+  box-shadow: var(--shadow-card);
+  margin-bottom: 16px;
+}
