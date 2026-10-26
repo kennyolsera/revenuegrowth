@@ -21,6 +21,7 @@ export const translations = {
 
     // Nav items
     nav_dashboard: "Dashboard",
+    nav_kanban: "Kanban Board",
     nav_calendar: "Calendar & Meeting",
     nav_mom: "MOM / Notulen",
     nav_qris: "Akuisisi QRIS",
@@ -251,6 +252,11 @@ export const translations = {
     cal_desc: "Kalender interaktif untuk menjadwalkan demo, onboarding, support, dan meeting tim.",
     cal_add: "Jadwal Baru",
 
+    // Kanban
+    kanban_title: "Kanban Board",
+    kanban_desc: "Alur kerja end-to-end tim: Backlog → To Do → Dikerjakan → Review → Selesai, lengkap dengan WIP limit, blocker, dan cycle time.",
+    kanban_add: "Kartu Baru",
+
     // MOM
     mom_title: "MOM / Notulen Meeting",
     mom_desc: "Dokumentasikan hasil meeting terstruktur, lengkap dengan poin bahasan, action item & PIC.",
@@ -331,6 +337,7 @@ export const translations = {
 
     // Nav items
     nav_dashboard: "Dashboard",
+    nav_kanban: "Kanban Board",
     nav_calendar: "Calendar & Meetings",
     nav_mom: "MOM Minutes",
     nav_qris: "QRIS Acquisition",
@@ -560,6 +567,11 @@ export const translations = {
     cal_title: "Calendar & Meeting Schedules",
     cal_desc: "Interactive schedule grid for demos, onboarding sessions, client meetings, and team briefings.",
     cal_add: "New Schedule",
+
+    // Kanban
+    kanban_title: "Kanban Board",
+    kanban_desc: "End-to-end team workflow: Backlog → To Do → In Progress → Review → Done, with WIP limits, blockers, and cycle time.",
+    kanban_add: "New Card",
 
     // MOM
     mom_title: "MOM / Meeting Minutes",

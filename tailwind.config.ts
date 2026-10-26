@@ -1,100 +1,93 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 /**
- * "Aurora" — bright, premium product-SaaS (Linear/Stripe-grade craft).
- * Petrol→azure brand gradient used with restraint, graphite neutrals, soft
- * layered shadows (never colored glow), generous radii. Semantic color stays
- * distinct from brand. See design-system memory.
+ * Every value points at a CSS variable from app/globals.css,
+ * so theme, accent and density switches never need a rebuild.
  */
+const v = (name: string) => `var(--${name})`;
+
 const config: Config = {
-  content: ["./src/**/*.{ts,tsx}"],
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
+    // Replace (not extend) colours so raw Tailwind palette hexes can't sneak in.
+    colors: {
+      transparent: 'transparent',
+      current: 'currentColor',
+      bg: v('bg'),
+      side: v('bg-side'),
+      surface: { DEFAULT: v('surface'), 2: v('surface-2'), 3: v('surface-3') },
+      sunken: v('sunken'),
+      border: { DEFAULT: v('border'), strong: v('border-strong') },
+      divider: v('divider'),
+      text: { DEFAULT: v('text'), 2: v('text-2'), 3: v('text-3'), 4: v('text-4') },
+      overlay: v('overlay'),
+      accent: { DEFAULT: v('accent'), soft: v('accent-soft'), line: v('accent-line'), on: v('on-accent') },
+      green: v('green'),
+      amber: v('amber'),
+      red: v('red'),
+      blue: v('blue'),
+      violet: v('violet'),
+      teal: v('teal'),
+      rose: v('rose'),
+      orange: v('orange'),
+      gray: v('gray'),
+      chart: { 1: v('chart-1'), 2: v('chart-2'), 3: v('chart-3'), 4: v('chart-4'), muted: v('chart-muted') },
+    },
+    fontFamily: {
+      sans: [v('font')],
+      mono: [v('mono')],
+    },
+    fontSize: {
+      '2xs': [v('fs-2xs'), { lineHeight: '1.3' }],
+      xs: [v('fs-xs'), { lineHeight: '1.3' }],
+      sm: [v('fs-sm'), { lineHeight: '1.45' }],
+      base: [v('fs'), { lineHeight: '1.45' }],
+      md: [v('fs-md'), { lineHeight: '1.4' }],
+      lg: [v('fs-lg'), { lineHeight: '1.3' }],
+      xl: [v('fs-xl'), { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+      stat: [v('fs-stat'), { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+      '2xl': [v('fs-2xl'), { lineHeight: '1.2', letterSpacing: '-0.022em' }],
+    },
+    fontWeight: {
+      normal: '400',
+      side: '450',
+      medium: '500',
+      semibold: '600',
+    },
+    borderRadius: {
+      none: '0',
+      xs: v('r-xs'),
+      sm: v('r-sm'),
+      DEFAULT: v('r'),
+      lg: v('r-lg'),
+      xl: v('r-xl'),
+      sheet: v('r-sheet'),
+      full: v('r-full'),
+    },
+    boxShadow: {
+      none: 'none',
+      sm: v('shadow-sm'),
+      card: v('shadow-card'),
+      pop: v('shadow-pop'),
+      drag: v('shadow-drag'),
+    },
     extend: {
-      colors: {
-        ink: {
-          DEFAULT: "#171A1F", // primary text
-          body: "#3A404A", // secondary text
-          muted: "#697280", // tertiary / captions
-          faint: "#98A0AC",
-        },
-        rail: {
-          DEFAULT: "#171A20", // sidebar ground
-          soft: "#1E232C",
-          line: "#2A3039",
-        },
-        // Petrol-blue brand accent (kept legacy keys mapped so nothing breaks)
-        accent: {
-          DEFAULT: "#1657A0", // petrol-azure, a touch brighter for the SaaS feel
-          strong: "#0F4680",
-          bright: "#2E7BD6", // gradient end / highlights
-          azure: "#2E7BD6",
-          dark: "#0F4680",
-          soft: "#E9F1FA",
-          light: "#F0F6FC",
-          line: "#C7DBEF",
-          violet: "#2E7BD6", // legacy alias → azure, never purple
-        },
-        cyan: {
-          data: "#0EA5C9", // secondary data-viz pop
-        },
-        surface: {
-          DEFAULT: "#FFFFFF",
-          canvas: "#F4F5F6",
-          muted: "#EFF1F3",
-          border: "#E4E6EB",
-        },
-        navy: {
-          DEFAULT: "#171A1F",
-          light: "#3A404A",
-          soft: "#EFF1F3",
-        },
-        status: {
-          draft: "#8A919C",
-          progress: "#134E7A",
-          success: "#15803D",
-          danger: "#B42318",
-          warning: "#B45309",
-        },
+      spacing: {
+        gutter: v('gutter'),
+        'h-xs': v('h-xs'),
+        'h-sm': v('h-sm'),
+        'h-md': v('h-md'),
+        'h-lg': v('h-lg'),
+        row: v('row-h'),
+        'side-row': v('side-row'),
+        side: v('side-w'),
+        topbar: v('topbar-h'),
       },
-      fontFamily: {
-        sans: ["var(--font-sans)", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-sans)", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-      },
-      boxShadow: {
-        // Soft, layered depth (Stripe-grade) — never a colored glow
-        xs: "0 1px 2px rgba(16, 24, 40, 0.05)",
-        card: "0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06)",
-        elevated: "0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 12px 28px -8px rgba(16, 24, 40, 0.14)",
-        lift: "0 2px 6px -2px rgba(16, 24, 40, 0.08), 0 8px 20px -6px rgba(16, 24, 40, 0.12)",
-        glow: "0 1px 2px rgba(16, 24, 40, 0.06)", // legacy alias → no colored glow
-      },
-      backgroundImage: {
-        "brand-gradient": "linear-gradient(135deg, #1657A0 0%, #2E7BD6 100%)",
-        "brand-sheen": "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0) 60%)",
-      },
-      borderRadius: {
-        DEFAULT: "0.5rem",
-        md: "0.5rem",
-        lg: "0.625rem",
-        xl: "0.75rem",
-        "2xl": "1rem",
-      },
-      keyframes: {
-        "fade-in": {
-          from: { opacity: "0", transform: "translateY(3px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        "fade-up": {
-          from: { opacity: "0", transform: "translateY(10px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        shimmer: { "100%": { transform: "translateX(100%)" } },
-        "draw-line": { from: { strokeDashoffset: "1" }, to: { strokeDashoffset: "0" } },
-      },
-      animation: {
-        "fade-in": "fade-in 0.18s ease-out forwards",
-        "fade-up": "fade-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+      transitionDuration: { DEFAULT: '140ms' },
+      transitionTimingFunction: {
+        DEFAULT: v('ease'),
+        spring: v('spring'),
+        drawer: v('ease-drawer'),
       },
     },
   },

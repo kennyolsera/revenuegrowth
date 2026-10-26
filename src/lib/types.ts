@@ -181,6 +181,52 @@ export interface MeetingMinute {
   created_at: string;
 }
 
+export type KanbanStage = "backlog" | "todo" | "in_progress" | "review" | "done";
+export type KanbanModule =
+  | "qris"
+  | "online_order"
+  | "financing"
+  | "network_partner"
+  | "commission"
+  | "request"
+  | "internal";
+export type KanbanSource = "manual" | "mom" | "request";
+
+export interface KanbanTask {
+  id: string;
+  title: string;
+  description: string | null;
+  stage: KanbanStage;
+  priority: RequestPriority;
+  module: KanbanModule;
+  assignee: string | null;
+  merchant_partner: string | null;
+  due_date: string | null;
+  checklist: { label: string; done: boolean }[];
+  position: number;
+  is_blocked: boolean;
+  blocked_reason: string | null;
+  source_type: KanbanSource;
+  source_id: string | null;
+  source_ref: number | null;
+  started_at: string | null;
+  completed_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface KanbanActivity {
+  id: string;
+  task_id: string;
+  kind: "created" | "moved" | "comment" | "blocked" | "unblocked";
+  from_stage: KanbanStage | null;
+  to_stage: KanbanStage | null;
+  body: string | null;
+  actor: string | null;
+  created_at: string;
+}
+
 export interface WeeklyReport {
   id: string;
   week_start: string;
