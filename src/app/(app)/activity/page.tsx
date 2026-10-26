@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, FileUp, ListChecks, Plus, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FileUp, ListChecks, Plus, RefreshCw, Search, X } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
-import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
-import { Toolbar } from "@/components/shared/Toolbar";
-import { DataTable, type ColumnDef } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/Button";
-import { Input, Label } from "@/components/ui/Input";
 import { isEventTypeColor } from "@/lib/calendar-event-types";
 import {
   OPTION_FIELDS,
@@ -17,11 +13,13 @@ import {
   type ActivityOption,
   type ActivityRecord,
   type OptionColumn,
+  type OptionField,
 } from "@/lib/activity";
-import { OptionChipSelect, chip } from "@/components/activity/options";
 import { ActivityDialog } from "@/components/activity/ActivityDialog";
 import { OptionsManager } from "@/components/activity/OptionsManager";
 import { ImportDialog } from "@/components/activity/ImportDialog";
+import { ActivityTable } from "@/components/activity/ActivityTable";
+import { FilterPill, StatusViews } from "@/components/activity/ActivityFilters";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
@@ -30,81 +28,110 @@ const PAGE = 100;
 const FETCH = 1000;
 const NONE = "__none__";
 
+type DatePreset = "" | "today" | "7d" | "30d" | "month" | "lastmonth" | "custom";
+
 const COPY = {
+  title: { id: "Catatan Aktivitas", en: "Activity Record" },
   desc: {
-    id: "Catatan aktivitas tim per toko: sumber data, scope, produk, status dan flagging support. Ubah chip langsung di baris.",
-    en: "The team's activity per store: data source, scope, product, status and support flag. Change a chip right in the row.",
+    id: "Aktivitas tim per toko. Ubah chip langsung di baris; klik baris untuk detail.",
+    en: "The team's activity per store. Change a chip right in the row; click a row for details.",
   },
   add: { id: "Aktivitas baru", en: "New activity" },
   import: { id: "Impor", en: "Import" },
   lists: { id: "Kelola daftar", en: "Edit lists" },
   refresh: { id: "Muat ulang", en: "Reload" },
   search: { id: "Cari toko, telepon, catatan…", en: "Search store, phone, notes…" },
+  clearSearch: { id: "Hapus pencarian", en: "Clear search" },
+  all: { id: "Semua", en: "All" },
+  none: { id: "(kosong)", en: "(empty)" },
+  noStatus: { id: "Tanpa status", en: "No status" },
+  statusViews: { id: "Tampilan status", en: "Status views" },
+  clear: { id: "Hapus", en: "Clear" },
+  clearAll: { id: "Hapus filter", en: "Clear filters" },
+  date: { id: "Tanggal", en: "Date" },
+  today: { id: "Hari ini", en: "Today" },
+  d7: { id: "7 hari terakhir", en: "Last 7 days" },
+  d30: { id: "30 hari terakhir", en: "Last 30 days" },
+  month: { id: "Bulan ini", en: "This month" },
+  lastmonth: { id: "Bulan lalu", en: "Last month" },
+  custom: { id: "Rentang…", en: "Custom range…" },
   from: { id: "Dari", en: "From" },
   to: { id: "Sampai", en: "To" },
-  none: { id: "(kosong)", en: "(empty)" },
-  count: { id: "{n} aktivitas", en: "{n} activities" },
-  of: { id: "dari {n}", en: "of {n}" },
+  records: { id: "{n} catatan", en: "{n} records" },
+  todayCount: { id: "{n} hari ini", en: "{n} today" },
+  updated: { id: "diperbarui {t}", en: "updated {t}" },
+  showing: { id: "Menampilkan {shown} dari {n}", en: "Showing {shown} of {n}" },
+  activities: { id: "{n} aktivitas", en: "{n} activities" },
   more: { id: "Tampilkan {n} lagi", en: "Show {n} more" },
-  date: { id: "TGL", en: "Date" },
-  store: { id: "Nama Toko", en: "Store" },
-  phone: { id: "No Telp", en: "Phone" },
-  notes: { id: "Catatan", en: "Notes" },
-  empty: { id: "Belum ada aktivitas. Tambah satu atau impor dari sheet tim.", en: "No activity yet. Add one or import the team sheet." },
-  noMatch: { id: "Tidak ada aktivitas yang cocok dengan filter.", en: "No activity matches these filters." },
-  loading: { id: "Memuat…", en: "Loading…" },
   missing: {
     id: "Menu ini belum aktif: tabel database activity_options dan activity_records belum dibuat (supabase/migrations/20261026_activity_record.sql).",
     en: "This menu isn't switched on yet: the activity_options and activity_records tables haven't been created (supabase/migrations/20261026_activity_record.sql).",
   },
   saveError: { id: "Gagal menyimpan", en: "Couldn't save" },
-  clear: { id: "Hapus filter", en: "Clear filters" },
-  openUrl: { id: "Buka URL toko", en: "Open store URL" },
+  kbdSearch: { id: "Tekan / untuk mencari", en: "Press / to search" },
 };
 
-function fmtDate(iso: string | null, language: "id" | "en") {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-").map(Number);
-  const dt = new Date(y, m - 1, d);
-  const sameYear = y === new Date().getFullYear();
-  return dt.toLocaleDateString(language === "id" ? "id-ID" : "en-GB", { day: "numeric", month: "short", ...(sameYear ? {} : { year: "numeric" }) });
+const pad = (n: number) => String(n).padStart(2, "0");
+const isoOf = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+function presetRange(p: DatePreset, from: string, to: string): [string, string] {
+  const now = new Date();
+  const today = isoOf(now);
+  const back = (n: number) => isoOf(new Date(now.getFullYear(), now.getMonth(), now.getDate() - n));
+  switch (p) {
+    case "today":
+      return [today, today];
+    case "7d":
+      return [back(6), today];
+    case "30d":
+      return [back(29), today];
+    case "month":
+      return [isoOf(new Date(now.getFullYear(), now.getMonth(), 1)), today];
+    case "lastmonth":
+      return [isoOf(new Date(now.getFullYear(), now.getMonth() - 1, 1)), isoOf(new Date(now.getFullYear(), now.getMonth(), 0))];
+    case "custom":
+      return [from, to];
+    default:
+      return ["", ""];
+  }
 }
 
-function safeHref(url: string) {
-  const u = url.trim();
-  if (/^https?:\/\//i.test(u)) return u;
-  if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(u)) return `https://${u}`;
-  return null; // never render javascript:, data: etc. as links
+function isTypingTarget(el: EventTarget | null) {
+  const t = el as HTMLElement | null;
+  return !!t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName));
 }
 
 export default function ActivityRecordPage() {
   const { language } = useLanguage();
   const toast = useToast();
+  const locale = language === "id" ? "id-ID" : "en-US";
   const c = (k: keyof typeof COPY, vars: Record<string, string | number> = {}) =>
     Object.entries(vars).reduce((s, [k2, v]) => s.replace(`{${k2}}`, String(v)), COPY[k][language]);
+  const fmt = (n: number) => n.toLocaleString(locale);
 
   const [options, setOptions] = useState<ActivityOption[]>([]);
   const [records, setRecords] = useState<ActivityRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [missing, setMissing] = useState(false);
+  const [loadedAt, setLoadedAt] = useState<Date | null>(null);
 
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const [dateFrom, setDateFrom] = useState("");
-  const [dateTo, setDateTo] = useState("");
+  const [filters, setFilters] = useState<Partial<Record<OptionField, string>>>({});
+  const [preset, setPreset] = useState<DatePreset>("");
+  const [customFrom, setCustomFrom] = useState("");
+  const [customTo, setCustomTo] = useState("");
   const [shown, setShown] = useState(PAGE);
+  const [flashId, setFlashId] = useState<string | null>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<ActivityRecord | null>(null);
   const [listsOpen, setListsOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   async function fetchOptions() {
-    const { data, error: err } = await createClient()
-      .from("activity_options")
-      .select("id, field, label, color, sort")
-      .order("sort", { ascending: true });
+    const { data, error: err } = await createClient().from("activity_options").select("id, field, label, color, sort").order("sort", { ascending: true });
     if (err) throw err;
     setOptions(((data ?? []) as any[]).map((o) => ({ ...o, color: isEventTypeColor(o.color) ? o.color : "gray" })));
   }
@@ -116,9 +143,7 @@ export default function ActivityRecordPage() {
     for (let from = 0; ; from += FETCH) {
       const { data, error: err } = await supabase
         .from("activity_records")
-        .select(
-          "id, activity_date, store_name, phone, store_url, subs_id, source_id, scope_id, product_id, status_id, flagging_id, notes, created_by, created_at, updated_at"
-        )
+        .select("id, activity_date, store_name, phone, store_url, subs_id, source_id, scope_id, product_id, status_id, flagging_id, notes, created_by, created_at, updated_at")
         .order("activity_date", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false })
         .order("id", { ascending: true })
@@ -128,13 +153,11 @@ export default function ActivityRecordPage() {
       if (!data || data.length < FETCH) break;
     }
     setRecords(all);
+    setLoadedAt(new Date());
   }
 
   async function load() {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
+    if (!isSupabaseConfigured) return setLoading(false);
     setLoading(true);
     setError(null);
     try {
@@ -153,6 +176,25 @@ export default function ActivityRecordPage() {
     load();
   }, []);
 
+  const anyDialog = dialogOpen || listsOpen || importOpen;
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (anyDialog || e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target)) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      } else if ((e.key === "n" || e.key === "N") && !missing) {
+        e.preventDefault();
+        setEditing(null);
+        setDialogOpen(true);
+      }
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [anyDialog, missing]);
+
+  const [dateFrom, dateTo] = presetRange(preset, customFrom, customTo);
+
   const usage = useMemo(() => {
     const m = new Map<string, number>();
     for (const r of records)
@@ -163,16 +205,13 @@ export default function ActivityRecordPage() {
     return m;
   }, [records]);
 
-  const optionById = useMemo(() => new Map(options.map((o) => [o.id, o])), [options]);
-
-  const filtered = useMemo(() => {
+  /** Every filter except status, so status views can show counts for the current slice. */
+  const beforeStatus = useMemo(() => {
     const q = search.trim().toLowerCase();
     return records.filter((r) => {
-      if (q) {
-        const hay = [r.store_name, r.phone, r.notes, r.store_url].join(" ").toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
+      if (q && ![r.store_name, r.phone, r.notes, r.store_url].join(" ").toLowerCase().includes(q)) return false;
       for (const f of OPTION_FIELDS) {
+        if (f.field === "status") continue;
         const want = filters[f.field];
         if (!want) continue;
         if (want === NONE ? r[f.column] !== null : r[f.column] !== want) return false;
@@ -183,18 +222,26 @@ export default function ActivityRecordPage() {
     });
   }, [records, search, filters, dateFrom, dateTo]);
 
-  useEffect(() => setShown(PAGE), [search, filters, dateFrom, dateTo]);
-
-  // Breakdown by status for the filtered rows (most used first).
-  const statusSummary = useMemo(() => {
+  const statusCounts = useMemo(() => {
     const m = new Map<string, number>();
-    for (const r of filtered) if (r.status_id) m.set(r.status_id, (m.get(r.status_id) ?? 0) + 1);
-    return [...m.entries()]
-      .map(([id, n]) => ({ o: optionById.get(id), n }))
-      .filter((x) => x.o)
-      .sort((a, b) => b.n - a.n)
-      .slice(0, 6);
-  }, [filtered, optionById]);
+    let none = 0;
+    for (const r of beforeStatus) {
+      if (r.status_id) m.set(r.status_id, (m.get(r.status_id) ?? 0) + 1);
+      else none++;
+    }
+    return { m, none };
+  }, [beforeStatus]);
+
+  const filtered = useMemo(() => {
+    const want = filters.status;
+    if (!want) return beforeStatus;
+    return beforeStatus.filter((r) => (want === NONE ? r.status_id === null : r.status_id === want));
+  }, [beforeStatus, filters.status]);
+
+  useEffect(() => setShown(PAGE), [search, filters, preset, customFrom, customTo]);
+
+  const todayIso = isoOf(new Date());
+  const todayCount = useMemo(() => records.filter((r) => r.activity_date === todayIso).length, [records, todayIso]);
 
   async function changeOption(row: ActivityRecord, column: OptionColumn, id: string | null) {
     const before = row[column];
@@ -204,175 +251,215 @@ export default function ActivityRecordPage() {
     if (err) {
       setRecords((rs) => rs.map((r) => (r.id === row.id ? { ...r, [column]: before } : r)));
       toast.error(`${COPY.saveError[language]}: ${err.message}`);
+      return;
     }
+    setFlashId(null);
+    requestAnimationFrame(() => setFlashId(row.id));
   }
 
-  const anyFilter = !!search || Object.values(filters).some(Boolean) || !!dateFrom || !!dateTo;
+  function clearAll() {
+    setSearch("");
+    setFilters({});
+    setPreset("");
+    setCustomFrom("");
+    setCustomTo("");
+  }
 
-  const columns: ColumnDef<ActivityRecord>[] = [
-    {
-      key: "activity_date",
-      label: COPY.date[language],
-      render: (r) => <span className="num whitespace-nowrap text-text-2">{fmtDate(r.activity_date, language)}</span>,
-    },
-    {
-      key: "store_name",
-      label: COPY.store[language],
-      render: (r) => {
-        const href = r.store_url ? safeHref(r.store_url) : null;
-        return (
-          <span className="flex min-w-[180px] max-w-[260px] items-center gap-1.5">
-            <span className="truncate font-medium text-text" title={r.store_name}>
-              {r.store_name}
-            </span>
-            {href && (
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                aria-label={`${COPY.openUrl[language]}: ${r.store_name}`}
-                title={r.store_url ?? ""}
-                className="shrink-0 rounded p-0.5 text-text-4 hover:text-accent"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
-            )}
-          </span>
-        );
-      },
-    },
-    { key: "phone", label: COPY.phone[language], render: (r) => <span className="num whitespace-nowrap text-text-2">{r.phone}</span> },
-    ...OPTION_FIELDS.map<ColumnDef<ActivityRecord>>((f) => ({
-      key: f.column,
-      label: f.label[language],
-      render: (r) => (
-        <OptionChipSelect
-          label={`${f.label[language]}: ${r.store_name}`}
-          value={r[f.column]}
-          options={optionsFor(options, f.field)}
-          onChange={(id) => changeOption(r, f.column, id)}
-        />
-      ),
-    })),
-    {
-      key: "notes",
-      label: COPY.notes[language],
-      render: (r) => (
-        <span className="block max-w-[240px] truncate text-text-2" title={r.notes ?? ""}>
-          {r.notes}
-        </span>
-      ),
-    },
+  const activeCount = Object.values(filters).filter(Boolean).length + (search ? 1 : 0) + (preset ? 1 : 0);
+  const statuses = optionsFor(options, "status");
+
+  const datePresetOptions: { value: DatePreset; label: string }[] = [
+    { value: "today", label: c("today") },
+    { value: "7d", label: c("d7") },
+    { value: "30d", label: c("d30") },
+    { value: "month", label: c("month") },
+    { value: "lastmonth", label: c("lastmonth") },
+    { value: "custom", label: c("custom") },
   ];
 
   return (
-    <div className="space-y-5">
-      <PageHeader
-        title={language === "id" ? "Catatan Aktivitas" : "Activity Record"}
-        description={COPY.desc[language]}
-        action={
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant="secondary" onClick={load} aria-label={COPY.refresh[language]} title={COPY.refresh[language]}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button size="sm" variant="secondary" disabled={missing} onClick={() => setImportOpen(true)}>
-              <FileUp className="h-4 w-4" /> {COPY.import[language]}
-            </Button>
-            <Button size="sm" variant="secondary" disabled={missing} onClick={() => setListsOpen(true)}>
-              <ListChecks className="h-4 w-4" /> {COPY.lists[language]}
-            </Button>
-            <Button
-              size="sm"
-              variant="accent"
-              disabled={missing}
-              onClick={() => {
-                setEditing(null);
-                setDialogOpen(true);
-              }}
-            >
-              <Plus className="h-4 w-4" /> {COPY.add[language]}
-            </Button>
-          </div>
-        }
-      />
+    <div className="space-y-4">
+      {/* Header: left-aligned title with a monospace meta line; actions on the right */}
+      <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-text">{c("title")}</h1>
+          <p className="mt-1 max-w-[65ch] text-[13px] text-text-3">{c("desc")}</p>
+          {!missing && !loading && (
+            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11.5px] text-text-3">
+              <span>{c("records", { n: fmt(records.length) })}</span>
+              <span aria-hidden className="text-text-4">/</span>
+              <span>{c("todayCount", { n: fmt(todayCount) })}</span>
+              {loadedAt && (
+                <>
+                  <span aria-hidden className="text-text-4">/</span>
+                  <span>{c("updated", { t: loadedAt.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" }) })}</span>
+                </>
+              )}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" variant="ghost" onClick={load} aria-label={c("refresh")} title={c("refresh")} className="active:scale-[0.98]">
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+          </Button>
+          <Button size="sm" variant="secondary" disabled={missing} onClick={() => setImportOpen(true)} className="active:scale-[0.98]">
+            <FileUp className="h-4 w-4" /> {c("import")}
+          </Button>
+          <Button size="sm" variant="secondary" disabled={missing} onClick={() => setListsOpen(true)} className="active:scale-[0.98]">
+            <ListChecks className="h-4 w-4" /> {c("lists")}
+          </Button>
+          <Button
+            size="sm"
+            variant="accent"
+            disabled={missing}
+            onClick={() => {
+              setEditing(null);
+              setDialogOpen(true);
+            }}
+            aria-keyshortcuts="n"
+            className="active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" /> {c("add")}
+            <kbd aria-hidden className="ml-1 hidden rounded border border-accent-on/30 px-1 font-mono text-[10px] leading-4 text-accent-on/80 sm:inline">N</kbd>
+          </Button>
+        </div>
+      </header>
 
       {!isSupabaseConfigured && <SupabaseNotice />}
       {isSupabaseConfigured && error && <ErrorNotice message={error} />}
       {missing && (
         <div role="status" className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          {COPY.missing[language]}
+          {c("missing")}
         </div>
       )}
 
       {!missing && (
         <>
-          <Toolbar
-            search={search}
-            onSearchChange={setSearch}
-            searchPlaceholder={COPY.search[language]}
-            filters={OPTION_FIELDS.map((f) => ({
-              key: f.field,
-              label: f.label[language],
-              options: [...optionsFor(options, f.field).map((o) => ({ value: o.id, label: o.label })), { value: NONE, label: COPY.none[language] }],
-            }))}
-            filterValues={filters}
-            onFilterChange={(k, v) => setFilters((p) => ({ ...p, [k]: v }))}
+          <StatusViews
+            statuses={statuses}
+            counts={statusCounts.m}
+            total={beforeStatus.length}
+            noneCount={statusCounts.none}
+            value={filters.status ?? ""}
+            onChange={(v) => setFilters((p) => ({ ...p, status: v }))}
+            allLabel={c("all")}
+            noneLabel={c("noStatus")}
+            groupLabel={c("statusViews")}
+            locale={locale}
           />
 
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="flex flex-wrap items-end gap-2">
-              <div>
-                <Label htmlFor="act-from">{COPY.from[language]}</Label>
-                <Input id="act-from" type="date" value={dateFrom} max={dateTo || undefined} onChange={(e) => setDateFrom(e.target.value)} className="w-40" />
-              </div>
-              <div>
-                <Label htmlFor="act-to">{COPY.to[language]}</Label>
-                <Input id="act-to" type="date" value={dateTo} min={dateFrom || undefined} onChange={(e) => setDateTo(e.target.value)} className="w-40" />
-              </div>
-              {anyFilter && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setSearch("");
-                    setFilters({});
-                    setDateFrom("");
-                    setDateTo("");
-                  }}
+          {/* Filter bar: search + pills, one line on desktop, wraps on small screens */}
+          <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
+            <label className="relative block w-full lg:w-72">
+              <span className="sr-only">{c("search")}</span>
+              <Search aria-hidden className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-4" />
+              <input
+                ref={searchRef}
+                aria-keyshortcuts="/"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={c("search")}
+                className="h-8 w-full rounded-md border border-border bg-surface pl-8 pr-14 text-[13px] text-text placeholder:text-text-4 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/25"
+              />
+              {search ? (
+                <button
+                  type="button"
+                  onClick={() => setSearch("")}
+                  aria-label={c("clearSearch")}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-text-4 hover:text-text"
                 >
-                  {COPY.clear[language]}
-                </Button>
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : (
+                <kbd aria-hidden title={c("kbdSearch")} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border border-border px-1.5 font-mono text-[10.5px] leading-4 text-text-4">
+                  /
+                </kbd>
+              )}
+            </label>
+
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+              {OPTION_FIELDS.filter((f) => f.field !== "status").map((f) => (
+                <FilterPill
+                  key={f.field}
+                  label={f.label[language]}
+                  value={filters[f.field] ?? ""}
+                  options={[...optionsFor(options, f.field).map((o) => ({ value: o.id, label: o.label })), { value: NONE, label: c("none") }]}
+                  onChange={(v) => setFilters((p) => ({ ...p, [f.field]: v }))}
+                  clearLabel={c("clear")}
+                  allLabel={c("all")}
+                />
+              ))}
+              <FilterPill
+                label={c("date")}
+                value={preset}
+                options={datePresetOptions}
+                onChange={(v) => setPreset(v as DatePreset)}
+                clearLabel={c("clear")}
+                allLabel={c("all")}
+              />
+              {preset === "custom" && (
+                <span className="inline-flex items-center gap-1 font-mono text-[12px] text-text-3">
+                  <input
+                    id="act-from"
+                    type="date"
+                    aria-label={c("from")}
+                    value={customFrom}
+                    max={customTo || undefined}
+                    onChange={(e) => setCustomFrom(e.target.value)}
+                    className="h-7 rounded-md border border-border bg-surface px-2 text-[12px] text-text focus:border-accent focus:outline-none"
+                  />
+                  <span aria-hidden>–</span>
+                  <input
+                    id="act-to"
+                    type="date"
+                    aria-label={c("to")}
+                    value={customTo}
+                    min={customFrom || undefined}
+                    onChange={(e) => setCustomTo(e.target.value)}
+                    className="h-7 rounded-md border border-border bg-surface px-2 text-[12px] text-text focus:border-accent focus:outline-none"
+                  />
+                </span>
+              )}
+              {activeCount > 0 && (
+                <button type="button" onClick={clearAll} className="h-7 whitespace-nowrap rounded-md px-2 text-[12px] font-medium text-text-3 hover:bg-surface-2 hover:text-text">
+                  {c("clearAll")}
+                </button>
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-text-3" aria-live="polite">
-              <span className="text-sm font-medium text-text">
-                {c("count", { n: filtered.length.toLocaleString(language === "id" ? "id-ID" : "en-US") })}
-              </span>
-              {anyFilter && <span>{c("of", { n: records.length.toLocaleString(language === "id" ? "id-ID" : "en-US") })}</span>}
-              {statusSummary.map(({ o, n }) => (
-                <span key={o!.id} className={cn("rounded-md px-1.5 py-0.5 font-semibold", chip(o!.color))}>
-                  {o!.label} <span className="num">{n}</span>
-                </span>
-              ))}
-            </div>
+
+            <p className="shrink-0 whitespace-nowrap font-mono text-[11.5px] text-text-3" aria-live="polite">
+              {c("activities", { n: fmt(filtered.length) })}
+            </p>
           </div>
 
-          <DataTable
-            columns={columns}
+          <ActivityTable
             rows={filtered.slice(0, shown)}
-            emptyText={loading ? COPY.loading[language] : records.length === 0 ? COPY.empty[language] : COPY.noMatch[language]}
-            onRowClick={(row) => {
-              setEditing(row);
+            options={options}
+            loading={loading}
+            totalRecords={records.length}
+            flashId={flashId}
+            language={language}
+            onOpen={(r) => {
+              setEditing(r);
               setDialogOpen(true);
             }}
+            onChangeOption={changeOption}
+            onImport={() => setImportOpen(true)}
+            onNew={() => {
+              setEditing(null);
+              setDialogOpen(true);
+            }}
+            onClearFilters={clearAll}
           />
 
-          {filtered.length > shown && (
-            <div className="flex justify-center">
-              <Button variant="secondary" size="sm" onClick={() => setShown((s) => s + PAGE)}>
-                {c("more", { n: Math.min(PAGE, filtered.length - shown) })}
-              </Button>
+          {!loading && filtered.length > 0 && (
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-mono text-[11.5px] text-text-3">{c("showing", { shown: fmt(Math.min(shown, filtered.length)), n: fmt(filtered.length) })}</p>
+              {filtered.length > shown && (
+                <Button variant="secondary" size="sm" onClick={() => setShown((s) => s + PAGE)} className="active:scale-[0.98]">
+                  {c("more", { n: Math.min(PAGE, filtered.length - shown) })}
+                </Button>
+              )}
             </div>
           )}
         </>

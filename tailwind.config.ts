@@ -202,6 +202,10 @@ const config: Config = {
         drawer: "var(--ease-drawer)",
       },
       keyframes: {
+        "row-flash": {
+          from: { backgroundColor: "rgb(var(--c-accent-soft))" },
+          to: { backgroundColor: "rgb(var(--c-surface))" },
+        },
         "fade-in": {
           from: { opacity: "0", transform: "translateY(3px)" },
           to: { opacity: "1", transform: "translateY(0)" },
@@ -215,6 +219,7 @@ const config: Config = {
       },
       animation: {
         "fade-in": "fade-in 0.18s var(--ease) forwards",
+        "row-flash": "row-flash 1.2s var(--ease)",
         "fade-up": "fade-up 0.36s var(--ease) forwards",
       },
     },

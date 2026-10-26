@@ -68,23 +68,31 @@ export function OptionChipSelect({
   const { language } = useLanguage();
   const current = options.find((o) => o.id === value);
   return (
-    // Explicit min-width from the label length so a tight table grows (and scrolls)
-    // instead of squashing the chip to "C…"; very long labels cap at 220px.
+    // The visible text sizes the chip exactly (no squashing, no empty tail); a
+    // transparent native <select> covers it, so keyboard and screen readers get the
+    // real control. The chevron appears only on row hover or focus, so a full
+    // table reads as data, not as a wall of dropdowns.
     <span
       className={cn(
-        "relative inline-flex items-center whitespace-nowrap rounded-md text-xs font-semibold",
-        current ? chip(current.color) : "border border-dashed border-border-strong text-text-4"
+        "group/chip relative inline-flex max-w-[240px] items-center whitespace-nowrap rounded-[5px] text-[11.5px] font-semibold leading-5 transition-colors focus-within:ring-2 focus-within:ring-accent/40",
+        current
+          ? chip(current.color)
+          : "border border-transparent text-text-4 group-hover/row:border-dashed group-hover/row:border-border-strong focus-within:border-dashed focus-within:border-border-strong"
       )}
-      style={{ minWidth: `min(220px, calc(${(current?.label ?? "—").length}ch + 2.25rem))`, maxWidth: 240 }}
+      title={current?.label}
     >
+      <span className="pointer-events-none truncate pl-2 pr-5">{current?.label ?? OPT_COPY.none[language]}</span>
+      <ChevronDown
+        aria-hidden
+        className="pointer-events-none absolute right-1.5 h-3 w-3 opacity-0 transition-opacity group-hover/row:opacity-60 group-focus-within/chip:opacity-80"
+      />
       <select
         aria-label={label}
         value={value ?? ""}
         disabled={disabled}
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => onChange(e.target.value || null)}
-        title={current?.label}
-        className="w-full min-w-0 cursor-pointer appearance-none truncate bg-transparent py-0.5 pl-2 pr-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 rounded-md disabled:cursor-default"
+        className="absolute inset-0 h-full w-full cursor-pointer appearance-none opacity-0 disabled:cursor-default"
       >
         <option value="">{OPT_COPY.none[language]}</option>
         {options.map((o) => (
@@ -93,7 +101,6 @@ export function OptionChipSelect({
           </option>
         ))}
       </select>
-      <ChevronDown aria-hidden className="pointer-events-none absolute right-1.5 h-3 w-3 opacity-70" />
     </span>
   );
 }
