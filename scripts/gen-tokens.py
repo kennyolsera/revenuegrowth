@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate src/styles/tokens.css from the DESIGN.md base colours (ESMM brand).
+Generate src/styles/tokens.css from the DESIGN.md base colours (ESMM brand, Olsera palette).
 
 Every colour is emitted as space-separated RGB channels ("29 28 26") so Tailwind
 opacity modifiers (bg-accent/10, ring-accent/40) keep working with CSS variables.
@@ -25,56 +25,59 @@ def ch(h):
 
 WHITE, BLACK = '#ffffff', '#000000'
 
-# ── ESMM brand (DESIGN.md › colors / colors-dark) ───────────────────────────
-# Light = warm Paper ground, white panels, Ink text. Dark = Forest Ink ground, Canopy-tinted panels.
+# ── ESMM brand on the Olsera palette (DESIGN.md › colors / colors-dark) ─────
+# Colours sampled from the Olsera logo (2026-10-26): wordmark Navy #16397B,
+# balloon Ocean #1393D1, Sky #10AAE2, Cyan #3AC7EA.
+# Light = cool Cloud ground, white panels, Navy Ink text. Dark = Night Navy ground.
 NEUTRAL = {
-    'light': dict(bg='#f3f1ea', side='#0d2620', surface='#ffffff', **{'surface-2': '#f5f3ee', 'surface-3': '#ece9e1'},
-                  sunken='#efece4', border='#e2ded4', **{'border-strong': '#d3cec1'}, divider='#ece8df',
-                  text='#10201b', **{'text-2': '#3e4e48', 'text-3': '#4f5e58', 'text-4': '#7a8781'}),
-    'dark': dict(bg='#0d2620', side='#0a1f1a', surface='#133229', **{'surface-2': '#18392f', 'surface-3': '#1f4237'},
-                 sunken='#0b211b', border='#24463b', **{'border-strong': '#2f5547'}, divider='#1a3a30',
-                 text='#f3f1ea', **{'text-2': '#c9d4cf', 'text-3': '#a9b8b1', 'text-4': '#7e8f88'}),
+    'light': dict(bg='#f4f7fb', side='#16397b', surface='#ffffff', **{'surface-2': '#f6f8fc', 'surface-3': '#ebf0f7'},
+                  sunken='#eef2f8', border='#dfe6f0', **{'border-strong': '#cad4e3'}, divider='#e8edf5',
+                  text='#0f1e3d', **{'text-2': '#3a4a66', 'text-3': '#4b5a75', 'text-4': '#77849b'}),
+    'dark': dict(bg='#0b1b3a', side='#0d2350', surface='#102449', **{'surface-2': '#142b54', 'surface-3': '#1a335f'},
+                 sunken='#091733', border='#213c69', **{'border-strong': '#2c4a7c'}, divider='#18305a',
+                 text='#f4f7fb', **{'text-2': '#c9d5e8', 'text-3': '#a7b6cf', 'text-4': '#7e8eaa'}),
 }
 
-# The sidebar ("rail") is Forest in BOTH modes (Kenny, 2026-10-26: option A).
+# The sidebar ("rail") is Olsera Navy in BOTH modes; the node is Balloon Cyan.
 RAIL = {
-    'light': {'rail': '#0d2620', 'rail-hover': '#173a30', 'rail-active': '#1f4a3d', 'rail-line': '#1f3d34',
-              'rail-text': '#f3f1ea', 'rail-text-2': '#c9d4cf', 'rail-muted': '#8fa39b', 'rail-node': '#3ddc97'},
-    'dark': {'rail': '#0a1f1a', 'rail-hover': '#143429', 'rail-active': '#1c4436', 'rail-line': '#183a30',
-             'rail-text': '#f3f1ea', 'rail-text-2': '#c9d4cf', 'rail-muted': '#8fa39b', 'rail-node': '#3ddc97'},
+    'light': {'rail': '#16397b', 'rail-hover': '#1d4588', 'rail-active': '#255297', 'rail-line': '#24488a',
+              'rail-text': '#ffffff', 'rail-text-2': '#d3def0', 'rail-muted': '#9db2d6', 'rail-node': '#3ac7ea'},
+    'dark': {'rail': '#0d2350', 'rail-hover': '#163066', 'rail-active': '#1e3b78', 'rail-line': '#1a3466',
+             'rail-text': '#ffffff', 'rail-text-2': '#d3def0', 'rail-muted': '#9db2d6', 'rail-node': '#3ac7ea'},
 }
 
-# Neutral scale used for slate/gray/zinc/neutral/stone (green-grey, warm).
+# Neutral scale used for slate/gray/zinc/neutral/stone (cool navy-grey).
 NSCALE = {
-    'light': {50: '#f5f3ee', 100: '#ece9e1', 200: '#e2ded4', 300: '#d3cec1', 400: '#7a8781', 500: '#4f5e58',
-              600: '#3e4e48', 700: '#2c3a35', 800: '#1c2a25', 900: '#10201b', 950: '#0a1612'},
-    'dark': {50: '#18392f', 100: '#1f4237', 200: '#24463b', 300: '#2f5547', 400: '#7e8f88', 500: '#a9b8b1',
-             600: '#c9d4cf', 700: '#dde4e0', 800: '#e9ede9', 900: '#f3f1ea', 950: '#faf9f5'},
+    'light': {50: '#f6f8fc', 100: '#ebf0f7', 200: '#dfe6f0', 300: '#cad4e3', 400: '#77849b', 500: '#4b5a75',
+              600: '#3a4a66', 700: '#283754', 800: '#1a2846', 900: '#0f1e3d', 950: '#091530'},
+    'dark': {50: '#142b54', 100: '#1a335f', 200: '#213c69', 300: '#2c4a7c', 400: '#7e8eaa', 500: '#a7b6cf',
+             600: '#c9d5e8', 700: '#dce4f1', 800: '#e9eef7', 900: '#f4f7fb', 950: '#fafcfe'},
 }
 
-HUES = {  # (light: darkened for AA text on paper/white, dark: lifted for forest)
+HUES = {  # (light: darkened for AA text on cloud/white, dark: lifted for night navy)
     'red': ('#b23c30', '#f08a7e'),
     'amber': ('#8a5a0c', '#e8bd5a'),
     'green': ('#1f6e45', '#5fd39a'),
-    'blue': ('#33669e', '#8fb4e0'),
+    'blue': ('#1c6aa8', '#8fc4f0'),
     'violet': ('#6b51a8', '#b8a2ee'),
     'teal': ('#1d6f72', '#6fcfd2'),
     'orange': ('#a65a26', '#e8a06c'),
     'rose': ('#b0405f', '#f09ab2'),
 }
 
-# One brand accent. Light: Deep Mint (paper text 5.2:1). Dark: Signal Mint (forest text 9:1).
-ACCENT_DEFAULT = 'esmm'
+# One brand accent. Light: Olsera Navy (white text 11:1). Dark: Balloon Cyan (navy text 8.5:1).
+ACCENT_DEFAULT = 'olsera'
 ACCENTS = {
-    'esmm': ('#0b7350', '#3ddc97'),
+    'olsera': ('#16397b', '#3ac7ea'),
 }
-ON_ACCENT = {'light': '#f3f1ea', 'dark': '#0d2620'}
-COPPER = {'light': '#c8743c', 'dark': '#e0965f'}
+ON_ACCENT = {'light': '#ffffff', 'dark': '#0b1b3a'}
+# Highlight (was Copper): Balloon Ocean / Sky. Graphics and marks only, never body text.
+HIGHLIGHT = {'light': '#1393d1', 'dark': '#10aae2'}
 
-# Charts: Deep Mint, Copper, Slate Blue, Sand (+ muted for "before"/target series).
+# Charts: Navy, Ocean, Amber (warm contrast), Slate Blue (+ muted for "before"/target series).
 CHARTS = {
-    'light': ['#0b7350', '#c8743c', '#3b6ea8', '#a88b3d', '#cfc9bb'],
-    'dark': ['#3ddc97', '#e0965f', '#8fb4e0', '#d4bc7a', '#3a5a4f'],
+    'light': ['#16397b', '#1393d1', '#c8862a', '#6b7fa3', '#cad4e3'],
+    'dark': ['#3ac7ea', '#8fb4f0', '#e8b05a', '#a7b6cf', '#2c4a7c'],
 }
 
 def hue_scale(base, mode):
@@ -113,22 +116,22 @@ def block(mode):
         out.append(f'  --c-{k}: {ch(v)};')
     for k, v in RAIL[mode].items():
         out.append(f'  --c-{k}: {ch(v)};')
-    out.append(f'  --c-copper: {ch(COPPER[mode])};')
+    out.append(f'  --c-highlight: {ch(HIGHLIGHT[mode])};')
     for i, v in enumerate(CHARTS[mode]):
         name = f'chart-{i + 1}' if i < 4 else 'chart-muted'
         out.append(f'  --{name}: rgb({ch(v)});')
     # Plain colour aliases for SVG/Recharts and inline styles.
-    for k in ['bg', 'surface', 'border', 'divider', 'text', 'text-2', 'text-3', 'text-4', 'accent', 'accent-soft', 'copper', 'rail', 'rail-node']:
+    for k in ['bg', 'surface', 'border', 'divider', 'text', 'text-2', 'text-3', 'text-4', 'accent', 'accent-soft', 'highlight', 'rail', 'rail-node']:
         out.append(f'  --{k}: rgb(var(--c-{k}));')
     for hue in HUES:
         out.append(f'  --{hue}: rgb(var(--c-{hue}));')
     if mode == 'light':
         out += [
-            '  --overlay: rgb(29 28 26 / 0.28);',
-            '  --shadow-sm: 0 1px 2px rgb(29 28 26 / 0.06);',
-            '  --shadow-card: 0 0 0 1px rgb(29 28 26 / 0.06), 0 1px 2px rgb(29 28 26 / 0.04);',
-            '  --shadow-pop: 0 0 0 1px rgb(29 28 26 / 0.06), 0 8px 24px rgb(29 28 26 / 0.12);',
-            '  --shadow-drag: 0 0 0 1px rgb(29 28 26 / 0.08), 0 16px 32px rgb(29 28 26 / 0.18);',
+            '  --overlay: rgb(15 30 61 / 0.28);',
+            '  --shadow-sm: 0 1px 2px rgb(15 30 61 / 0.06);',
+            '  --shadow-card: 0 0 0 1px rgb(15 30 61 / 0.06), 0 1px 2px rgb(15 30 61 / 0.04);',
+            '  --shadow-pop: 0 0 0 1px rgb(15 30 61 / 0.06), 0 8px 24px rgb(15 30 61 / 0.12);',
+            '  --shadow-drag: 0 0 0 1px rgb(15 30 61 / 0.08), 0 16px 32px rgb(15 30 61 / 0.18);',
             '  color-scheme: light;',
         ]
     else:

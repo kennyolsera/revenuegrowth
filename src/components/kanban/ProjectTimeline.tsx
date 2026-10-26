@@ -220,7 +220,7 @@ export function ProjectTimeline({
                       </div>
                       {/* today */}
                       {todayPos >= 0 && todayPos <= 1 && (
-                        <div aria-hidden className="absolute inset-y-0 w-px bg-copper" style={{ left: pct(todayPos) }} />
+                        <div aria-hidden className="absolute inset-y-0 w-px bg-highlight" style={{ left: pct(todayPos) }} />
                       )}
                       {visible ? (
                         <div

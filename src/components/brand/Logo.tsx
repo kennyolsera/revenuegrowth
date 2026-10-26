@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
  *
  * `tone`:
  *  - "dark"  → dark mark for the page background: follows the theme
- *              (Ink + Deep Mint in light mode, Paper + Signal Mint in dark mode).
- *  - "light" → light mark for the Forest sidebar/rail (Paper + Signal Mint).
+ *              (Navy Ink + Balloon Ocean in light mode, Cloud + Balloon Sky in dark mode).
+ *  - "light" → light mark for the Olsera Navy sidebar/rail (white + Balloon Cyan).
  */
 type Tone = "light" | "dark";
 
 const COLORS: Record<Tone, { ink: string; node: string }> = {
-  dark: { ink: "rgb(var(--c-text))", node: "rgb(var(--c-accent))" },
+  dark: { ink: "rgb(var(--c-text))", node: "rgb(var(--c-highlight))" },
   light: { ink: "rgb(var(--c-rail-text))", node: "rgb(var(--c-rail-node))" },
 };
 
