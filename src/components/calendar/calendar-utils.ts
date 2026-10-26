@@ -19,12 +19,4 @@ export function toDateInputValue(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-export const EVENT_TYPE_COLORS: Record<string, string> = {
-  demo: "bg-blue-50 text-accent border border-blue-200/60",
-  onboarding: "bg-emerald-50 text-status-success border border-emerald-200/60",
-  support: "bg-amber-50 text-amber-700 border border-amber-200/60",
-  internal: "bg-slate-100 text-slate-700 border border-slate-200",
-  lainnya: "bg-slate-100 text-slate-600 border border-slate-200",
-};
-
 export const DAY_LABELS = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];

@@ -13,7 +13,7 @@ import {
   Users,
   Activity,
   CreditCard,
-  SquareKanban,
+  GanttChart,
   type LucideIcon,
 } from "lucide-react";
 import type { TranslationKey } from "@/lib/i18n";
@@ -38,7 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
     titleKey: "nav_group_operations",
     items: [
       { href: "/dashboard", label: "Dashboard", translationKey: "nav_dashboard", icon: LayoutDashboard },
-      { href: "/kanban", label: "Kanban Board", translationKey: "nav_kanban", icon: SquareKanban },
+      { href: "/kanban", label: "Project Timeline", translationKey: "nav_kanban", icon: GanttChart },
       { href: "/calendar", label: "Calendar & Meetings", translationKey: "nav_calendar", icon: CalendarDays },
       { href: "/mom", label: "MOM Minutes", translationKey: "nav_mom", icon: NotebookPen },
     ],

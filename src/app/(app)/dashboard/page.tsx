@@ -10,7 +10,14 @@ import { GrowthChart, type GrowthPoint } from "@/components/dashboard/GrowthChar
 import { PipelineChart } from "@/components/dashboard/PipelineChart";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
-import { formatDate, formatRupiah } from "@/lib/utils";
+import { cn, formatDate, formatRupiah } from "@/lib/utils";
+import {
+  FALLBACK_EVENT_TYPES,
+  chipClass,
+  isEventTypeColor,
+  typeLabel,
+  type CalendarEventType,
+} from "@/lib/calendar-event-types";
 import { useLanguage } from "@/lib/LanguageContext";
 import Link from "next/link";
 
@@ -78,6 +85,18 @@ export default function DashboardPage() {
   const { t, language } = useLanguage();
   const [data, setData] = useState<DashboardData>(EMPTY);
   const [loading, setLoading] = useState(true);
+  const [eventTypes, setEventTypes] = useState<CalendarEventType[]>(FALLBACK_EVENT_TYPES);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    createClient()
+      .from("calendar_event_types")
+      .select("key, label, color, sort")
+      .then(({ data, error }) => {
+        if (error || !data) return; // table not migrated yet: keep the fixed list
+        setEventTypes(data.map((t: any) => ({ key: t.key, label: t.label, sort: t.sort ?? 100, color: isEventTypeColor(t.color) ? t.color : "gray" })));
+      });
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -264,7 +283,9 @@ export default function DashboardPage() {
                       <p className="truncate text-sm font-semibold text-slate-800">{a.title}</p>
                       <p className="text-xs text-slate-500 font-mono">{formatDate(a.start_time, true)}</p>
                     </div>
-                    <StatusBadge status={a.event_type} />
+                    <span className={cn("shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold", chipClass(eventTypes, a.event_type))}>
+                      {typeLabel(eventTypes, a.event_type)}
+                    </span>
                   </li>
                 ))}
               </ul>

@@ -71,7 +71,7 @@ export default function KanbanPage() {
   const [createStage, setCreateStage] = useState<KanbanStage>("backlog");
   const [importOpen, setImportOpen] = useState(false);
 
-  const [view, setView] = useState<"board" | "timeline">("board");
+  const [view, setView] = useState<"board" | "timeline">("timeline");
   const [projects, setProjects] = useState<KanbanProject[]>([]);
   const [projectCards, setProjectCards] = useState<ProjectCard[]>([]);
   /** null = still checking; false = migration not run yet (board works as before). */
@@ -347,8 +347,8 @@ export default function KanbanPage() {
 
       <div role="tablist" aria-label="View" className="inline-flex rounded-md bg-surface-3 p-0.5">
         {([
-          { key: "board", label: t("kanban_view_board"), icon: LayoutGrid },
           { key: "timeline", label: t("kanban_view_timeline"), icon: GanttChart },
+          { key: "board", label: t("kanban_view_board"), icon: LayoutGrid },
         ] as const).map((v) => (
           <button
             key={v.key}

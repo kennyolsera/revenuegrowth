@@ -1,6 +1,6 @@
-# Kanban Board — End-to-End Flow
+# Project Timeline (Kanban) — End-to-End Flow
 
-Menu: **Operations → Kanban Board** (`/kanban`).
+Menu: **Operations → Project Timeline** (`/kanban`). Opens on the timeline; the **Board** tab holds the Kanban columns.
 Tables: `kanban_tasks`, `kanban_task_activities` (see `supabase/schema.sql` §13).
 Rules live in `src/lib/kanban.ts`.
 
@@ -78,7 +78,7 @@ Clients can only add `comment` rows (enforced by RLS), so the history cannot be 
 
 ## 6. Projects & timeline
 
-Group cards into **projects** (an initiative with an owner, module, start and end date) and follow them on **Kanban → Project timeline**. Table: `kanban_projects`; cards link through `kanban_tasks.project_id` (see `supabase/migrations/20261026_kanban_projects.sql`, ADR-005). Rules live in `src/lib/kanban-projects.ts`.
+Group cards into **projects** (an initiative with an owner, module, start and end date) and follow them on **Project Timeline → Timeline**. Table: `kanban_projects`; cards link through `kanban_tasks.project_id` (see `supabase/migrations/20261026_kanban_projects.sql`, ADR-005). Rules live in `src/lib/kanban-projects.ts`.
 
 - **Create** with *New project* on the timeline. Add cards to it from the card dialog's **Project** field. When the board is filtered to a project, new cards start in that project.
 - **Progress** = Done cards ÷ all cards in the project, counted over all time (not just the 90-day board window).

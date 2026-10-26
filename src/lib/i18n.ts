@@ -21,7 +21,7 @@ export const translations = {
 
     // Nav items
     nav_dashboard: "Dashboard",
-    nav_kanban: "Kanban Board",
+    nav_kanban: "Project Timeline",
     nav_calendar: "Calendar & Meeting",
     nav_mom: "MOM / Notulen",
     nav_qris: "Akuisisi QRIS",
@@ -247,6 +247,12 @@ export const translations = {
     leads_col_status: "Status",
     leads_col_date: "Tanggal Upload",
     leads_preview: "Pratinjau",
+    leads_rename: "Ubah nama",
+    leads_rename_title: "Ubah nama file",
+    leads_rename_label: "Nama file",
+    leads_rename_hint: "Ekstensi {ext} tetap agar file tetap bisa dipratinjau dan dibuka.",
+    leads_rename_empty: "Nama file wajib diisi.",
+    leads_rename_done: "Nama file diubah menjadi \"{name}\"",
     leads_preview_loading: "Memuat pratinjau",
     leads_preview_error: "Pratinjau tidak bisa dibuka.",
     leads_preview_too_large: "File ini {size}, melebihi batas pratinjau 25 MB. Unduh untuk membukanya.",
@@ -271,8 +277,8 @@ export const translations = {
     cal_add: "Jadwal Baru",
 
     // Kanban
-    kanban_title: "Kanban Board",
-    kanban_desc: "Alur kerja end-to-end tim: Backlog → To Do → Dikerjakan → Review → Selesai, lengkap dengan WIP limit, blocker, dan cycle time.",
+    kanban_title: "Project Timeline",
+    kanban_desc: "Pantau progres proyek di timeline, lalu kelola kartunya di board: Backlog → To Do → Dikerjakan → Review → Selesai.",
     kanban_add: "Kartu Baru",
     proj_new: "Proyek baru",
     proj_edit: "Ubah proyek",
@@ -317,8 +323,11 @@ export const translations = {
     proj_filter_none: "Tanpa proyek",
     proj_field: "Proyek",
     proj_none: "— Tanpa proyek —",
+    proj_new_inline: "+ Proyek baru…",
+    proj_new_inline_hint: "Proyek dibuat saat kartu disimpan. Detail lain bisa dilengkapi nanti di timeline.",
+    proj_existing_linked: "Proyek \"{name}\" sudah ada, kartu ditautkan ke proyek itu.",
     kanban_view_board: "Board",
-    kanban_view_timeline: "Timeline proyek",
+    kanban_view_timeline: "Timeline",
 
     // MOM
     mom_title: "MOM / Notulen Meeting",
@@ -429,7 +438,7 @@ export const translations = {
 
     // Nav items
     nav_dashboard: "Dashboard",
-    nav_kanban: "Kanban Board",
+    nav_kanban: "Project Timeline",
     nav_calendar: "Calendar & Meetings",
     nav_mom: "MOM Minutes",
     nav_qris: "QRIS Acquisition",
@@ -655,6 +664,12 @@ export const translations = {
     leads_col_status: "Status",
     leads_col_date: "Upload Date",
     leads_preview: "Preview",
+    leads_rename: "Rename",
+    leads_rename_title: "Rename file",
+    leads_rename_label: "File name",
+    leads_rename_hint: "The {ext} extension stays so the file can still be previewed and opened.",
+    leads_rename_empty: "Enter a file name.",
+    leads_rename_done: "File renamed to \"{name}\"",
     leads_preview_loading: "Loading preview",
     leads_preview_error: "The preview couldn't be opened.",
     leads_preview_too_large: "This file is {size}, over the 25 MB preview limit. Download it to open.",
@@ -679,8 +694,8 @@ export const translations = {
     cal_add: "New Schedule",
 
     // Kanban
-    kanban_title: "Kanban Board",
-    kanban_desc: "End-to-end team workflow: Backlog → To Do → In Progress → Review → Done, with WIP limits, blockers, and cycle time.",
+    kanban_title: "Project Timeline",
+    kanban_desc: "Track project progress on the timeline, then work the cards on the board: Backlog → To Do → In Progress → Review → Done.",
     kanban_add: "New Card",
     proj_new: "New project",
     proj_edit: "Edit project",
@@ -725,8 +740,11 @@ export const translations = {
     proj_filter_none: "No project",
     proj_field: "Project",
     proj_none: "— No project —",
+    proj_new_inline: "+ New project…",
+    proj_new_inline_hint: "The project is created when you save the card. Fill in the rest later on the timeline.",
+    proj_existing_linked: "Project \"{name}\" already exists, so the card was linked to it.",
     kanban_view_board: "Board",
-    kanban_view_timeline: "Project timeline",
+    kanban_view_timeline: "Timeline",
 
     // MOM
     mom_title: "MOM / Meeting Minutes",

@@ -8,10 +8,18 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
-import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
+import { Field, Input, Label, Textarea } from "@/components/ui/Input";
 import { useMerchantOptions } from "@/lib/hooks/useMerchantOptions";
 import { MerchantSelectField, resolveMerchantId } from "@/components/shared/MerchantSelectField";
-import { EVENT_TYPE_COLORS, getMonthGrid, isSameDay, toDateInputValue } from "@/components/calendar/calendar-utils";
+import { getMonthGrid, isSameDay, toDateInputValue } from "@/components/calendar/calendar-utils";
+import { EventTypeField } from "@/components/calendar/EventTypeField";
+import {
+  FALLBACK_EVENT_TYPES,
+  chipClass,
+  isEventTypeColor,
+  isMissingTable,
+  type CalendarEventType,
+} from "@/lib/calendar-event-types";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
@@ -48,13 +56,31 @@ export default function CalendarPage() {
   const toast = useToast();
   const merchantOptions = useMerchantOptions();
 
-  const EVENT_TYPES = [
-    { value: "demo", label: "Demo" },
-    { value: "onboarding", label: "Onboarding" },
-    { value: "support", label: "Support" },
-    { value: "internal", label: language === "id" ? "Internal" : "Internal Briefing" },
-    { value: "lainnya", label: language === "id" ? "Lainnya" : "Other" },
-  ];
+  const [eventTypes, setEventTypes] = useState<CalendarEventType[]>(FALLBACK_EVENT_TYPES);
+  const [typesEditable, setTypesEditable] = useState(false);
+
+  async function fetchEventTypes() {
+    if (!isSupabaseConfigured) return;
+    const { data, error } = await createClient()
+      .from("calendar_event_types")
+      .select("key, label, color, sort")
+      .order("sort", { ascending: true })
+      .order("label", { ascending: true });
+    if (error) {
+      // Table not migrated yet: keep the fixed list, read-only.
+      if (!isMissingTable(error)) console.warn("calendar_event_types:", error.message);
+      setTypesEditable(false);
+      return;
+    }
+    setEventTypes(
+      (data ?? []).map((t: any) => ({ key: t.key, label: t.label, sort: t.sort ?? 100, color: isEventTypeColor(t.color) ? t.color : "gray" }))
+    );
+    setTypesEditable(true);
+  }
+
+  useEffect(() => {
+    fetchEventTypes();
+  }, []);
 
   const monthNames = language === "id" ? MONTH_NAMES_ID : MONTH_NAMES_EN;
   const dayLabels = language === "id" ? DAY_LABELS_ID : DAY_LABELS_EN;
@@ -99,7 +125,7 @@ export default function CalendarPage() {
 
   function openCreateAt(date: Date) {
     setEditingId(null);
-    setForm({ ...emptyForm, date: toDateInputValue(date) });
+    setForm({ ...emptyForm, event_type: eventTypes[0]?.key ?? "demo", date: toDateInputValue(date) });
     setDialogOpen(true);
   }
 
@@ -267,7 +293,7 @@ export default function CalendarPage() {
                       }}
                       className={cn(
                         "block w-full truncate rounded-lg px-2 py-0.5 text-left text-[11px] font-semibold transition-transform hover:scale-[1.02] shadow-2xs",
-                        EVENT_TYPE_COLORS[ev.event_type]
+                        chipClass(eventTypes, ev.event_type)
                       )}
                     >
                       {ev.title}
@@ -302,16 +328,16 @@ export default function CalendarPage() {
             />
           </Field>
           <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
-            <Field>
-              <Label>{language === "id" ? "Tipe Aktivitas" : "Activity Type"}</Label>
-              <Select value={form.event_type} onChange={(e) => setForm((p) => ({ ...p, event_type: e.target.value }))}>
-                {EVENT_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+            <EventTypeField
+              value={form.event_type}
+              onChange={(key) => setForm((p) => ({ ...p, event_type: key }))}
+              types={eventTypes}
+              editable={typesEditable}
+              onTypesChanged={async () => {
+                await fetchEventTypes();
+                await fetchEvents();
+              }}
+            />
             <Field>
               <MerchantSelectField
                 label={language === "id" ? "Merchant Terkait" : "Associated Merchant"}
@@ -336,8 +362,8 @@ export default function CalendarPage() {
               <Input value={form.organizer} onChange={(e) => setForm((p) => ({ ...p, organizer: e.target.value }))} placeholder="Nama PIC" />
             </Field>
             <Field>
-              <Label>{language === "id" ? "Tautan Online Meeting" : "Online Meeting Link"}</Label>
-              <Input value={form.meeting_link} onChange={(e) => setForm((p) => ({ ...p, meeting_link: e.target.value }))} placeholder="https://meet.google.com/..." />
+              <Label htmlFor="event-url">URL</Label>
+              <Input id="event-url" inputMode="url" value={form.meeting_link} onChange={(e) => setForm((p) => ({ ...p, meeting_link: e.target.value }))} placeholder="https://meet.google.com/..." />
             </Field>
           </div>
           <Field>

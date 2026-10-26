@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import { UploadCloud, Download, CheckCircle2, Eye } from "lucide-react";
+import { UploadCloud, Download, CheckCircle2, Eye, Pencil } from "lucide-react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -10,13 +10,14 @@ import { Toolbar } from "@/components/shared/Toolbar";
 import { DataTable, type ColumnDef } from "@/components/shared/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
-import { Field, Label, Select } from "@/components/ui/Input";
+import { Field, Input, Label, Select } from "@/components/ui/Input";
 import { StatusBadge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 import { FilePreview, KIND_ICON } from "@/components/leads/FilePreview";
 import { fileKind, isAcceptedLeadsFile, LEADS_ACCEPT, LEADS_MAX_BYTES } from "@/lib/files/fileKind";
+import { cleanBaseName, MAX_BASE_LENGTH, splitFileName } from "@/lib/files/rename";
 
 const BUCKET = "leads-raw";
 
@@ -44,6 +45,35 @@ export default function LeadsPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [previewRow, setPreviewRow] = useState<any | null>(null);
+  const [renameRow, setRenameRow] = useState<any | null>(null);
+  const [renameBase, setRenameBase] = useState("");
+  const [renaming, setRenaming] = useState(false);
+  const [renameError, setRenameError] = useState<string | null>(null);
+
+  function openRename(row: any) {
+    setRenameRow(row);
+    setRenameBase(splitFileName(row.file_name ?? "").base);
+    setRenameError(null);
+  }
+
+  async function handleRename(e: React.FormEvent) {
+    e.preventDefault();
+    if (!renameRow) return;
+    const { ext } = splitFileName(renameRow.file_name ?? "");
+    const base = cleanBaseName(renameBase);
+    if (!base) return setRenameError(t("leads_rename_empty"));
+    const next = `${base}${ext}`;
+    if (next === renameRow.file_name) return setRenameRow(null);
+    setRenaming(true);
+    // Only the display name changes; the storage object keeps its path.
+    const { error } = await createClient().from("leads_raw_data").update({ file_name: next }).eq("id", renameRow.id);
+    setRenaming(false);
+    if (error) return setRenameError(`${t("save_error")}: ${error.message}`);
+    setRows((rs) => rs.map((r) => (r.id === renameRow.id ? { ...r, file_name: next } : r)));
+    setPreviewRow((p: any) => (p && p.id === renameRow.id ? { ...p, file_name: next } : p));
+    toast.success(t("leads_rename_done").replace("{name}", next));
+    setRenameRow(null);
+  }
 
   async function fetchRows() {
     setLoading(true);
@@ -140,7 +170,10 @@ export default function LeadsPage() {
 
   async function handleDownload(row: any) {
     const supabase = createClient();
-    const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(row.storage_path, 60);
+    const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(row.storage_path, 60, {
+      // Save under the current (possibly renamed) name, not the stored object name.
+      download: row.file_name || true,
+    });
     if (error || !data) {
       toast.error(language === "id" ? "Gagal membuat link unduhan." : "Failed to create download link.");
       return;
@@ -223,6 +256,14 @@ export default function LeadsPage() {
               <Eye className="h-4 w-4" />
             </button>
             <button
+              onClick={() => openRename(row)}
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-accent transition-colors"
+              title={t("leads_rename")}
+              aria-label={`${t("leads_rename")}: ${row.file_name}`}
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
               onClick={() => handleDownload(row)}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-accent transition-colors"
               title={t("download")}
@@ -284,6 +325,53 @@ export default function LeadsPage() {
             </Button>
           </div>
         </form>
+      </Dialog>
+
+      <Dialog open={!!renameRow} onClose={() => setRenameRow(null)} title={t("leads_rename_title")}>
+        {renameRow && (
+          <form onSubmit={handleRename} noValidate>
+            <Field>
+              <Label htmlFor="lead-rename">{t("leads_rename_label")}</Label>
+              <div className="flex items-stretch">
+                <Input
+                  id="lead-rename"
+                  autoFocus
+                  maxLength={MAX_BASE_LENGTH}
+                  value={renameBase}
+                  onChange={(e) => {
+                    setRenameBase(e.target.value);
+                    setRenameError(null);
+                  }}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className={splitFileName(renameRow.file_name ?? "").ext ? "rounded-r-none" : undefined}
+                />
+                {splitFileName(renameRow.file_name ?? "").ext && (
+                  <span className="num inline-flex items-center rounded-r-md border border-l-0 border-border bg-surface-2 px-3 text-sm text-text-3">
+                    {splitFileName(renameRow.file_name ?? "").ext}
+                  </span>
+                )}
+              </div>
+              {splitFileName(renameRow.file_name ?? "").ext && (
+                <p className="mt-1.5 text-xs text-text-3">
+                  {t("leads_rename_hint").replace("{ext}", splitFileName(renameRow.file_name ?? "").ext)}
+                </p>
+              )}
+            </Field>
+            {renameError && (
+              <p role="alert" className="mb-3 text-xs text-red">
+                {renameError}
+              </p>
+            )}
+            <div className="mt-2 flex justify-end gap-2.5 border-t border-divider pt-4">
+              <Button type="button" variant="secondary" onClick={() => setRenameRow(null)}>
+                {t("cancel")}
+              </Button>
+              <Button type="submit" variant="accent" loading={renaming}>
+                {t("save")}
+              </Button>
+            </div>
+          </form>
+        )}
       </Dialog>
 
       {previewRow && (

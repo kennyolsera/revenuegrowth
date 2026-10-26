@@ -144,7 +144,8 @@ export interface LeadRawData {
   created_at: string;
 }
 
-export type CalendarEventType = "demo" | "onboarding" | "support" | "internal" | "lainnya";
+/** Key into calendar_event_types (ADR-006); the five original keys are seeded. */
+export type CalendarEventType = string;
 
 export interface CalendarEvent {
   id: string;

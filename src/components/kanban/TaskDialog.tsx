@@ -15,13 +15,23 @@ import {
   syncSourceOnDone,
   syncSourceOnStart,
   validateMove,
+  todayISO,
 } from "@/lib/kanban";
+import { addMonths } from "@/lib/kanban-projects";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 import type { KanbanActivity, KanbanProject, KanbanStage, KanbanTask } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
 
 type ChecklistItem = { label: string; done: boolean };
+
+/** Select value for "+ New project…": the project is created on save. */
+const NEW_PROJECT = "__new__";
+
+function emptyNewProject() {
+  const start = todayISO();
+  return { name: "", start_date: start, end_date: addMonths(start, 1) };
+}
 
 const emptyForm = {
   title: "",
@@ -71,12 +81,15 @@ export function TaskDialog({
   const [activities, setActivities] = useState<KanbanActivity[]>([]);
   const [comment, setComment] = useState("");
   const [posting, setPosting] = useState(false);
+  const [newProject, setNewProject] = useState(emptyNewProject);
+  const creatingProject = form.project_id === NEW_PROJECT;
 
   useEffect(() => {
     if (!open) return;
     setTab("details");
     setNewItem("");
     setComment("");
+    setNewProject(emptyNewProject());
     if (task) {
       setForm({
         title: task.title,
@@ -125,8 +138,15 @@ export function TaskDialog({
       checklist: items,
       is_blocked: form.is_blocked,
       blocked_reason: form.is_blocked ? form.blocked_reason || null : null,
-      ...(projects ? { project_id: form.project_id || null } : {}),
+      ...(projects ? { project_id: (creatingProject ? null : form.project_id) || null } : {}),
     };
+
+    const newName = newProject.name.trim();
+    if (creatingProject) {
+      if (!newName) return toast.error(t("proj_err_name"));
+      if (!newProject.start_date || !newProject.end_date) return toast.error(t("proj_err_dates"));
+      if (newProject.end_date < newProject.start_date) return toast.error(t("proj_err_end_before_start"));
+    }
 
     // Same gates as drag & drop, evaluated against the edited values.
     const stageChanged = !task || task.stage !== form.stage;
@@ -142,6 +162,34 @@ export function TaskDialog({
     setSaving(true);
     try {
       const supabase = createClient();
+      if (creatingProject && projects) {
+        // Reuse a project with the same name instead of creating a duplicate.
+        const existing = projects.find((p) => p.name.trim().toLowerCase() === newName.toLowerCase());
+        if (existing) {
+          payload.project_id = existing.id;
+          toast.success(t("proj_existing_linked").replace("{name}", existing.name));
+        } else {
+          const { data: userRes } = await supabase.auth.getUser();
+          const { data: proj, error: projErr } = await supabase
+            .from("kanban_projects")
+            .insert({
+              name: newName,
+              module: form.module,
+              owner: form.assignee.trim() || null,
+              start_date: newProject.start_date,
+              end_date: newProject.end_date,
+              status: "active",
+              created_by: userRes.user?.email ?? null,
+            })
+            .select("id")
+            .single();
+          if (projErr) throw projErr;
+          payload.project_id = proj.id;
+          toast.success(t("proj_toast_created").replace("{name}", newName));
+          // Later failures must not create the project twice on retry.
+          setForm((f) => ({ ...f, project_id: proj.id }));
+        }
+      }
       let saved: KanbanTask;
       if (task) {
         const { data, error } = await supabase
@@ -326,7 +374,18 @@ export function TaskDialog({
               <Select
                 id="task-project"
                 value={form.project_id}
-                onChange={(e) => setForm((p) => ({ ...p, project_id: e.target.value }))}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setForm((p) => ({ ...p, project_id: v }));
+                  if (v === NEW_PROJECT && form.due_date) {
+                    // Make the default window cover the card's due date.
+                    setNewProject((np) => ({
+                      ...np,
+                      end_date: form.due_date > np.end_date ? form.due_date : np.end_date,
+                      start_date: form.due_date < np.start_date ? form.due_date : np.start_date,
+                    }));
+                  }
+                }}
               >
                 <option value="">{t("proj_none")}</option>
                 {projects.map((p) => (
@@ -334,7 +393,45 @@ export function TaskDialog({
                     {p.name}
                   </option>
                 ))}
+                <option value={NEW_PROJECT}>{t("proj_new_inline")}</option>
               </Select>
+              {creatingProject && (
+                <div className="mt-2 space-y-3 rounded-md border border-border bg-surface-2 p-3">
+                  <div>
+                    <Label htmlFor="task-new-project-name">{t("proj_name")}</Label>
+                    <Input
+                      id="task-new-project-name"
+                      autoFocus
+                      maxLength={160}
+                      value={newProject.name}
+                      placeholder={id ? "mis. Onboarding partner Bank X" : "e.g. Bank X partner onboarding"}
+                      onChange={(e) => setNewProject((np) => ({ ...np, name: e.target.value }))}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="task-new-project-start">{t("proj_start")}</Label>
+                      <Input
+                        id="task-new-project-start"
+                        type="date"
+                        value={newProject.start_date}
+                        onChange={(e) => setNewProject((np) => ({ ...np, start_date: e.target.value }))}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="task-new-project-end">{t("proj_end")}</Label>
+                      <Input
+                        id="task-new-project-end"
+                        type="date"
+                        min={newProject.start_date}
+                        value={newProject.end_date}
+                        onChange={(e) => setNewProject((np) => ({ ...np, end_date: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-text-3">{t("proj_new_inline_hint")}</p>
+                </div>
+              )}
               {(() => {
                 const proj = projects.find((p) => p.id === form.project_id);
                 if (!proj || !form.due_date) return null;
