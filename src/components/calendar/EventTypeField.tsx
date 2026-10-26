@@ -51,7 +51,7 @@ const COPY = {
   deleted: { id: "Tipe \"{name}\" dihapus", en: "Type \"{name}\" deleted" },
 } satisfies Record<string, Copy>;
 
-function ColourPicker({
+export function ColourPicker({
   value,
   onChange,
   idPrefix,

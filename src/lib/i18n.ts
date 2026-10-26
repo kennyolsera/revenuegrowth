@@ -22,6 +22,7 @@ export const translations = {
     // Nav items
     nav_dashboard: "Dashboard",
     nav_kanban: "Project Timeline",
+    nav_activity: "Catatan Aktivitas",
     nav_calendar: "Calendar & Meeting",
     nav_mom: "MOM / Notulen",
     nav_qris: "Akuisisi QRIS",
@@ -439,6 +440,7 @@ export const translations = {
     // Nav items
     nav_dashboard: "Dashboard",
     nav_kanban: "Project Timeline",
+    nav_activity: "Activity Record",
     nav_calendar: "Calendar & Meetings",
     nav_mom: "MOM Minutes",
     nav_qris: "QRIS Acquisition",
