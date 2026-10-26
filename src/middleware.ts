@@ -1,7 +1,10 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login"];
+// Pages reachable without a session. /reset-password is public because invite
+// links may carry the session in the URL hash, which only the browser can read;
+// the page itself shows "link expired" when no session can be established.
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password", "/auth/"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request: { headers: request.headers } });

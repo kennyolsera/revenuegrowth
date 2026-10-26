@@ -67,8 +67,12 @@ export async function POST(request: NextRequest) {
 
   const admin = createClient(url, serviceKey);
 
+  // Invite link lands on the set-password page (ADR-002). Supabase only honours
+  // redirect URLs on its allowlist, so a spoofed Host header can't redirect elsewhere.
+  const next = encodeURIComponent("/reset-password?mode=invite");
   const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
     data: { full_name, role, division },
+    redirectTo: `${request.nextUrl.origin}/auth/confirm?next=${next}`,
   });
 
   if (error) {
