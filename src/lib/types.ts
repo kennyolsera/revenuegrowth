@@ -214,6 +214,24 @@ export interface KanbanTask {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  /** Present once the kanban_projects migration has run (ADR-005). */
+  project_id?: string | null;
+}
+
+export type KanbanProjectStatus = "planning" | "active" | "on_hold" | "done" | "cancelled";
+
+export interface KanbanProject {
+  id: string;
+  name: string;
+  description: string | null;
+  owner: string | null;
+  module: KanbanModule;
+  start_date: string;
+  end_date: string;
+  status: KanbanProjectStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface KanbanActivity {

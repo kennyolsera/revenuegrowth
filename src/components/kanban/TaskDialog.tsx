@@ -18,7 +18,7 @@ import {
 } from "@/lib/kanban";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
-import type { KanbanActivity, KanbanStage, KanbanTask } from "@/lib/types";
+import type { KanbanActivity, KanbanProject, KanbanStage, KanbanTask } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
 
 type ChecklistItem = { label: string; done: boolean };
@@ -34,6 +34,7 @@ const emptyForm = {
   due_date: "",
   is_blocked: false,
   blocked_reason: "",
+  project_id: "",
 };
 
 export function TaskDialog({
@@ -41,6 +42,8 @@ export function TaskDialog({
   task,
   defaultStage,
   nextPosition,
+  projects = null,
+  defaultProjectId = "",
   onClose,
   onSaved,
 }: {
@@ -49,6 +52,10 @@ export function TaskDialog({
   task: KanbanTask | null;
   defaultStage: KanbanStage;
   nextPosition: (stage: KanbanStage) => number;
+  /** null until the kanban_projects migration has run: the field is hidden and project_id is never written. */
+  projects?: KanbanProject[] | null;
+  /** Pre-selected project for new cards (e.g. when the board is filtered to one project). */
+  defaultProjectId?: string;
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -82,15 +89,16 @@ export function TaskDialog({
         due_date: task.due_date ?? "",
         is_blocked: task.is_blocked,
         blocked_reason: task.blocked_reason ?? "",
+        project_id: task.project_id ?? "",
       });
       setChecklist(task.checklist ?? []);
       fetchActivities(task.id);
     } else {
-      setForm({ ...emptyForm, stage: defaultStage });
+      setForm({ ...emptyForm, stage: defaultStage, project_id: defaultProjectId });
       setChecklist([]);
       setActivities([]);
     }
-  }, [open, task, defaultStage]);
+  }, [open, task, defaultStage, defaultProjectId]);
 
   async function fetchActivities(taskId: string) {
     const supabase = createClient();
@@ -117,6 +125,7 @@ export function TaskDialog({
       checklist: items,
       is_blocked: form.is_blocked,
       blocked_reason: form.is_blocked ? form.blocked_reason || null : null,
+      ...(projects ? { project_id: form.project_id || null } : {}),
     };
 
     // Same gates as drag & drop, evaluated against the edited values.
@@ -311,6 +320,35 @@ export function TaskDialog({
               />
             </Field>
           </div>
+          {projects && (
+            <Field>
+              <Label htmlFor="task-project">{t("proj_field")}</Label>
+              <Select
+                id="task-project"
+                value={form.project_id}
+                onChange={(e) => setForm((p) => ({ ...p, project_id: e.target.value }))}
+              >
+                <option value="">{t("proj_none")}</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </Select>
+              {(() => {
+                const proj = projects.find((p) => p.id === form.project_id);
+                if (!proj || !form.due_date) return null;
+                if (form.due_date >= proj.start_date && form.due_date <= proj.end_date) return null;
+                return (
+                  <p className="mt-1 text-xs text-amber">
+                    {id
+                      ? `Tenggat kartu di luar jadwal proyek (${proj.start_date} – ${proj.end_date}).`
+                      : `The card's due date is outside the project dates (${proj.start_date} – ${proj.end_date}).`}
+                  </p>
+                );
+              })()}
+            </Field>
+          )}
           <Field>
             <Label>{id ? "Deskripsi / Konteks" : "Description / Context"}</Label>
             <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />

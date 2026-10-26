@@ -6,7 +6,10 @@ import {
   CalendarClock,
   CheckCircle2,
   Download,
+  FolderPlus,
   Gauge,
+  GanttChart,
+  LayoutGrid,
   Layers,
   Plus,
   RefreshCw,
@@ -21,6 +24,9 @@ import { Input, Select } from "@/components/ui/Input";
 import { KanbanCard } from "@/components/kanban/KanbanCard";
 import { TaskDialog } from "@/components/kanban/TaskDialog";
 import { ImportSourcesDialog } from "@/components/kanban/ImportSourcesDialog";
+import { ProjectDialog } from "@/components/kanban/ProjectDialog";
+import { ProjectTimeline } from "@/components/kanban/ProjectTimeline";
+import type { ProjectCard } from "@/lib/kanban-projects";
 import {
   MODULE_OPTIONS,
   PRIORITY_OPTIONS,
@@ -32,12 +38,18 @@ import {
   syncSourceOnStart,
   validateMove,
 } from "@/lib/kanban";
-import type { KanbanStage, KanbanTask } from "@/lib/types";
+import type { KanbanProject, KanbanStage, KanbanTask } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 
 const DONE_WINDOW_DAYS = 14;
+
+/** True when the error means the kanban_projects migration hasn't run yet. */
+function isMissingProjectsTable(err: { code?: string; message?: string } | null) {
+  if (!err) return false;
+  return err.code === "42P01" || err.code === "PGRST205" || /kanban_projects|project_id/.test(err.message ?? "");
+}
 
 export default function KanbanPage() {
   const { t, language } = useLanguage();
@@ -58,6 +70,15 @@ export default function KanbanPage() {
   const [editing, setEditing] = useState<KanbanTask | null>(null);
   const [createStage, setCreateStage] = useState<KanbanStage>("backlog");
   const [importOpen, setImportOpen] = useState(false);
+
+  const [view, setView] = useState<"board" | "timeline">("board");
+  const [projects, setProjects] = useState<KanbanProject[]>([]);
+  const [projectCards, setProjectCards] = useState<ProjectCard[]>([]);
+  /** null = still checking; false = migration not run yet (board works as before). */
+  const [projectsReady, setProjectsReady] = useState<boolean | null>(null);
+  const [projectFilter, setProjectFilter] = useState("");
+  const [projectDialogOpen, setProjectDialogOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<KanbanProject | null>(null);
 
   const [dragId, setDragId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ stage: KanbanStage; index: number } | null>(null);
@@ -83,9 +104,35 @@ export default function KanbanPage() {
     }
   }
 
-  useEffect(() => {
+  async function fetchProjects() {
+    const supabase = createClient();
+    const { data, error } = await supabase.from("kanban_projects").select("*").order("start_date", { ascending: true });
+    if (error) {
+      setProjectsReady(isMissingProjectsTable(error) ? false : true);
+      if (!isMissingProjectsTable(error)) toast.error(`${t("save_error")}: ${error.message}`);
+      return;
+    }
+    setProjects((data ?? []) as KanbanProject[]);
+    setProjectsReady(true);
+    // All-time slice for progress (the board query hides Done cards older than 90 days).
+    const { data: cardRows } = await supabase
+      .from("kanban_tasks")
+      .select("project_id, stage, due_date, is_blocked")
+      .not("project_id", "is", null);
+    setProjectCards((cardRows ?? []) as ProjectCard[]);
+  }
+
+  function refreshAll() {
     fetchTasks();
+    fetchProjects();
+  }
+
+  useEffect(() => {
+    refreshAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
 
   const assignees = useMemo(
     () => Array.from(new Set(tasks.map((x) => x.assignee).filter(Boolean) as string[])).sort(),
@@ -101,11 +148,13 @@ export default function KanbanPage() {
       if (assigneeFilter && x.assignee !== assigneeFilter) return false;
       if (moduleFilter && x.module !== moduleFilter) return false;
       if (priorityFilter && x.priority !== priorityFilter) return false;
+      if (projectFilter === "none" && x.project_id) return false;
+      if (projectFilter && projectFilter !== "none" && x.project_id !== projectFilter) return false;
       if (!showAllDone && x.stage === "done" && x.completed_at && new Date(x.completed_at).getTime() < doneCutoff)
         return false;
       return true;
     });
-  }, [tasks, search, assigneeFilter, moduleFilter, priorityFilter, showAllDone]);
+  }, [tasks, search, assigneeFilter, moduleFilter, priorityFilter, projectFilter, showAllDone]);
 
   const columns = useMemo(() => {
     const byStage = {} as Record<KanbanStage, KanbanTask[]>;
@@ -263,21 +312,93 @@ export default function KanbanPage() {
         description={t("kanban_desc")}
         action={
           <>
-            <Button size="sm" variant="secondary" onClick={fetchTasks} aria-label="Refresh">
+            <Button size="sm" variant="secondary" onClick={refreshAll} aria-label="Refresh">
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => setImportOpen(true)}>
-              <Download className="h-4 w-4" /> {id ? "Tarik dari MOM / Request" : "Pull from MOM / Requests"}
-            </Button>
-            <Button size="sm" variant="accent" onClick={() => openCreate("backlog")}>
-              <Plus className="h-4 w-4" /> {t("kanban_add")}
-            </Button>
+            {view === "board" ? (
+              <>
+                <Button size="sm" variant="secondary" onClick={() => setImportOpen(true)}>
+                  <Download className="h-4 w-4" /> {id ? "Tarik dari MOM / Request" : "Pull from MOM / Requests"}
+                </Button>
+                <Button size="sm" variant="accent" onClick={() => openCreate("backlog")}>
+                  <Plus className="h-4 w-4" /> {t("kanban_add")}
+                </Button>
+              </>
+            ) : (
+              projectsReady && (
+                <Button
+                  size="sm"
+                  variant="accent"
+                  onClick={() => {
+                    setEditingProject(null);
+                    setProjectDialogOpen(true);
+                  }}
+                >
+                  <FolderPlus className="h-4 w-4" /> {t("proj_new")}
+                </Button>
+              )
+            )}
           </>
         }
       />
 
       {!isSupabaseConfigured && <SupabaseNotice />}
       {isSupabaseConfigured && error && <ErrorNotice message={error} />}
+
+      <div role="tablist" aria-label="View" className="inline-flex rounded-md bg-surface-3 p-0.5">
+        {([
+          { key: "board", label: t("kanban_view_board"), icon: LayoutGrid },
+          { key: "timeline", label: t("kanban_view_timeline"), icon: GanttChart },
+        ] as const).map((v) => (
+          <button
+            key={v.key}
+            role="tab"
+            aria-selected={view === v.key}
+            onClick={() => setView(v.key)}
+            className={cn(
+              "inline-flex h-7 items-center gap-1.5 rounded-xs px-3 text-[12.5px] font-medium transition-colors",
+              view === v.key ? "bg-surface text-text shadow-sm" : "text-text-3 hover:text-text"
+            )}
+          >
+            <v.icon className="h-3.5 w-3.5" />
+            {v.label}
+          </button>
+        ))}
+      </div>
+
+      {view === "timeline" &&
+        (projectsReady === false ? (
+          <div className="rounded-lg border border-border bg-surface p-5">
+            <h3 className="text-base font-semibold text-text">{t("proj_setup_title")}</h3>
+            <p className="mt-1 max-w-2xl text-sm text-text-3">{t("proj_setup_desc")}</p>
+          </div>
+        ) : projectsReady === null ? (
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="skeleton h-12" />
+            ))}
+          </div>
+        ) : (
+          <ProjectTimeline
+            projects={projects}
+            cards={projectCards}
+            onNew={() => {
+              setEditingProject(null);
+              setProjectDialogOpen(true);
+            }}
+            onEdit={(p) => {
+              setEditingProject(p);
+              setProjectDialogOpen(true);
+            }}
+            onViewCards={(p) => {
+              setProjectFilter(p.id);
+              setView("board");
+            }}
+          />
+        ))}
+
+      {view === "board" && (
+      <>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {kpis.map((k) => (
@@ -310,6 +431,17 @@ export default function KanbanPage() {
               </option>
             ))}
           </Select>
+          {projectsReady && (
+            <Select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="lg:w-48" aria-label={t("proj_field")}>
+              <option value="">{t("proj_filter_all")}</option>
+              <option value="none">{t("proj_filter_none")}</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </Select>
+          )}
           <Select value={moduleFilter} onChange={(e) => setModuleFilter(e.target.value)} className="lg:w-44">
             <option value="">{id ? "Semua Modul" : "All Modules"}</option>
             {MODULE_OPTIONS.map((m) => (
@@ -386,6 +518,7 @@ export default function KanbanPage() {
                       {isTarget && dropTarget?.index === idx && <DropLine />}
                       <KanbanCard
                         task={task}
+                        projectName={task.project_id ? projectById.get(task.project_id)?.name : undefined}
                         dragging={dragId === task.id}
                         onOpen={() => openEdit(task)}
                         onDragStart={(e) => {
@@ -413,18 +546,30 @@ export default function KanbanPage() {
         </div>
       </div>
 
+      </>
+      )}
+
       <TaskDialog
         open={dialogOpen}
         task={editing}
         defaultStage={createStage}
         nextPosition={topPosition}
+        projects={projectsReady ? projects : null}
+        defaultProjectId={projectFilter && projectFilter !== "none" ? projectFilter : ""}
         onClose={() => setDialogOpen(false)}
-        onSaved={fetchTasks}
+        onSaved={refreshAll}
+      />
+      <ProjectDialog
+        open={projectDialogOpen}
+        project={editingProject}
+        assignees={assignees}
+        onClose={() => setProjectDialogOpen(false)}
+        onSaved={refreshAll}
       />
       <ImportSourcesDialog
         open={importOpen}
         onClose={() => setImportOpen(false)}
-        onImported={fetchTasks}
+        onImported={refreshAll}
         topPosition={topPosition}
       />
     </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertOctagon, CalendarClock, ListChecks, NotebookPen, Inbox } from "lucide-react";
+import { AlertOctagon, CalendarClock, FolderKanban, ListChecks, NotebookPen, Inbox } from "lucide-react";
 import { StatusBadge } from "@/components/ui/Badge";
 import { checklistProgress, isOverdue, moduleLabel } from "@/lib/kanban";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -9,12 +9,15 @@ import { cn, formatDate, initials } from "@/lib/utils";
 
 export function KanbanCard({
   task,
+  projectName,
   dragging,
   onOpen,
   onDragStart,
   onDragEnd,
 }: {
   task: KanbanTask;
+  /** Name of the card's project, when it has one. */
+  projectName?: string;
   dragging: boolean;
   onOpen: () => void;
   onDragStart: (e: React.DragEvent) => void;
@@ -57,6 +60,12 @@ export function KanbanCard({
       </div>
 
       <p className="text-sm font-semibold leading-snug text-ink line-clamp-3">{task.title}</p>
+      {projectName && (
+        <p className="mt-1 flex min-w-0 items-center gap-1 text-[11px] text-ink-muted" title={projectName}>
+          <FolderKanban className="h-3 w-3 shrink-0" aria-hidden />
+          <span className="truncate">{projectName}</span>
+        </p>
+      )}
       {task.merchant_partner && <p className="mt-0.5 truncate text-xs text-ink-muted">{task.merchant_partner}</p>}
 
       {task.is_blocked && (

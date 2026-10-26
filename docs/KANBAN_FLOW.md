@@ -76,7 +76,29 @@ Clients can only add `comment` rows (enforced by RLS), so the history cannot be 
 - **Weekly triage (Head RG):** empty Backlog into To Do, run *Pull from MOM / Requests*, and check that WIP limits still fit team size.
 - **Monthly:** review the cycle-time trend in the Weekly Report.
 
-## 6. Deployment
+## 6. Projects & timeline
+
+Group cards into **projects** (an initiative with an owner, module, start and end date) and follow them on **Kanban → Project timeline**. Table: `kanban_projects`; cards link through `kanban_tasks.project_id` (see `supabase/migrations/20261026_kanban_projects.sql`, ADR-005). Rules live in `src/lib/kanban-projects.ts`.
+
+- **Create** with *New project* on the timeline. Add cards to it from the card dialog's **Project** field. When the board is filtered to a project, new cards start in that project.
+- **Progress** = Done cards ÷ all cards in the project, counted over all time (not just the 90-day board window).
+- **Health** on each bar:
+
+| Health | When |
+|---|---|
+| Done / Cancelled | Project status says so (hidden unless *Show done & cancelled*) |
+| On hold | Status is On hold |
+| Not started | Today is before the start date |
+| Overdue | Past the end date and not 100% done |
+| No cards yet | Started, but no cards linked |
+| At risk | Progress is more than 15 points behind the share of time passed, or any card is blocked or overdue |
+| On track | Everything else |
+
+- **Timeline:** 3 / 6 / 12-month window, previous / today / next. The copper line is today. The bar's filled part is progress. *View cards* opens the board filtered to that project.
+- **Delete** a project from its edit dialog (asks first). Its cards stay on the board without a project.
+- **Weekly triage:** check At risk and Overdue projects first, then link any new cards to their project.
+
+## 7. Deployment
 
 1. Run `supabase/schema.sql` again in the Supabase SQL Editor. It is idempotent; only section 13 is new.
 2. Deploy the app. The menu item appears for all internal roles (RLS: `is_internal()`).
