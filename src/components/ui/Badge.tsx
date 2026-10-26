@@ -2,35 +2,16 @@ import { cn } from "@/lib/utils";
 
 type Tone = "draft" | "progress" | "success" | "danger" | "warning" | "neutral" | "info";
 
+// DESIGN.md › Badge: neutral fill + border, status lives in the 6px dot.
+const NEUTRAL_BADGE = "bg-surface-2 text-text-2 border-border";
 const toneClasses: Record<Tone, { badge: string; dot: string }> = {
-  draft: {
-    badge: "bg-slate-100/90 text-slate-700 border-slate-200",
-    dot: "bg-slate-400",
-  },
-  progress: {
-    badge: "bg-blue-50 text-blue-700 border-blue-200/80",
-    dot: "bg-blue-500",
-  },
-  success: {
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
-    dot: "bg-emerald-500",
-  },
-  danger: {
-    badge: "bg-rose-50 text-rose-700 border-rose-200/80",
-    dot: "bg-rose-500",
-  },
-  warning: {
-    badge: "bg-amber-50 text-amber-800 border-amber-200/80",
-    dot: "bg-amber-500",
-  },
-  neutral: {
-    badge: "bg-slate-100 text-slate-700 border-slate-200",
-    dot: "bg-slate-500",
-  },
-  info: {
-    badge: "bg-sky-50 text-sky-700 border-sky-200/80",
-    dot: "bg-sky-500",
-  },
+  draft: { badge: NEUTRAL_BADGE, dot: "bg-slate-400" },
+  progress: { badge: NEUTRAL_BADGE, dot: "bg-blue" },
+  success: { badge: NEUTRAL_BADGE, dot: "bg-green" },
+  danger: { badge: NEUTRAL_BADGE, dot: "bg-red" },
+  warning: { badge: NEUTRAL_BADGE, dot: "bg-amber" },
+  neutral: { badge: NEUTRAL_BADGE, dot: "bg-slate-500" },
+  info: { badge: NEUTRAL_BADGE, dot: "bg-teal" },
 };
 
 const STATUS_TONE_MAP: Record<string, Tone> = {
@@ -102,7 +83,7 @@ export function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold capitalize tracking-wide shadow-xs",
+        "inline-flex h-5 items-center gap-1.5 rounded-xs border px-1.5 text-xs font-medium capitalize whitespace-nowrap",
         style.badge
       )}
     >
@@ -125,7 +106,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold shadow-xs",
+        "inline-flex h-5 items-center gap-1.5 rounded-xs border px-1.5 text-xs font-medium whitespace-nowrap",
         style.badge
       )}
     >

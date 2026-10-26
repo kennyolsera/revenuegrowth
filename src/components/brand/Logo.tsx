@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Brand mark — a flat "ledger + ascending step" glyph. Solid petrol fill, one
- * lighter tint step, a crisp ascending stroke. No gradients or glow: it reads
+ * Brand mark: a flat "ledger + ascending step" glyph on the accent colour. No gradients or glow: it reads
  * as an instrument, not a marketing logo.
  */
 export function LogoMark({ className, size = 34 }: { className?: string; size?: number }) {
@@ -17,19 +16,14 @@ export function LogoMark({ className, size = 34 }: { className?: string; size?: 
       role="img"
       aria-label="Revenue Growth"
     >
-      <defs>
-        <linearGradient id="rg-mark" x1="2" y1="2" x2="30" y2="30" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1657A0" />
-          <stop offset="1" stopColor="#2E7BD6" />
-        </linearGradient>
-      </defs>
-      <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#rg-mark)" />
+      {/* Flat accent tile (no gradient): follows the user's accent choice and theme */}
+      <rect x="1" y="1" width="30" height="30" rx="7" style={{ fill: "rgb(var(--c-accent))" }} />
       {/* base ledger line */}
-      <rect x="7" y="22" width="18" height="2.2" rx="1.1" fill="#7FA8C9" />
+      <rect x="7" y="22" width="18" height="2.2" rx="1.1" style={{ fill: "rgb(var(--c-on-accent) / 0.55)" }} />
       {/* ascending steps */}
-      <rect x="8" y="16" width="4" height="6" rx="1" fill="#CBD8E6" />
-      <rect x="14" y="12" width="4" height="10" rx="1" fill="#CBD8E6" />
-      <rect x="20" y="7.5" width="4" height="14.5" rx="1" fill="#FFFFFF" />
+      <rect x="8" y="16" width="4" height="6" rx="1" style={{ fill: "rgb(var(--c-on-accent) / 0.75)" }} />
+      <rect x="14" y="12" width="4" height="10" rx="1" style={{ fill: "rgb(var(--c-on-accent) / 0.75)" }} />
+      <rect x="20" y="7.5" width="4" height="14.5" rx="1" style={{ fill: "rgb(var(--c-on-accent))" }} />
     </svg>
   );
 }
@@ -52,7 +46,7 @@ export function Logo({
       <span className="min-w-0 leading-tight">
         <span
           className={cn(
-            "block font-display font-semibold tracking-tight",
+            "block font-semibold tracking-tight",
             size >= 36 ? "text-[15px]" : "text-[13.5px]",
             tone === "light" ? "text-white" : "text-ink"
           )}

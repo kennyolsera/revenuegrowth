@@ -41,47 +41,48 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
             <AreaChart data={data} margin={{ top: 12, right: 12, left: -16, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorQris" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1657A0" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#1657A0" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.08} />
+                  <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorOO" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#14B8A6" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#14B8A6" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.08} />
+                  <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0.0} />
                 </linearGradient>
                 <linearGradient id="colorFin" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#F97316" stopOpacity={0.35} />
-                  <stop offset="95%" stopColor="#F97316" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="var(--chart-3)" stopOpacity={0.08} />
+                  <stop offset="95%" stopColor="var(--chart-3)" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+              <CartesianGrid stroke="var(--divider)" vertical={false} />
               <XAxis
                 dataKey="period"
-                tick={{ fontSize: 11, fill: "#64748B" }}
-                axisLine={{ stroke: "#E2E8F0" }}
+                tick={{ fontSize: 11, fill: "var(--text-3)" }}
+                axisLine={{ stroke: "var(--border)" }}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: "#64748B" }}
+                tick={{ fontSize: 11, fill: "var(--text-3)" }}
                 axisLine={false}
                 tickLine={false}
                 width={36}
               />
               <Tooltip
                 contentStyle={{
-                  borderRadius: 12,
-                  border: "1px solid #E2E8F0",
-                  backgroundColor: "rgba(255, 255, 255, 0.96)",
-                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  backgroundColor: "var(--surface)",
+                  color: "var(--text)",
+                  boxShadow: "var(--shadow-pop)",
                   fontSize: 12,
                 }}
-                labelStyle={{ fontWeight: 600, color: "#0F172A", marginBottom: 4 }}
+                labelStyle={{ fontWeight: 600, color: "var(--text)", marginBottom: 4 }}
               />
               <Legend wrapperStyle={{ fontSize: 12, paddingTop: 10 }} />
               <Area
                 type="monotone"
                 dataKey="qris"
                 name="QRIS"
-                stroke="#1657A0"
+                stroke="var(--chart-1)"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorQris)"
@@ -90,7 +91,7 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
                 type="monotone"
                 dataKey="onlineOrder"
                 name="Online Order"
-                stroke="#14B8A6"
+                stroke="var(--chart-2)"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorOO)"
@@ -99,7 +100,7 @@ export function GrowthChart({ data }: { data: GrowthPoint[] }) {
                 type="monotone"
                 dataKey="financing"
                 name="Financing Loan"
-                stroke="#F97316"
+                stroke="var(--chart-3)"
                 strokeWidth={2.5}
                 fillOpacity={1}
                 fill="url(#colorFin)"

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";
-import { AlertTriangle, Lock, Mail, TrendingUp, ShieldCheck } from "lucide-react";
+import { AlertTriangle, Lock, Mail } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { useLanguage } from "@/lib/LanguageContext";
 import { cn } from "@/lib/utils";
@@ -36,176 +36,103 @@ function LoginPageInner() {
   }
 
   return (
-    <div className="relative flex min-h-screen bg-slate-950">
-      {/* Language Switcher on Top Right Corner of Login Screen */}
-      <div className="absolute right-6 top-6 z-40">
-        <div className="flex items-center rounded-xl border border-slate-700/80 bg-slate-900/90 p-1 shadow-lg backdrop-blur-md">
-          <button
-            type="button"
-            onClick={() => setLanguage("id")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
-              language === "id"
-                ? "bg-accent text-white shadow-sm"
-                : "text-slate-400 hover:text-white"
-            )}
-          >
-            <span>🇮🇩</span>
-            <span className="font-mono">ID</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setLanguage("en")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
-              language === "en"
-                ? "bg-accent text-white shadow-sm"
-                : "text-slate-400 hover:text-white"
-            )}
-          >
-            <span>🇬🇧</span>
-            <span className="font-mono">EN</span>
-          </button>
+    <div className="relative flex min-h-screen flex-col bg-bg">
+      {/* Language switch, top right */}
+      <div className="absolute right-4 top-4 sm:right-6 sm:top-5">
+        <div role="radiogroup" aria-label="Language" className="inline-flex rounded-md bg-surface-3 p-0.5">
+          {(["id", "en"] as const).map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              role="radio"
+              aria-checked={language === lang}
+              onClick={() => setLanguage(lang)}
+              title={lang === "id" ? "Bahasa Indonesia" : "English"}
+              className={cn(
+                "inline-flex h-6 items-center rounded-xs px-2 text-xs font-medium uppercase transition-colors",
+                language === lang ? "bg-surface text-text shadow-sm" : "text-text-3 hover:text-text"
+              )}
+            >
+              {lang}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Left Panel — Console rail */}
-      <div className="relative hidden w-[44%] flex-col justify-between overflow-hidden bg-rail p-12 text-white lg:flex border-r border-rail-line">
-        {/* Ambient brand wash + animated growth-line graphic */}
-        <div className="pointer-events-none absolute inset-0 bg-hero-soft opacity-70" />
-        <svg
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-56 w-full"
-          viewBox="0 0 600 200"
-          preserveAspectRatio="none"
-          fill="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2E7BD6" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="#2E7BD6" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M0 170 L90 150 L170 158 L250 120 L330 132 L420 78 L500 96 L600 40 L600 200 L0 200 Z"
-            fill="url(#heroFill)"
-          />
-          <path
-            className="animate-draw"
-            pathLength={1}
-            d="M0 170 L90 150 L170 158 L250 120 L330 132 L420 78 L500 96 L600 40"
-            stroke="#2E7BD6"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+      {/* Centred auth box (DESIGN.md: only auth, empty and full-page states are centred) */}
+      <main className="flex flex-1 items-center justify-center px-4 py-16">
+        <div className="w-full max-w-[380px] animate-fade-up">
+          <Logo tone="dark" size={28} />
 
-        <div className="relative z-10">
-          <Logo tone="light" size={36} />
-        </div>
-
-        <div className="relative z-10 my-auto max-w-md space-y-6">
-          <div className="label-mono inline-flex items-center gap-2 border-l-2 border-accent-bright pl-3 text-slate-400">
-            <ShieldCheck className="h-3.5 w-3.5 text-accent-bright" /> Enterprise Operations Suite
+          <div className="mt-8">
+            <h1 className="text-xl text-text">{t("login_form_title")}</h1>
+            <p className="mt-1 text-[12.5px] text-text-3">{t("login_form_desc")}</p>
           </div>
 
-          <h1 className="font-display text-[32px] font-semibold leading-[1.15] tracking-tight text-white sm:text-[38px]">
-            {language === "id" ? "Akselerasi Pertumbuhan Layanan Value-Added" : "Accelerate Growth for Value-Added Services"}
-          </h1>
-
-          <p className="text-sm leading-relaxed text-slate-400">{t("login_hero_desc")}</p>
-
-          <div className="grid grid-cols-2 gap-3 pt-2">
-            <div className="rounded-md border border-rail-line bg-rail-soft p-3.5">
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
-                <TrendingUp className="h-4 w-4 text-accent-bright" /> 12 Modules
-              </div>
-              <p className="label-mono mt-1.5 text-slate-500">Integrated Pipeline</p>
-            </div>
-            <div className="rounded-md border border-rail-line bg-rail-soft p-3.5">
-              <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-200">
-                <ShieldCheck className="h-4 w-4 text-accent-bright" /> Role-based
-              </div>
-              <p className="label-mono mt-1.5 text-slate-500">Access Control</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="label-mono relative z-10 flex items-center justify-between text-slate-500">
-          <span>© {new Date().getFullYear()} Revenue Growth · VAS</span>
-          <span>v1.0</span>
-        </div>
-      </div>
-
-      {/* Right Panel — Login Form */}
-      <div className="relative flex w-full items-center justify-center bg-surface p-6 lg:flex-1">
-        <div className="relative w-full max-w-md space-y-6">
-          <div className="lg:hidden">
-            <Logo tone="dark" size={38} />
-          </div>
-
-          <div className="space-y-1.5">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{t("login_form_title")}</h2>
-            <p className="text-xs sm:text-sm text-slate-500">{t("login_form_desc")}</p>
-          </div>
-
-          {!isSupabaseConfigured && (
-            <div className="flex items-start gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-xs text-amber-900 shadow-sm">
-              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              <span>{t("login_supabase_warn")}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Field>
-              <Label htmlFor="email">{t("login_email")}</Label>
-              <div className="relative">
-                <Mail className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  placeholder="kenny@perusahaan.com"
-                  className="pl-10 h-11"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </Field>
-
-            <Field>
-              <Label htmlFor="password">{t("login_password")}</Label>
-              <div className="relative">
-                <Lock className="pointer-events-none absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  placeholder="••••••••"
-                  className="pl-10 h-11"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            </Field>
-
-            {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-xs text-status-danger">
-                {error}
+          <div className="mt-6 rounded-lg border border-border bg-surface p-5">
+            {!isSupabaseConfigured && (
+              <div className="mb-4 flex items-start gap-2 rounded-md border border-border bg-surface-2 p-3 text-xs text-text-2">
+                <AlertTriangle className="mt-px h-[14px] w-[14px] shrink-0 text-amber" />
+                <span>{t("login_supabase_warn")}</span>
               </div>
             )}
 
-            <Button type="submit" variant="accent" loading={loading} className="w-full h-11 text-sm font-semibold shadow-md shadow-accent/25">
-              {t("login_submit")}
-            </Button>
-          </form>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Field>
+                <Label htmlFor="email">{t("login_email")}</Label>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-text-4" />
+                  <Input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    placeholder="nama@perusahaan.com"
+                    className="h-9 pl-8"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </Field>
 
-          <p className="text-center text-xs text-slate-400 leading-relaxed">
-            {t("login_need_account")}
-          </p>
+              <Field>
+                <Label htmlFor="password">{t("login_password")}</Label>
+                <div className="relative">
+                  <Lock className="pointer-events-none absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-text-4" />
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    placeholder="••••••••"
+                    className="h-9 pl-8"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+              </Field>
+
+              {error && (
+                <p role="alert" className="flex items-start gap-1.5 text-xs text-red">
+                  <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" />
+                  {error}
+                </p>
+              )}
+
+              <Button type="submit" variant="accent" size="lg" loading={loading} className="w-full">
+                {t("login_submit")}
+              </Button>
+            </form>
+          </div>
+
+          <p className="mt-4 text-center text-xs text-text-3">{t("login_need_account")}</p>
         </div>
-      </div>
+      </main>
+
+      <footer className="flex items-center justify-between px-4 pb-4 text-xs text-text-4 sm:px-6">
+        <span>© {new Date().getFullYear()} Revenue Growth · VAS</span>
+        <span>v1.0</span>
+      </footer>
     </div>
   );
 }

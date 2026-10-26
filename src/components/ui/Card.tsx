@@ -4,7 +4,7 @@ export function Card({ className, children }: { className?: string; children: Re
   return (
     <div
       className={cn(
-        "rounded-2xl border border-surface-border bg-surface shadow-card transition-shadow duration-200 hover:shadow-lift",
+        "rounded-lg border border-border bg-surface",
         className
       )}
     >
@@ -25,14 +25,14 @@ export function CardHeader({
   icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex items-start justify-between gap-4 border-b border-surface-border px-5 py-3.5">
+    <div className="flex items-start justify-between gap-4 border-b border-divider px-4 py-3">
       <div className="min-w-0">
-        <h3 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-ink">
-          {Icon && <Icon className="h-4 w-4 shrink-0 text-ink-faint" />}
+        <h3 className="flex items-center gap-2 text-base font-semibold text-text">
+          {Icon && <Icon className="h-[15px] w-[15px] shrink-0 text-text-4" />}
           {title}
         </h3>
         {description && (
-          <p className={cn("mt-0.5 text-xs text-ink-muted leading-relaxed", Icon && "pl-6")}>{description}</p>
+          <p className={cn("mt-0.5 text-xs text-text-3", Icon && "pl-6")}>{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}
@@ -41,5 +41,5 @@ export function CardHeader({
 }
 
 export function CardBody({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("p-5", className)}>{children}</div>;
+  return <div className={cn("p-4", className)}>{children}</div>;
 }

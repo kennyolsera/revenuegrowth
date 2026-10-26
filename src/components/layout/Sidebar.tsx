@@ -27,22 +27,22 @@ export function Sidebar({
   };
 
   const content = (
-    <div className="relative flex h-full flex-col overflow-hidden bg-surface text-ink-body border-r border-surface-border">
+    <div className="relative flex h-full flex-col overflow-hidden bg-side text-text-2 border-r border-border">
       {/* Brand Header */}
       <div
         className={cn(
-          "relative flex items-center border-b border-surface-border px-4 py-4 h-16 transition-all",
+          "relative flex h-[46px] items-center px-3 transition-all",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
         <Link href="/dashboard" className={cn("flex items-center", isCollapsed && "justify-center")}>
-          {isCollapsed ? <LogoMark size={30} /> : <Logo tone="dark" size={30} />}
+          {isCollapsed ? <LogoMark size={24} /> : <Logo tone="dark" size={24} subtitle={false} />}
         </Link>
 
         {/* Mobile close button */}
         <button
           onClick={handleClose}
-          className="rounded-md p-1.5 text-ink-muted hover:bg-surface-muted hover:text-ink lg:hidden"
+          className="rounded-md p-1.5 text-text-3 hover:bg-surface-3 hover:text-text lg:hidden"
           aria-label="Close menu"
         >
           <X className="h-4 w-4" />
@@ -50,17 +50,17 @@ export function Sidebar({
       </div>
 
       {/* Grouped Navigation List */}
-      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4 scrollbar-thin">
+      <nav className="flex-1 space-y-4 overflow-y-auto px-2 pb-3 pt-1 scrollbar-thin">
         {NAV_GROUPS.map((group, groupIdx) => {
           const groupTitle = t(group.titleKey);
 
           return (
-            <div key={group.id} className="space-y-1">
+            <div key={group.id} className="space-y-px">
               {/* Group Section Header */}
               {!isCollapsed ? (
-                <div className="label-mono px-3 pb-1.5 pt-1 text-ink-faint">{groupTitle}</div>
+                <div className="label-mono px-2 pb-1 pt-1 text-text-4">{groupTitle}</div>
               ) : groupIdx > 0 ? (
-                <div className="my-2 border-t border-surface-border" />
+                <div className="mx-2 my-2 border-t border-border" />
               ) : null}
 
               {/* Group Items */}
@@ -78,29 +78,29 @@ export function Sidebar({
                     onClick={handleClose}
                     title={isCollapsed ? translatedLabel : undefined}
                     className={cn(
-                      "group relative flex items-center rounded-lg px-3 py-2 text-sm transition-colors duration-100",
+                      "group relative flex h-[30px] items-center rounded-md px-2 text-sm transition-colors",
                       active
-                        ? "bg-accent-soft text-accent"
-                        : "text-ink-body hover:bg-surface-muted hover:text-ink",
-                      isCollapsed && "justify-center px-2 py-2.5"
+                        ? "bg-surface text-text shadow-sm"
+                        : "text-text-2 hover:bg-surface-3 hover:text-text",
+                      isCollapsed && "h-9 justify-center px-2"
                     )}
                   >
                     <Icon
                       className={cn(
                         "shrink-0",
-                        active ? "text-accent" : "text-ink-muted group-hover:text-ink-body",
-                        isCollapsed ? "h-5 w-5" : "mr-3 h-[18px] w-[18px]"
+                        active ? "text-text" : "text-text-3 group-hover:text-text-2",
+                        isCollapsed ? "h-[18px] w-[18px]" : "mr-2 h-[15px] w-[15px]"
                       )}
                     />
 
                     {!isCollapsed && (
-                      <span className={cn("truncate text-[13px]", active ? "font-semibold" : "font-medium")}>
+                      <span className={cn("truncate", active ? "font-medium" : "font-side")}>
                         {translatedLabel}
                       </span>
                     )}
 
                     {isCollapsed && (
-                      <div className="pointer-events-none absolute left-full ml-3 z-50 hidden rounded-md bg-ink px-2.5 py-1 text-xs font-medium text-white whitespace-nowrap group-hover:block">
+                      <div className="pointer-events-none absolute left-full ml-3 z-50 hidden rounded-md bg-text px-2 py-1 text-xs font-medium text-surface whitespace-nowrap shadow-pop group-hover:block">
                         {translatedLabel}
                       </div>
                     )}
@@ -115,22 +115,22 @@ export function Sidebar({
       {/* Footer Branding & Collapse Button */}
       <div
         className={cn(
-          "border-t border-surface-border p-3 flex items-center",
+          "border-t border-border px-3 py-2 flex items-center",
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
         {!isCollapsed && (
           <div className="flex items-center gap-2">
             <span className="inline-block h-1.5 w-1.5 rounded-full bg-status-success" />
-            <span className="label-mono text-ink-faint">v1.0 · VAS Live</span>
+            <span className="text-xs text-text-3">v1.0 · VAS Live</span>
           </div>
         )}
         <button
           onClick={toggleCollapsed}
           title={isCollapsed ? t("expand_sidebar") : t("collapse_sidebar")}
-          className="hidden rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink lg:flex items-center justify-center"
+          className="hidden rounded-md p-1.5 text-text-3 transition-colors hover:bg-surface-3 hover:text-text lg:flex items-center justify-center"
         >
-          {isCollapsed ? <PanelLeft className="h-4 w-4 text-accent" /> : <PanelLeftClose className="h-4 w-4" />}
+          {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
         </button>
       </div>
     </div>
@@ -140,8 +140,8 @@ export function Sidebar({
     <>
       <aside
         className={cn(
-          "hidden shrink-0 transition-all duration-300 ease-in-out lg:block",
-          isCollapsed ? "w-20" : "w-64"
+          "hidden shrink-0 transition-[width] duration-200 lg:block",
+          isCollapsed ? "w-[52px]" : "w-[252px]"
         )}
       >
         {content}
@@ -150,10 +150,10 @@ export function Sidebar({
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden animate-fade-in">
           <div
-            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-[var(--overlay)] transition-opacity"
             onClick={handleClose}
           />
-          <div className="absolute inset-y-0 left-0 w-72 shadow-2xl animate-slide-right">
+          <div className="absolute inset-y-0 left-0 w-[280px] shadow-pop animate-slide-right">
             {content}
           </div>
         </div>

@@ -13,23 +13,24 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
 }
 
+// DESIGN.md › Buttons: 30px, 6px radius, 12.5/500, press = scale(0.97). One primary per view.
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-ink text-white shadow-xs hover:bg-ink-body hover:shadow-card active:translate-y-px disabled:opacity-50",
+    "bg-accent text-accent-on shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)] hover:bg-accent-strong disabled:opacity-50",
   accent:
-    "bg-brand-gradient text-white shadow-card hover:shadow-lift hover:brightness-[1.05] active:translate-y-px active:brightness-95 disabled:opacity-50 disabled:shadow-none",
+    "bg-accent text-accent-on shadow-[inset_0_-1px_0_rgb(0_0_0/0.12)] hover:bg-accent-strong disabled:opacity-50",
   secondary:
-    "bg-surface text-ink-body border border-surface-border shadow-xs hover:bg-surface-muted hover:text-ink hover:border-accent-line disabled:opacity-50",
+    "bg-surface text-text border border-border-strong shadow-sm hover:bg-surface-2 disabled:opacity-50",
   ghost:
-    "bg-transparent text-ink-body hover:bg-surface-muted hover:text-ink disabled:opacity-40",
+    "bg-transparent text-text-2 hover:bg-surface-2 hover:text-text disabled:opacity-40",
   danger:
-    "bg-status-danger text-white shadow-card hover:brightness-110 hover:shadow-lift active:translate-y-px disabled:opacity-50",
+    "bg-red text-accent-on hover:brightness-[1.06] disabled:opacity-50",
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: "text-xs px-3 py-1.5 gap-1.5 rounded-md font-medium",
-  md: "text-sm px-3.5 py-2 gap-2 rounded-md font-medium",
-  lg: "text-[15px] px-5 py-2.5 gap-2.5 rounded-md font-semibold",
+  sm: "h-[26px] px-2.5 gap-1.5 text-xs",
+  md: "h-[30px] px-3 gap-1.5 text-[12.5px]",
+  lg: "h-9 px-4 gap-2 text-sm",
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -38,8 +39,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || loading}
+        aria-busy={loading || undefined}
         className={cn(
-          "inline-flex items-center justify-center transition-colors duration-100 cursor-pointer disabled:cursor-not-allowed whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-1",
+          "inline-flex items-center justify-center rounded-md font-medium whitespace-nowrap select-none",
+          "transition-[background-color,border-color,color,transform] active:scale-[0.97]",
+          "cursor-pointer disabled:cursor-not-allowed disabled:active:scale-100",
           variantClasses[variant],
           sizeClasses[size],
           className

@@ -28,10 +28,10 @@ export function FinancingGrowthChart({ data }: { data: LoanGrowthPoint[] }) {
         ) : (
           <ResponsiveContainer width="100%" height={280}>
             <BarChart data={data} margin={{ top: 12, right: 16, left: 16, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-              <XAxis dataKey="merchant" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
+              <CartesianGrid stroke="var(--divider)" vertical={false} />
+              <XAxis dataKey="merchant" tick={{ fontSize: 11, fill: "var(--text-3)" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
               <YAxis
-                tick={{ fontSize: 11, fill: "#64748B" }}
+                tick={{ fontSize: 11, fill: "var(--text-3)" }}
                 axisLine={false}
                 tickLine={false}
                 width={80}
@@ -40,10 +40,11 @@ export function FinancingGrowthChart({ data }: { data: LoanGrowthPoint[] }) {
               <Tooltip
                 formatter={(value: number) => [formatRupiah(value), ""]}
                 contentStyle={{
-                  borderRadius: 12,
-                  border: "1px solid #E2E8F0",
-                  backgroundColor: "rgba(255, 255, 255, 0.96)",
-                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  backgroundColor: "var(--surface)",
+                  color: "var(--text)",
+                  boxShadow: "var(--shadow-pop)",
                   fontSize: 12,
                 }}
               />
@@ -51,13 +52,13 @@ export function FinancingGrowthChart({ data }: { data: LoanGrowthPoint[] }) {
               <Bar
                 dataKey="before"
                 name={language === "id" ? "Omzet Sebelum" : "Revenue Before"}
-                fill="#94A3B8"
+                fill="var(--chart-muted)"
                 radius={[6, 6, 0, 0]}
               />
               <Bar
                 dataKey="after"
                 name={language === "id" ? "Omzet Sesudah" : "Revenue After"}
-                fill="#10B981"
+                fill="var(--chart-1)"
                 radius={[6, 6, 0, 0]}
               />
             </BarChart>

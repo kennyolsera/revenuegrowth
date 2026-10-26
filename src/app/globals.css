@@ -1,37 +1,65 @@
+@import "../styles/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* DESIGN.md v1.0 — calm, warm, dense, quiet. Tokens live in src/styles/tokens.css. */
+
 @layer base {
   html {
+    background: rgb(var(--c-bg));
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-surface-canvas text-ink;
+    @apply bg-bg text-text;
+    font-family: var(--font);
+    font-size: 13.5px;
+    line-height: 1.45;
+    font-feature-settings: "ss01", "cv11";
   }
   h1, h2, h3, h4 {
-    font-family: var(--font-display), var(--font-sans), sans-serif;
-    letter-spacing: -0.014em;
+    font-family: var(--font);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
   }
   /* Tabular figures everywhere numbers line up */
-  .font-mono {
-    font-feature-settings: "tnum" 1, "zero" 1;
+  .font-mono,
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background: rgb(var(--c-accent) / 0.16);
+  }
+  input,
+  textarea {
+    caret-color: rgb(var(--c-accent));
+  }
+  :focus-visible {
+    outline: 2px solid rgb(var(--c-accent));
+    outline-offset: 1px;
+  }
+  /* Elements that draw their own focus ring don't get a second outline */
+  [class*="focus-visible:ring"]:focus-visible,
+  [class*="focus:ring"]:focus-visible {
+    outline: none;
   }
 }
 
 @layer utilities {
-  /* Hairline top border used as a subtle console accent on panels */
   .rule-top {
-    box-shadow: inset 0 1px 0 var(--tw-shadow-color, rgba(228, 230, 235, 1));
+    box-shadow: inset 0 1px 0 rgb(var(--c-border));
   }
 
-  /* Uppercase micro-label — the console's structural voice */
+  /* Uppercase micro-label: sidebar sections and tiny meta only */
   .label-mono {
-    font-family: var(--font-mono), monospace;
-    font-size: 10px;
-    letter-spacing: 0.08em;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
   }
 
@@ -43,55 +71,55 @@
     background: transparent;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-surface-border rounded-full;
+    @apply bg-border-strong rounded-full;
   }
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-ink-faint;
+    @apply bg-text-4;
   }
 
-  /* Soft brand-tinted hero wash (restrained, single radial — not a mesh) */
+  /* No decorative washes in this design */
   .bg-hero-soft {
-    background-image:
-      radial-gradient(60% 50% at 85% 0%, rgba(46, 123, 214, 0.10), transparent 60%),
-      radial-gradient(50% 45% at 0% 100%, rgba(22, 87, 160, 0.07), transparent 60%);
+    background-image: none;
   }
 
-  /* Staggered entrance — direct children fade-up in sequence */
+  /* Staggered entrance: rise 8px, 360ms, 35ms per child (max ~100ms) */
   .stagger-children > * {
     opacity: 0;
-    animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: fadeUp 360ms var(--ease) forwards;
   }
-  .stagger-children > *:nth-child(1) { animation-delay: 0.03s; }
-  .stagger-children > *:nth-child(2) { animation-delay: 0.08s; }
-  .stagger-children > *:nth-child(3) { animation-delay: 0.13s; }
-  .stagger-children > *:nth-child(4) { animation-delay: 0.18s; }
-  .stagger-children > *:nth-child(5) { animation-delay: 0.23s; }
-  .stagger-children > *:nth-child(6) { animation-delay: 0.28s; }
-  .stagger-children > *:nth-child(n+7) { animation-delay: 0.32s; }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 35ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 70ms; }
+  .stagger-children > *:nth-child(n+4) { animation-delay: 100ms; }
 
-  .animate-fade-up { animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  .animate-fade-up { animation: fadeUp 360ms var(--ease) forwards; }
 
   /* Draws an SVG stroke in via dashoffset (set pathLength="1" on the path) */
   .animate-draw {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    animation: drawLine 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+    animation: drawLine 500ms var(--ease) 100ms forwards;
   }
 
-  /* Shimmering skeleton */
+  /* Warm skeleton shimmer */
   .skeleton {
     position: relative;
     overflow: hidden;
-    @apply bg-surface-muted;
+    background: rgb(var(--c-surface-3));
+    border-radius: 4px;
   }
   .skeleton::after {
     content: "";
     position: absolute;
     inset: 0;
     transform: translateX(-100%);
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-    animation: shimmer 1.6s infinite;
+    background: linear-gradient(90deg, transparent, rgb(var(--c-surface-2)), transparent);
+    animation: shimmer 1.3s infinite;
   }
+
+  /* One-shot "something happened" washes */
+  .wash-green { animation: washGreen 1s var(--ease) both; }
+  .wash-accent { animation: washAccent 1.4s var(--ease) both; }
 }
 
 @keyframes fadeIn {
@@ -105,7 +133,7 @@
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -117,28 +145,53 @@
   to { stroke-dashoffset: 0; }
 }
 
+@keyframes washGreen {
+  from { background-color: rgb(var(--c-green) / 0.14); }
+  to { background-color: transparent; }
+}
+
+@keyframes washAccent {
+  from { background-color: rgb(var(--c-accent) / 0.12); }
+  to { background-color: transparent; }
+}
+
 .animate-fade-in {
-  animation: fadeIn 0.18s ease-out forwards;
+  animation: fadeIn 0.18s var(--ease) forwards;
 }
 
 .animate-slide-right {
-  animation: slideRight 0.2s ease-out forwards;
+  animation: slideRight 0.28s var(--ease-drawer) forwards;
 }
 
-/* Respect users who ask for less motion — disable all of it */
+/* Reduced motion: OS setting or the user's data-motion knob → short fades only */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.001ms !important;
+    animation-duration: 120ms !important;
     animation-delay: 0ms !important;
-    transition-duration: 0.001ms !important;
+    transition-duration: 120ms !important;
     scroll-behavior: auto !important;
   }
   .stagger-children > *,
   .animate-fade-up,
   .animate-draw {
     opacity: 1 !important;
+    transform: none !important;
     stroke-dashoffset: 0 !important;
   }
+}
+[data-motion="reduce"] *,
+[data-motion="reduce"] *::before,
+[data-motion="reduce"] *::after {
+  animation-duration: 120ms !important;
+  animation-delay: 0ms !important;
+  transition-duration: 120ms !important;
+}
+[data-motion="reduce"] .stagger-children > *,
+[data-motion="reduce"] .animate-fade-up,
+[data-motion="reduce"] .animate-draw {
+  opacity: 1 !important;
+  transform: none !important;
+  stroke-dashoffset: 0 !important;
 }

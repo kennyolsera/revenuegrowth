@@ -88,7 +88,7 @@ export function Dialog({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/60 p-4 backdrop-blur-sm sm:items-center animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--overlay)] p-4 sm:items-center animate-fade-in">
       <div className="fixed inset-0" onClick={() => onCloseRef.current()} aria-hidden="true" />
       <div
         ref={panelRef}
@@ -97,11 +97,11 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className={`relative z-10 w-full ${width} overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-elevated transition-all focus:outline-none`}
+        className={`relative z-10 w-full ${width} overflow-hidden rounded-xl border border-border bg-surface shadow-pop transition-all focus:outline-none`}
       >
-        <div className="flex items-start justify-between border-b border-surface-border px-5 py-4">
+        <div className="flex items-start justify-between border-b border-divider px-5 py-3.5">
           <div>
-            <h3 id={titleId} className="text-base font-bold tracking-tight text-slate-900">
+            <h3 id={titleId} className="text-lg font-semibold text-text">
               {title}
             </h3>
             {description && (
@@ -112,7 +112,7 @@ export function Dialog({
           </div>
           <button
             onClick={() => onCloseRef.current()}
-            className="rounded-xl p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+            className="rounded-md p-1.5 text-text-3 transition-colors hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
             aria-label="Tutup"
           >
             <X className="h-4 w-4" />

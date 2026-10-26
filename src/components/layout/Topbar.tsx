@@ -2,19 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  Menu,
-  LogOut,
-  User as UserIcon,
-  PanelLeftClose,
-  PanelLeft,
-  Sparkles,
-} from "lucide-react";
+import { Menu, LogOut, User as UserIcon, PanelLeftClose, PanelLeft, Sun, Moon } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_ITEMS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useSidebar } from "@/lib/SidebarContext";
 import { cn } from "@/lib/utils";
+
+type Theme = "light" | "dark";
+
+/** Reads/writes the theme knob (DESIGN.md › User-tunable knobs). Cached in localStorage. */
+function useTheme(): [Theme, () => void] {
+  const [theme, setTheme] = useState<Theme>("light");
+
+  useEffect(() => {
+    setTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+  }, []);
+
+  const toggle = () => {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    const root = document.documentElement;
+    if (next === "dark") root.dataset.theme = "dark";
+    else delete root.dataset.theme;
+    try {
+      const prefs = JSON.parse(localStorage.getItem("rgd-prefs") || "{}");
+      localStorage.setItem("rgd-prefs", JSON.stringify({ ...prefs, theme: next }));
+    } catch {
+      /* storage unavailable: the choice still applies for this visit */
+    }
+    setTheme(next);
+  };
+
+  return [theme, toggle];
+}
 
 export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const pathname = usePathname();
@@ -22,6 +42,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
   const { language, setLanguage, t } = useLanguage();
   const { isCollapsed, toggleCollapsed, setMobileOpen } = useSidebar();
   const [email, setEmail] = useState<string | null>(null);
+  const [theme, toggleTheme] = useTheme();
 
   const current = NAV_ITEMS.find(
     (i) => pathname === i.href || (i.href !== "/dashboard" && pathname.startsWith(i.href + "/"))
@@ -39,90 +60,86 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
     router.refresh();
   }
 
+  const iconBtn =
+    "inline-flex h-[30px] w-[30px] items-center justify-center rounded-md text-text-2 transition-colors hover:bg-surface-2 hover:text-text";
+
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-surface-border bg-surface px-4 sm:px-6">
-      {/* Left section: Collapse Toggle & Breadcrumb / Title */}
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-30 flex h-[46px] shrink-0 items-center justify-between gap-3 border-b border-border bg-bg px-4 sm:px-6">
+      {/* Left: menu / collapse, then breadcrumb */}
+      <div className="flex min-w-0 items-center gap-1.5">
         <button
           onClick={() => (onMenuClick ? onMenuClick() : setMobileOpen(true))}
-          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 lg:hidden"
+          className={cn(iconBtn, "lg:hidden")}
           aria-label="Buka menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-4 w-4" />
         </button>
 
         <button
           onClick={toggleCollapsed}
           title={isCollapsed ? t("expand_sidebar") : t("collapse_sidebar")}
-          className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-navy lg:flex items-center justify-center"
+          aria-label={isCollapsed ? t("expand_sidebar") : t("collapse_sidebar")}
+          className={cn(iconBtn, "hidden lg:inline-flex")}
         >
-          {isCollapsed ? (
-            <PanelLeft className="h-5 w-5 text-accent" />
-          ) : (
-            <PanelLeftClose className="h-5 w-5" />
-          )}
+          {isCollapsed ? <PanelLeft className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent-soft text-accent">
-            {current?.icon ? <current.icon className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}
-          </div>
-          <h1 className="text-sm font-semibold tracking-tight text-ink sm:text-[15px]">
+        <nav aria-label="Breadcrumb" className="ml-1 flex min-w-0 items-center text-[12.5px]">
+          <span className="hidden text-text-3 sm:inline">{t("app_title")}</span>
+          <span className="mx-1.5 hidden text-text-4 sm:inline">/</span>
+          <h1 className="truncate text-[12.5px] font-medium tracking-normal text-text">
             {current ? t(current.translationKey) : t("app_title")}
           </h1>
-        </div>
+        </nav>
       </div>
 
-      {/* Right section: Language Switcher & User Controls (Pojok Kanan Atas) */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="relative">
-          <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100/90 p-0.5 shadow-inner">
+      {/* Right: language, theme, user, logout */}
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div role="radiogroup" aria-label="Language" className="inline-flex rounded-md bg-surface-3 p-0.5">
+          {(["id", "en"] as const).map((lang) => (
             <button
+              key={lang}
               type="button"
-              onClick={() => setLanguage("id")}
+              role="radio"
+              aria-checked={language === lang}
+              onClick={() => setLanguage(lang)}
+              title={lang === "id" ? "Bahasa Indonesia" : "English"}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all",
-                language === "id"
-                  ? "bg-white text-navy shadow-sm ring-1 ring-black/5"
-                  : "text-slate-500 hover:text-slate-800"
+                "inline-flex h-6 items-center rounded-xs px-2 text-xs font-medium uppercase transition-colors",
+                language === lang ? "bg-surface text-text shadow-sm" : "text-text-3 hover:text-text"
               )}
-              title="Bahasa Indonesia"
             >
-              <span className="text-sm leading-none">🇮🇩</span>
-              <span className="font-mono">ID</span>
+              {lang}
             </button>
-            <button
-              type="button"
-              onClick={() => setLanguage("en")}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all",
-                language === "en"
-                  ? "bg-white text-navy shadow-sm ring-1 ring-black/5"
-                  : "text-slate-500 hover:text-slate-800"
-              )}
-              title="English"
-            >
-              <span className="text-sm leading-none">🇬🇧</span>
-              <span className="font-mono">EN</span>
-            </button>
-          </div>
+          ))}
         </div>
 
-        <div className="hidden items-center gap-2 rounded-lg border border-slate-200/80 bg-slate-50/80 px-3 py-1.5 sm:flex">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
-            {email ? email[0].toUpperCase() : <UserIcon className="h-3.5 w-3.5" />}
-          </div>
-          <span className="max-w-[140px] truncate text-xs font-medium text-slate-700">
-            {email ?? t("user")}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className={iconBtn}
+          aria-label={theme === "dark" ? "Mode terang" : "Mode gelap"}
+          title={theme === "dark" ? "Mode terang" : "Mode gelap"}
+        >
+          {theme === "dark" ? <Sun className="h-[15px] w-[15px]" /> : <Moon className="h-[15px] w-[15px]" />}
+        </button>
+
+        <div className="hidden items-center gap-2 pl-1 sm:flex">
+          <span
+            aria-hidden
+            className="inline-flex h-[22px] w-[22px] items-center justify-center rounded-full bg-accent/15 text-[11px] font-semibold text-accent"
+          >
+            {email ? email[0].toUpperCase() : <UserIcon className="h-3 w-3" />}
           </span>
+          <span className="max-w-[140px] truncate text-xs text-text-2">{email ?? t("user")}</span>
         </div>
 
         <button
           onClick={handleLogout}
           title={t("logout")}
-          className="flex items-center gap-1.5 rounded-lg border border-transparent px-2.5 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-status-danger"
+          className="inline-flex h-[30px] items-center gap-1.5 rounded-md px-2 text-xs font-medium text-text-2 transition-colors hover:bg-surface-2 hover:text-red"
         >
-          <LogOut className="h-4 w-4" />
+          <LogOut className="h-[15px] w-[15px]" />
           <span className="hidden sm:inline">{t("logout")}</span>
         </button>
       </div>

@@ -157,11 +157,11 @@ export default function FinancingPerformancePage() {
               <CardBody>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={44} tickFormatter={(v) => `${(v / 1e9).toFixed(1)}`} />
-                    <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [formatRupiah(v), t("fl_col_amount")]} />
-                    <Bar dataKey="disbursed" radius={[4, 4, 0, 0]} fill="#1657A0" />
+                    <CartesianGrid stroke="var(--divider)" vertical={false} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "var(--text-3)" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "var(--text-3)" }} axisLine={false} tickLine={false} width={44} tickFormatter={(v) => `${(v / 1e9).toFixed(1)}`} />
+                    <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", boxShadow: "var(--shadow-pop)", fontSize: 12 }} formatter={(v: any) => [formatRupiah(v), t("fl_col_amount")]} />
+                    <Bar dataKey="disbursed" radius={[4, 4, 0, 0]} fill="var(--chart-1)" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardBody>
@@ -171,11 +171,11 @@ export default function FinancingPerformancePage() {
               <CardBody>
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={chartData} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
-                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "#64748B" }} axisLine={{ stroke: "#E2E8F0" }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: "#64748B" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => `${v}%`} />
-                    <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 12 }} formatter={(v: any) => [`${v}%`, "B/C"]} />
-                    <Line type="monotone" dataKey="completion" stroke="#B45309" strokeWidth={2} dot={{ r: 2.5 }} />
+                    <CartesianGrid stroke="var(--divider)" vertical={false} />
+                    <XAxis dataKey="period" tick={{ fontSize: 11, fill: "var(--text-3)" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 11, fill: "var(--text-3)" }} axisLine={false} tickLine={false} width={40} tickFormatter={(v) => `${v}%`} />
+                    <Tooltip contentStyle={{ borderRadius: 10, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", boxShadow: "var(--shadow-pop)", fontSize: 12 }} formatter={(v: any) => [`${v}%`, "B/C"]} />
+                    <Line type="monotone" dataKey="completion" stroke="var(--chart-3)" strokeWidth={2} dot={{ r: 2.5 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </CardBody>

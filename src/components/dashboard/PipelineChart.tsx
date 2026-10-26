@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/shared/SupabaseNotice";
 import { PieChart as PieIcon } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 
-const COLORS = ["#1657A0", "#14B8A6", "#8B5CF6", "#F97316", "#EC4899", "#64748B"];
+const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-4)", "var(--chart-3)", "var(--rose)", "var(--text-3)"];
 
 export function PipelineChart({ data }: { data: { name: string; value: number }[] }) {
   const { t } = useLanguage();
@@ -42,10 +42,11 @@ export function PipelineChart({ data }: { data: { name: string; value: number }[
               </Pie>
               <Tooltip
                 contentStyle={{
-                  borderRadius: 12,
-                  border: "1px solid #E2E8F0",
-                  backgroundColor: "rgba(255, 255, 255, 0.96)",
-                  boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                  borderRadius: 10,
+                  border: "1px solid var(--border)",
+                  backgroundColor: "var(--surface)",
+                  color: "var(--text)",
+                  boxShadow: "var(--shadow-pop)",
                   fontSize: 12,
                 }}
               />
