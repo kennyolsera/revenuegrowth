@@ -342,7 +342,7 @@ export function computeFlags(r: FinancingReportRow): DataFlag[] {
     flags.push({
       severity: "med",
       title: '"Loan Agreement Opened" is 0 while Review > 0',
-      detail: `Review shows ${n(r.loan_agreement_review)} — an agreement cannot be reviewed before it is opened. Likely an untracked event.`,
+      detail: `Review shows ${n(r.loan_agreement_review)}, but an agreement cannot be reviewed before it is opened. Likely an untracked event.`,
     });
   }
   if (r.expected_fee && n(r.disbursed_amount) > 0) {
@@ -351,7 +351,7 @@ export function computeFlags(r: FinancingReportRow): DataFlag[] {
       flags.push({
         severity: "info",
         title: "Effective fee rate is outside the usual band",
-        detail: `Expected Fee ÷ Disbursed = ${rate.toFixed(1)}% (typically ~20–25%). Worth a sanity check.`,
+        detail: `Expected Fee ÷ Disbursed = ${rate.toFixed(1)}% (typically about 20-25%). Worth a sanity check.`,
       });
     }
   }

@@ -1,15 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Activity,
-  User,
-  Clock,
-  Layers,
-  Eye,
-  RefreshCw,
-  Sparkles,
-} from "lucide-react";
+import { Pulse as Activity, User, Clock, Stack as Layers, Eye, ArrowsClockwise as RefreshCw } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -100,7 +92,7 @@ const SAMPLE_LOGS: AuditLogRow[] = [
     changed_by: "sales.lead@perusahaan.com",
     changed_at: new Date(Date.now() - 1000 * 60 * 480).toISOString(),
     old_value: null,
-    new_value: { title: "Online Order Demo — Resto Seafood 99", event_type: "demo" },
+    new_value: { title: "Online Order Demo, Resto Seafood 99", event_type: "demo" },
   },
 ];
 
@@ -214,11 +206,6 @@ export default function ActivityLogsPage() {
       <PageHeader
         title={t("logs_title")}
         description={t("logs_desc")}
-        badge={
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 border border-emerald-200">
-            <Sparkles className="h-3 w-3 text-emerald-600" /> Audit Trail Active
-          </span>
-        }
         action={
           <Button size="sm" variant="secondary" onClick={fetchLogs} loading={loading}>
             <RefreshCw className="h-4 w-4" /> {language === "id" ? "Muat Ulang" : "Refresh"}
@@ -270,11 +257,11 @@ export default function ActivityLogsPage() {
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200">
+              <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-400 block font-semibold">{t("logs_col_user")}</span>
                 <span className="font-semibold text-slate-800">{inspectRow.changed_by}</span>
               </div>
-              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200">
+              <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-400 block font-semibold">{t("logs_col_time")}</span>
                 <span className="font-mono text-slate-800">{formatDate(inspectRow.changed_at, true)}</span>
               </div>
@@ -285,7 +272,7 @@ export default function ActivityLogsPage() {
                 <span className="text-xs font-bold text-slate-700 block mb-1">
                   {language === "id" ? "Nilai Sebelumnya (Before)" : "Previous Value (Before)"}:
                 </span>
-                <pre className="max-h-40 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] font-mono text-emerald-400 border border-slate-800 scrollbar-thin">
+                <pre className="max-h-40 overflow-auto rounded-lg bg-slate-900 p-3 text-[11px] font-mono text-emerald-400 border border-slate-800 scrollbar-thin">
                   {JSON.stringify(inspectRow.old_value, null, 2)}
                 </pre>
               </div>
@@ -296,7 +283,7 @@ export default function ActivityLogsPage() {
                 <span className="text-xs font-bold text-slate-700 block mb-1">
                   {language === "id" ? "Nilai Baru (After / Payload)" : "New Value (After / Payload)"}:
                 </span>
-                <pre className="max-h-40 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] font-mono text-blue-400 border border-slate-800 scrollbar-thin">
+                <pre className="max-h-40 overflow-auto rounded-lg bg-slate-900 p-3 text-[11px] font-mono text-blue-400 border border-slate-800 scrollbar-thin">
                   {JSON.stringify(inspectRow.new_value, null, 2)}
                 </pre>
               </div>

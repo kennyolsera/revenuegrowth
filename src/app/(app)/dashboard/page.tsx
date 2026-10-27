@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, QrCode, Landmark, Inbox, CalendarClock, ListChecks, ArrowUpRight, Sparkles } from "lucide-react";
+import { Users, QrCode, Bank as Landmark, Tray as Inbox, CalendarCheck as CalendarClock, ListChecks, ArrowUpRight } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, EmptyState } from "@/components/shared/SupabaseNotice";
@@ -197,9 +197,9 @@ export default function DashboardPage() {
         title={t("dash_header_title")}
         description={t("dash_header_desc")}
         badge={
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent border border-accent/20">
-            <Sparkles className="h-3 w-3" /> {isSupabaseConfigured ? t("live_operations") : t("sample_data")}
-          </span>
+          isSupabaseConfigured ? undefined : (
+            <span className="rounded border border-border px-1.5 py-px font-mono text-[11px] text-text-3">{t("sample_data")}</span>
+          )
         }
       />
 
@@ -276,7 +276,7 @@ export default function DashboardPage() {
               <ul className="divide-y divide-slate-100">
                 {data.agenda.map((a) => (
                   <li key={a.id} className="flex items-center gap-3 px-6 py-3.5 hover:bg-slate-50/60 transition-colors">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-accent">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-accent">
                       <CalendarClock className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -317,7 +317,7 @@ export default function DashboardPage() {
               <ul className="divide-y divide-slate-100">
                 {data.recentRequests.map((r) => (
                   <li key={r.id} className="flex items-center gap-3 px-6 py-3.5 hover:bg-slate-50/60 transition-colors">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
                       <ListChecks className="h-4 w-4" />
                     </div>
                     <div className="min-w-0 flex-1">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, PanelLeftClose, PanelLeft } from "lucide-react";
+import { X, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft } from "@phosphor-icons/react";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { NAV_GROUPS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -27,7 +27,7 @@ export function Sidebar({
   };
 
   const content = (
-    <div className="relative flex h-full flex-col overflow-hidden bg-rail text-rail-text-2 border-r border-rail-line">
+    <div className="relative flex h-full flex-col overflow-hidden border-r border-rail-line bg-rail text-rail-text-2">
       {/* Brand Header */}
       <div
         className={cn(
@@ -58,7 +58,7 @@ export function Sidebar({
             <div key={group.id} className="space-y-px">
               {/* Group Section Header */}
               {!isCollapsed ? (
-                <div className="label-mono px-2 pb-1 pt-1 text-rail-muted">{groupTitle}</div>
+                <div className="px-2 pb-1 pt-1.5 text-[11.5px] font-medium text-rail-muted">{groupTitle}</div>
               ) : groupIdx > 0 ? (
                 <div className="mx-2 my-2 border-t border-rail-line" />
               ) : null}
@@ -80,12 +80,14 @@ export function Sidebar({
                     className={cn(
                       "group relative flex h-[30px] items-center rounded-md px-2 text-sm transition-colors",
                       active
-                        ? "bg-rail-active text-rail-text"
+                        ? "bg-rail-active text-rail-text shadow-[0_0_0_1px_rgb(var(--c-rail-line)),0_1px_2px_rgb(13_20_36/0.05)]"
                         : "text-rail-text-2 hover:bg-rail-hover hover:text-rail-text",
                       isCollapsed && "h-9 justify-center px-2"
                     )}
                   >
                     <Icon
+                      weight={active ? "fill" : "regular"}
+                      aria-hidden
                       className={cn(
                         "shrink-0",
                         active ? "text-rail-node" : "text-rail-muted group-hover:text-rail-text-2",
@@ -119,12 +121,7 @@ export function Sidebar({
           isCollapsed ? "justify-center" : "justify-between"
         )}
       >
-        {!isCollapsed && (
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-rail-node" />
-            <span className="text-xs text-rail-muted">v1.0 · VAS Live</span>
-          </div>
-        )}
+        {!isCollapsed && <span className="text-[11.5px] text-rail-muted">Olsera · VAS</span>}
         <button
           onClick={toggleCollapsed}
           title={isCollapsed ? t("expand_sidebar") : t("collapse_sidebar")}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertOctagon, ArrowRight, MessageSquare, Plus, Trash2 } from "lucide-react";
+import { WarningOctagon as AlertOctagon, ArrowRight, ChatCenteredText as MessageSquare, Plus, Trash as Trash2 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -439,8 +439,8 @@ export function TaskDialog({
                 return (
                   <p className="mt-1 text-xs text-amber">
                     {id
-                      ? `Tenggat kartu di luar jadwal proyek (${proj.start_date} – ${proj.end_date}).`
-                      : `The card's due date is outside the project dates (${proj.start_date} – ${proj.end_date}).`}
+                      ? `Tenggat kartu di luar jadwal proyek (${proj.start_date} s.d. ${proj.end_date}).`
+                      : `The card's due date is outside the project dates (${proj.start_date} to ${proj.end_date}).`}
                   </p>
                 );
               })()}
@@ -519,7 +519,7 @@ export function TaskDialog({
             </div>
           </Field>
 
-          <div className={cn("mb-4 rounded-xl border p-3", form.is_blocked ? "border-rose-200 bg-rose-50/50" : "border-surface-border")}>
+          <div className={cn("mb-4 rounded-lg border p-3", form.is_blocked ? "border-rose-200 bg-rose-50/50" : "border-surface-border")}>
             <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-ink-body">
               <input
                 type="checkbox"
@@ -546,11 +546,11 @@ export function TaskDialog({
               <ArrowRight className="h-3.5 w-3.5" />
               {task.source_type === "mom"
                 ? id
-                  ? "Berasal dari Action Item MOM — akan dicentang otomatis saat kartu Selesai."
-                  : "Sourced from a MOM action item — it is ticked automatically when the card is Done."
+                  ? "Berasal dari Action Item MOM. Otomatis dicentang saat kartu Selesai."
+                  : "Sourced from a MOM action item. It is ticked automatically when the card is Done."
                 : id
-                ? "Berasal dari Request Form — status tiket ikut berubah saat kartu dikerjakan / selesai."
-                : "Sourced from the Request Form — the ticket status follows when the card starts / finishes."}
+                ? "Berasal dari Request Form. Status tiket ikut berubah saat kartu dikerjakan atau selesai."
+                : "Sourced from the Request Form. The ticket status follows when the card starts or finishes."}
             </p>
           )}
 

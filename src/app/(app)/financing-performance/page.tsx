@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { Landmark, Wallet, Percent, Users, FileUp, ShieldAlert, Lock, AlertTriangle, Info } from "lucide-react";
+import { Bank as Landmark, Wallet, Percent, Users, FileArrowUp as FileUp, ShieldWarning as ShieldAlert, Lock, Warning as AlertTriangle, Info } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
@@ -80,7 +80,7 @@ export default function FinancingPerformancePage() {
         <PageHeader title={t("finperf_title")} description={t("finperf_desc")} />
         <Card>
           <CardBody className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
               <Lock className="h-6 w-6" />
             </div>
             <p className="max-w-sm text-sm font-medium text-slate-600">{t("finperf_restricted")}</p>
@@ -100,7 +100,7 @@ export default function FinancingPerformancePage() {
         description={t("finperf_desc")}
         badge={
           latest ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
+            <span className="rounded border border-border px-1.5 py-px font-mono text-[11px] text-text-3">
               {latest.period_label}
             </span>
           ) : undefined
@@ -217,7 +217,7 @@ export default function FinancingPerformancePage() {
                 {flags.map((f, i) => {
                   const s = FLAG_STYLE[f.severity];
                   return (
-                    <div key={i} className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
+                    <div key={i} className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50/60 p-3.5">
                       <span className={cn("inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[10px] font-bold uppercase", s.chip)}>{s.icon} {s.label}</span>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-800">{f.title}</p>
@@ -278,7 +278,7 @@ function FeeRow({ label, value, pct, tone }: { label: string; value: number; pct
         <div className={cn("h-full rounded-md", bar[tone])} style={{ width: `${Math.min(100, Math.abs(pct))}%` }} />
       </div>
       <span className={cn("text-right text-xs font-semibold font-mono", value < 0 ? "text-rose-600" : "text-slate-700")}>
-        {value < 0 ? "– " : ""}{formatRupiah(Math.abs(value))}
+        {value < 0 ? "−" : ""}{formatRupiah(Math.abs(value))}
       </span>
     </div>
   );

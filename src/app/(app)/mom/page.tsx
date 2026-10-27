@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, Trash2, CheckCircle2, Circle, Paperclip, Upload, X, Pencil } from "lucide-react";
+import { Plus, Trash as Trash2, CheckCircle as CheckCircle2, Circle, Paperclip, UploadSimple as Upload, X, PencilSimple as Pencil } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";

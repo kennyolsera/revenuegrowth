@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import { UploadCloud, Download, CheckCircle2, Eye, Pencil } from "lucide-react";
+import { CloudArrowUp as UploadCloud, DownloadSimple as Download, CheckCircle as CheckCircle2, Eye, PencilSimple as Pencil } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -208,7 +208,7 @@ export default function LeadsPage() {
         fileKind(r.file_name ?? "") === "spreadsheet" ? (
           <span className="num">{new Intl.NumberFormat("id-ID").format(r.row_count ?? 0)}</span>
         ) : (
-          <span className="text-text-4">—</span>
+          <span className="text-text-4">-</span>
         ),
     },
     { key: "uploaded_by", label: t("leads_col_uploader") },
@@ -307,14 +307,14 @@ export default function LeadsPage() {
               accept={LEADS_ACCEPT}
               required
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="block w-full text-xs text-slate-600 file:mr-3 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3.5 file:py-2.5 file:text-xs file:font-semibold file:text-accent hover:file:bg-blue-100 cursor-pointer"
+              className="block w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3.5 file:py-2.5 file:text-xs file:font-semibold file:text-accent hover:file:bg-blue-100 cursor-pointer"
             />
             <p className="mt-1.5 text-xs text-slate-400">
               {t("leads_upload_hint")}
             </p>
           </Field>
 
-          {uploadError && <p className="mb-3 rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-xs text-status-danger">{uploadError}</p>}
+          {uploadError && <p className="mb-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-status-danger">{uploadError}</p>}
 
           <div className="flex justify-end gap-2.5 border-t border-slate-100 pt-4 mt-2">
             <Button type="button" variant="secondary" onClick={() => setUploadOpen(false)}>

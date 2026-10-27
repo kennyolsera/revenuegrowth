@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileUp } from "lucide-react";
+import { FileArrowUp as FileUp } from "@phosphor-icons/react";
 import { ResourceManager } from "@/components/shared/ResourceManager";
 import { OnlineOrderImportDialog } from "@/components/online-order/OnlineOrderImportDialog";
 import { Button } from "@/components/ui/Button";

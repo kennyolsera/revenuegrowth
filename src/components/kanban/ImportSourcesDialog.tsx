@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Inbox, Loader2, NotebookPen } from "lucide-react";
+import { Tray as Inbox, CircleNotch as Loader2, NotePencil as NotebookPen } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -221,7 +221,7 @@ export function ImportSourcesDialog({
                     {allOn ? (id ? "Batal pilih" : "Clear") : id ? "Pilih semua" : "Select all"}
                   </button>
                 </div>
-                <ul className="divide-y divide-surface-border overflow-hidden rounded-xl border border-surface-border">
+                <ul className="divide-y divide-surface-border overflow-hidden rounded-lg border border-surface-border">
                   {items.map((c) => (
                     <li key={c.key}>
                       <label

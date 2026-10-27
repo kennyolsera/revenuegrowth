@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Download } from "lucide-react";
+import { Plus, PencilSimple as Pencil, Trash as Trash2, DownloadSimple as Download } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -358,7 +358,7 @@ export function ResourceManager<T extends { id: string }>({
       <Dialog
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
-        title={editing ? `${t("edit")} — ${title}` : effectiveAddLabel}
+        title={editing ? `${t("edit")}: ${title}` : effectiveAddLabel}
         width="max-w-xl"
       >
         <form onSubmit={handleSubmit}>
@@ -425,7 +425,7 @@ export function ResourceManager<T extends { id: string }>({
           </div>
 
           {formError && (
-            <p className="mb-4 rounded-xl bg-red-50 border border-red-200 px-3.5 py-2 text-xs text-status-danger">
+            <p className="mb-4 rounded-lg bg-red-50 border border-red-200 px-3.5 py-2 text-xs text-status-danger">
               {formError}
             </p>
           )}
@@ -448,14 +448,14 @@ export function ResourceManager<T extends { id: string }>({
         width="max-w-md"
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-status-danger">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-50 text-status-danger">
             <Trash2 className="h-5 w-5" />
           </div>
           <p className="text-sm text-slate-600 leading-relaxed">{t("confirm_delete")}</p>
         </div>
 
         {deleteError && (
-          <p className="mt-4 rounded-xl bg-red-50 border border-red-200 px-3.5 py-2 text-xs text-status-danger">
+          <p className="mt-4 rounded-lg bg-red-50 border border-red-200 px-3.5 py-2 text-xs text-status-danger">
             {deleteError}
           </p>
         )}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Plus } from "lucide-react";
+import { CaretDown as ChevronDown, Plus } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select } from "@/components/ui/Input";
@@ -14,7 +14,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 export const NEW_OPTION = "__new__";
 
 export const OPT_COPY = {
-  none: { id: "—", en: "—" },
+  none: { id: "-", en: "-" },
   newOption: { id: "+ Opsi baru…", en: "+ New option…" },
   newName: { id: "Nama opsi baru", en: "New option name" },
   add: { id: "Tambah", en: "Add" },

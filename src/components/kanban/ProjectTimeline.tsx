@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, FolderKanban, Pencil, Plus, SquareKanban } from "lucide-react";
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, Kanban as FolderKanban, PencilSimple as Pencil, Plus, Kanban as SquareKanban } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/Button";
 import { moduleLabel, todayISO } from "@/lib/kanban";
 import {
@@ -226,15 +226,15 @@ export function ProjectTimeline({
                         <div
                           className={cn("absolute top-1/2 h-5 -translate-y-1/2 overflow-hidden", tone.track, clippedStart ? "rounded-l-none" : "rounded-l-md", clippedEnd ? "rounded-r-none" : "rounded-r-md")}
                           style={{ left: pct(left), width: pct(right - left) }}
-                          title={`${p.name}: ${fmtDate(p.start_date)} – ${fmtDate(p.end_date)} · ${pct(progress.ratio)}`}
+                          title={`${p.name}: ${fmtDate(p.start_date)} - ${fmtDate(p.end_date)} · ${pct(progress.ratio)}`}
                           role="img"
-                          aria-label={`${p.name}, ${fmtDate(p.start_date)} – ${fmtDate(p.end_date)}, ${pct(progress.ratio)} ${t("proj_complete")}, ${meta.label[language]}`}
+                          aria-label={`${p.name}, ${fmtDate(p.start_date)} - ${fmtDate(p.end_date)}, ${pct(progress.ratio)} ${t("proj_complete")}, ${meta.label[language]}`}
                         >
                           <div className={cn("h-full", tone.fill)} style={{ width: pct(progress.ratio) }} />
                         </div>
                       ) : (
                         <span className="absolute inset-y-0 left-3 flex items-center text-xs text-text-4">
-                          {positionIn(from, windowEnd, p.start_date) >= 1 ? t("proj_later") : t("proj_earlier")} · {fmtDate(p.start_date)} – {fmtDate(p.end_date)}
+                          {positionIn(from, windowEnd, p.start_date) >= 1 ? t("proj_later") : t("proj_earlier")} · {fmtDate(p.start_date)} - {fmtDate(p.end_date)}
                         </span>
                       )}
                     </div>

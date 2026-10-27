@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileUp, ListChecks, Plus, RefreshCw, Search, X } from "lucide-react";
+import { FileArrowUp as FileUp, ListChecks, Plus, ArrowsClockwise as RefreshCw, MagnifyingGlass as Search, X } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
 import { Button } from "@/components/ui/Button";
@@ -408,7 +408,7 @@ export default function ActivityRecordPage() {
                     onChange={(e) => setCustomFrom(e.target.value)}
                     className="h-7 rounded-md border border-border bg-surface px-2 text-[12px] text-text focus:border-accent focus:outline-none"
                   />
-                  <span aria-hidden>–</span>
+                  <span aria-hidden>-</span>
                   <input
                     id="act-to"
                     type="date"

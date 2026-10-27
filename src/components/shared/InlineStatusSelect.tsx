@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Loader2 } from "lucide-react";
+import { CaretDown as ChevronDown, CircleNotch as Loader2 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { statusTone } from "@/components/ui/Badge";
 import { useLanguage } from "@/lib/LanguageContext";

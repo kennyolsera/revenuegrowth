@@ -17,7 +17,9 @@
     font-family: var(--font);
     font-size: 13.5px;
     line-height: 1.45;
-    font-feature-settings: "ss01", "cv11";
+    letter-spacing: -0.003em;
+    /* Geist: slashed zero off, tabular figures where numbers line up (see .num) */
+    font-feature-settings: "ss01" 0;
   }
   h1, h2, h3, h4 {
     font-family: var(--font);

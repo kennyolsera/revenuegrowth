@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { MagnifyingGlass as Search, X } from "@phosphor-icons/react";
 import { Input, Select } from "@/components/ui/Input";
 import { useLanguage } from "@/lib/LanguageContext";
 
@@ -40,7 +40,7 @@ export function Toolbar({
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={defaultPlaceholder}
-            className="pl-10 pr-8 h-10 rounded-xl bg-white shadow-xs"
+            className="pl-10 pr-8 h-10 rounded-lg bg-white shadow-xs"
           />
           {search && (
             <button

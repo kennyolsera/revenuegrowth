@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FileUp } from "lucide-react";
+import { FileArrowUp as FileUp } from "@phosphor-icons/react";
 import { ResourceManager } from "@/components/shared/ResourceManager";
 import { Button } from "@/components/ui/Button";
 import { StatusBadge } from "@/components/ui/Badge";

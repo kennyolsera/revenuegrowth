@@ -1,29 +1,12 @@
-import {
-  LayoutDashboard,
-  CalendarDays,
-  NotebookPen,
-  QrCode,
-  ShoppingCart,
-  LineChart,
-  Network,
-  BadgeCheck,
-  Inbox,
-  FileBarChart,
-  Database,
-  Users,
-  Activity,
-  CreditCard,
-  GanttChart,
-  ClipboardList,
-  type LucideIcon,
-} from "lucide-react";
+import { SquaresFour as LayoutDashboard, CalendarDots as CalendarDays, NotePencil as NotebookPen, QrCode, ShoppingCart, ChartLine as LineChart, Graph as Network, SealCheck as BadgeCheck, Tray as Inbox, ChartBar as FileBarChart, Database, Users, Pulse as Activity, CreditCard, ChartBarHorizontal as GanttChart, ClipboardText as ClipboardList } from "@phosphor-icons/react/dist/ssr";
+import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import type { TranslationKey } from "@/lib/i18n";
 
 export interface NavItem {
   href: string;
   label: string;
   translationKey: TranslationKey;
-  icon: LucideIcon;
+  icon: PhosphorIcon;
   badge?: string;
 }
 

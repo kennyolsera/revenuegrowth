@@ -26,58 +26,59 @@ def ch(h):
 WHITE, BLACK = '#ffffff', '#000000'
 
 # ── ESMM brand on the Olsera palette (DESIGN.md › colors / colors-dark) ─────
-# Colours sampled from the Olsera logo (2026-10-26): wordmark Navy #16397B,
-# balloon Ocean #1393D1, Sky #10AAE2, Cyan #3AC7EA.
-# Light = cool Cloud ground, white panels, Navy Ink text. Dark = Night Navy ground.
+# v1.3 (2026-10-27, ADR-009): neutral-first chrome. The page is near-neutral
+# cool grey; colour is spent on ONE accent (Olsera Blue, the midpoint of the
+# logo's wordmark navy #16397B and balloon blue #1393D1) and on meaning
+# (status chips). The logo keeps navy + balloon blues.
 NEUTRAL = {
-    'light': dict(bg='#f4f7fb', side='#16397b', surface='#ffffff', **{'surface-2': '#f6f8fc', 'surface-3': '#ebf0f7'},
-                  sunken='#eef2f8', border='#dfe6f0', **{'border-strong': '#cad4e3'}, divider='#e8edf5',
-                  text='#0f1e3d', **{'text-2': '#3a4a66', 'text-3': '#4b5a75', 'text-4': '#77849b'}),
-    'dark': dict(bg='#0b1b3a', side='#0d2350', surface='#102449', **{'surface-2': '#142b54', 'surface-3': '#1a335f'},
-                 sunken='#091733', border='#213c69', **{'border-strong': '#2c4a7c'}, divider='#18305a',
-                 text='#f4f7fb', **{'text-2': '#c9d5e8', 'text-3': '#a7b6cf', 'text-4': '#7e8eaa'}),
+    'light': dict(bg='#f7f8fa', side='#f1f3f6', surface='#ffffff', **{'surface-2': '#f4f5f7', 'surface-3': '#eceef1'},
+                  sunken='#f1f2f4', border='#e3e6ea', **{'border-strong': '#d0d5dc'}, divider='#edeff2',
+                  text='#0d1424', **{'text-2': '#3b4556', 'text-3': '#4f5868', 'text-4': '#7c8594'}),
+    'dark': dict(bg='#0a0d14', side='#0c1018', surface='#10141d', **{'surface-2': '#151a25', 'surface-3': '#1c2230'},
+                 sunken='#080b11', border='#232a38', **{'border-strong': '#2f3848'}, divider='#1a202b',
+                 text='#eef1f6', **{'text-2': '#c3cad6', 'text-3': '#9aa3b2', 'text-4': '#737d8d'}),
 }
 
-# The sidebar ("rail") is Olsera Navy in BOTH modes; the node is Balloon Cyan.
+# Sidebar ("rail"): a quiet neutral panel in both modes, one step off the page.
 RAIL = {
-    'light': {'rail': '#16397b', 'rail-hover': '#1d4588', 'rail-active': '#255297', 'rail-line': '#24488a',
-              'rail-text': '#ffffff', 'rail-text-2': '#d3def0', 'rail-muted': '#9db2d6', 'rail-node': '#3ac7ea'},
-    'dark': {'rail': '#0d2350', 'rail-hover': '#163066', 'rail-active': '#1e3b78', 'rail-line': '#1a3466',
-             'rail-text': '#ffffff', 'rail-text-2': '#d3def0', 'rail-muted': '#9db2d6', 'rail-node': '#3ac7ea'},
+    'light': {'rail': '#f1f3f6', 'rail-hover': '#e7eaee', 'rail-active': '#ffffff', 'rail-line': '#e1e5ea',
+              'rail-text': '#0d1424', 'rail-text-2': '#3b4556', 'rail-muted': '#5c6574', 'rail-node': '#1468b3'},
+    'dark': {'rail': '#0c1018', 'rail-hover': '#151a25', 'rail-active': '#1a2030', 'rail-line': '#1a202b',
+             'rail-text': '#eef1f6', 'rail-text-2': '#c3cad6', 'rail-muted': '#8790a0', 'rail-node': '#5aaee9'},
 }
 
-# Neutral scale used for slate/gray/zinc/neutral/stone (cool navy-grey).
+# Neutral scale used for slate/gray/zinc/neutral/stone (cool, near-neutral).
 NSCALE = {
-    'light': {50: '#f6f8fc', 100: '#ebf0f7', 200: '#dfe6f0', 300: '#cad4e3', 400: '#77849b', 500: '#4b5a75',
-              600: '#3a4a66', 700: '#283754', 800: '#1a2846', 900: '#0f1e3d', 950: '#091530'},
-    'dark': {50: '#142b54', 100: '#1a335f', 200: '#213c69', 300: '#2c4a7c', 400: '#7e8eaa', 500: '#a7b6cf',
-             600: '#c9d5e8', 700: '#dce4f1', 800: '#e9eef7', 900: '#f4f7fb', 950: '#fafcfe'},
+    'light': {50: '#f4f5f7', 100: '#eceef1', 200: '#e3e6ea', 300: '#d0d5dc', 400: '#7c8594', 500: '#4f5868',
+              600: '#3b4556', 700: '#2a3342', 800: '#1a2231', 900: '#0d1424', 950: '#070b15'},
+    'dark': {50: '#151a25', 100: '#1c2230', 200: '#232a38', 300: '#2f3848', 400: '#737d8d', 500: '#9aa3b2',
+             600: '#c3cad6', 700: '#d8dde6', 800: '#e6e9ef', 900: '#eef1f6', 950: '#f7f8fa'},
 }
 
-HUES = {  # (light: darkened for AA text on cloud/white, dark: lifted for night navy)
-    'red': ('#b23c30', '#f08a7e'),
+HUES = {  # (light: darkened for AA text on white, dark: lifted for near-black)
+    'red': ('#b42f2a', '#f08a7e'),
     'amber': ('#8a5a0c', '#e8bd5a'),
-    'green': ('#1f6e45', '#5fd39a'),
-    'blue': ('#1c6aa8', '#8fc4f0'),
-    'violet': ('#6b51a8', '#b8a2ee'),
-    'teal': ('#1d6f72', '#6fcfd2'),
-    'orange': ('#a65a26', '#e8a06c'),
-    'rose': ('#b0405f', '#f09ab2'),
+    'green': ('#1d6b46', '#5fcf96'),
+    'blue': ('#1468b3', '#7fbcef'),
+    'violet': ('#5f4bb0', '#b3a3f0'),
+    'teal': ('#156e72', '#6acdd0'),
+    'orange': ('#a4521c', '#eda06a'),
+    'rose': ('#ab3a5c', '#f09ab2'),
 }
 
-# One brand accent. Light: Olsera Navy (white text 11:1). Dark: Balloon Cyan (navy text 8.5:1).
+# One brand accent. Light: Olsera Blue (white text 5.7:1). Dark: lifted Olsera Blue (near-black text 7.9:1).
 ACCENT_DEFAULT = 'olsera'
 ACCENTS = {
-    'olsera': ('#16397b', '#3ac7ea'),
+    'olsera': ('#1468b3', '#5aaee9'),
 }
-ON_ACCENT = {'light': '#ffffff', 'dark': '#0b1b3a'}
-# Highlight (was Copper): Balloon Ocean / Sky. Graphics and marks only, never body text.
-HIGHLIGHT = {'light': '#1393d1', 'dark': '#10aae2'}
+ON_ACCENT = {'light': '#ffffff', 'dark': '#08101c'}
+# Highlight: the logo's balloon blues. Graphics only (logo node, today line), never body text.
+HIGHLIGHT = {'light': '#1393d1', 'dark': '#3ac7ea'}
 
-# Charts: Navy, Ocean, Amber (warm contrast), Slate Blue (+ muted for "before"/target series).
+# Charts: accent, amber (warm contrast), slate, balloon blue (+ muted for "before"/target series).
 CHARTS = {
-    'light': ['#16397b', '#1393d1', '#c8862a', '#6b7fa3', '#cad4e3'],
-    'dark': ['#3ac7ea', '#8fb4f0', '#e8b05a', '#a7b6cf', '#2c4a7c'],
+    'light': ['#1468b3', '#b7791f', '#6b7484', '#1393d1', '#d0d5dc'],
+    'dark': ['#5aaee9', '#e3b062', '#9aa3b2', '#3ac7ea', '#2f3848'],
 }
 
 def hue_scale(base, mode):
@@ -127,11 +128,11 @@ def block(mode):
         out.append(f'  --{hue}: rgb(var(--c-{hue}));')
     if mode == 'light':
         out += [
-            '  --overlay: rgb(15 30 61 / 0.28);',
-            '  --shadow-sm: 0 1px 2px rgb(15 30 61 / 0.06);',
-            '  --shadow-card: 0 0 0 1px rgb(15 30 61 / 0.06), 0 1px 2px rgb(15 30 61 / 0.04);',
-            '  --shadow-pop: 0 0 0 1px rgb(15 30 61 / 0.06), 0 8px 24px rgb(15 30 61 / 0.12);',
-            '  --shadow-drag: 0 0 0 1px rgb(15 30 61 / 0.08), 0 16px 32px rgb(15 30 61 / 0.18);',
+            '  --overlay: rgb(13 20 36 / 0.28);',
+            '  --shadow-sm: 0 1px 2px rgb(13 20 36 / 0.06);',
+            '  --shadow-card: 0 0 0 1px rgb(13 20 36 / 0.06), 0 1px 2px rgb(13 20 36 / 0.04);',
+            '  --shadow-pop: 0 0 0 1px rgb(13 20 36 / 0.06), 0 8px 24px rgb(13 20 36 / 0.12);',
+            '  --shadow-drag: 0 0 0 1px rgb(13 20 36 / 0.08), 0 16px 32px rgb(13 20 36 / 0.18);',
             '  color-scheme: light;',
         ]
     else:
@@ -157,8 +158,8 @@ parts = [
     '',
     ':root {',
     block('light'),
-    '  --font: "Sora Variable", "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;',
-    '  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;',
+    '  --font: "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;',
+    '  --mono: "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;',
     '  --row-h: 40px;',
     '  --gutter: 24px;',
     '  --dur: 140ms;',

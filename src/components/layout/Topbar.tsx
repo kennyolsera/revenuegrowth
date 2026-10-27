@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Menu, LogOut, User as UserIcon, PanelLeftClose, PanelLeft, Sun, Moon } from "lucide-react";
+import { List as Menu, SignOut as LogOut, User as UserIcon, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft, Sun, Moon } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_ITEMS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -87,9 +87,9 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
         <nav aria-label="Breadcrumb" className="ml-1 flex min-w-0 items-center text-[12.5px]">
           <span className="hidden text-text-3 sm:inline">{t("app_title")}</span>
           <span className="mx-1.5 hidden text-text-4 sm:inline">/</span>
-          <h1 className="truncate text-[12.5px] font-medium tracking-normal text-text">
+          <span aria-current="page" className="truncate text-[12.5px] font-medium text-text">
             {current ? t(current.translationKey) : t("app_title")}
-          </h1>
+          </span>
         </nav>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, FileSpreadsheet, CheckCircle2 } from "lucide-react";
+import { UploadSimple as Upload, FileXls as FileSpreadsheet, CheckCircle as CheckCircle2 } from "@phosphor-icons/react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Field, Label, Input } from "@/components/ui/Input";
@@ -101,7 +101,7 @@ export function WeeklyReportImportDialog({
         </Field>
       </div>
 
-      <div className="mb-4 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/60 p-6 text-center">
+      <div className="mb-4 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/60 p-6 text-center">
         <FileSpreadsheet className="mx-auto mb-2 h-8 w-8 text-accent" />
         <label className="cursor-pointer text-sm font-semibold text-accent hover:underline">
           <input
@@ -116,7 +116,7 @@ export function WeeklyReportImportDialog({
       </div>
 
       {parseError && (
-        <p className="mb-3 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2 text-xs text-status-danger">{parseError}</p>
+        <p className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2 text-xs text-status-danger">{parseError}</p>
       )}
 
       {rows.length > 0 && (
@@ -129,7 +129,7 @@ export function WeeklyReportImportDialog({
               {format} · {rows.length} {language === "id" ? "periode" : "periods"}
             </span>
           </div>
-          <div className="scrollbar-thin mb-4 max-h-64 overflow-auto rounded-xl border border-slate-200">
+          <div className="scrollbar-thin mb-4 max-h-64 overflow-auto rounded-lg border border-slate-200">
             <table className="w-full text-left text-xs">
               <thead className="sticky top-0 bg-slate-50">
                 <tr>

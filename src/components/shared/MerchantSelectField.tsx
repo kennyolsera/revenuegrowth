@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Input, Label } from "@/components/ui/Input";
 import { useLanguage } from "@/lib/LanguageContext";
-import { Store, Check, Sparkles } from "lucide-react";
+import { Storefront as Store, Check, Plus } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 export interface MerchantOption {
@@ -206,7 +206,7 @@ export function MerchantSelectField({
             </>
           ) : (
             <>
-              <Sparkles className="h-3 w-3" /> {t("merchant_will_create")}
+              <Plus className="h-3 w-3" /> {t("merchant_will_create")}
             </>
           )}
         </p>
@@ -214,7 +214,7 @@ export function MerchantSelectField({
 
       {/* Suggestions dropdown */}
       {open && suggestions.length > 0 && (
-        <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-xl border border-slate-200 bg-white py-1 shadow-elevated scrollbar-thin">
+        <ul className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-slate-200 bg-white py-1 shadow-elevated scrollbar-thin">
           {suggestions.map((o, i) => (
             <li key={o.value}>
               <button
@@ -233,7 +233,7 @@ export function MerchantSelectField({
           ))}
           {showCreateHint && (
             <li className="border-t border-slate-100 px-3.5 py-2 text-[11px] text-slate-400">
-              “{query.trim()}” — {t("merchant_will_create")}
+              “{query.trim()}”: {t("merchant_will_create")}
             </li>
           )}
         </ul>

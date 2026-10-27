@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, X } from "lucide-react";
+import { CaretDown as ChevronDown, X } from "@phosphor-icons/react";
 import { EVENT_TYPE_COLOR_CLASSES } from "@/lib/calendar-event-types";
 import type { ActivityOption } from "@/lib/activity";
 import { cn } from "@/lib/utils";

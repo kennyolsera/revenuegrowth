@@ -33,7 +33,7 @@ export function isAcceptedLeadsFile(name: string): boolean {
 
 /** "2,4 MB" style size for the preview header. */
 export function formatBytes(bytes: number, locale = "id-ID"): string {
-  if (!Number.isFinite(bytes) || bytes <= 0) return "—";
+  if (!Number.isFinite(bytes) || bytes <= 0) return "-";
   const units = ["B", "KB", "MB", "GB"];
   let value = bytes;
   let unit = 0;

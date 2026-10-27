@@ -29,7 +29,7 @@ export function DataTable<T extends { id: string | number }>({
   const resolvedEmptyText = emptyText ?? t("no_data");
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-card">
+    <div className="overflow-hidden rounded-lg border border-surface-border bg-surface">
       <div className="scrollbar-thin overflow-x-auto">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>

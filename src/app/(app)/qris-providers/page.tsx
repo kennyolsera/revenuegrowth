@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Power, Lock } from "lucide-react";
+import { Power, Lock } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
@@ -83,7 +83,7 @@ export default function QrisProvidersPage() {
         <PageHeader title={t("qpv_title")} description={t("qpv_desc")} />
         <Card>
           <CardBody className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
               <Lock className="h-6 w-6" />
             </div>
             <p className="max-w-sm text-sm font-medium text-ink-body">{t("qpv_restricted")}</p>

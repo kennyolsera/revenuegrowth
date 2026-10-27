@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
-// ESMM type (DESIGN.md › Typography): Sora + IBM Plex Mono, self-hosted via
+// ESMM type (DESIGN.md › Typography): Geist + Geist Mono, self-hosted via
 // @fontsource so the build never fetches Google Fonts.
-import "@fontsource-variable/sora";
-import "@fontsource/ibm-plex-mono/400.css";
-import "@fontsource/ibm-plex-mono/500.css";
+import "@fontsource-variable/geist";
+import "@fontsource-variable/geist-mono";
 import "./globals.css";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { SidebarProvider } from "@/lib/SidebarContext";
@@ -11,7 +10,7 @@ import { ToastProvider } from "@/lib/ToastContext";
 
 export const metadata: Metadata = {
   title: "ESMM · Revenue Growth Dashboard",
-  description: "Ecosystem Solution & Merchant Monetization — operations and performance hub for the Revenue Growth (VAS) division",
+  description: "Ecosystem Solution & Merchant Monetization: operations and performance hub for the Revenue Growth (VAS) division",
 };
 
 export const viewport: Viewport = {

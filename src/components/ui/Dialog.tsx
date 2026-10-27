@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X } from "@phosphor-icons/react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 
@@ -97,7 +97,7 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className={`relative z-10 w-full ${width} overflow-hidden rounded-xl border border-border bg-surface shadow-pop transition-all focus:outline-none`}
+        className={`relative z-10 w-full ${width} overflow-hidden rounded-lg border border-border bg-surface shadow-pop transition-all focus:outline-none`}
       >
         <div className="flex items-start justify-between border-b border-divider px-5 py-3.5">
           <div>

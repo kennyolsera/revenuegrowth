@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Check, Pencil, Plus, Settings2, Trash2 } from "lucide-react";
+import { Check, PencilSimple as Pencil, Plus, SlidersHorizontal as Settings2, Trash as Trash2 } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Label, Select } from "@/components/ui/Input";

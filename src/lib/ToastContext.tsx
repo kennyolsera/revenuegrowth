@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useState } from "react";
-import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
+import { CheckCircle as CheckCircle2, Warning as AlertTriangle, Info, X } from "@phosphor-icons/react";
 
 type ToastType = "success" | "error" | "info";
 
@@ -71,7 +71,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <div
               key={t.id}
               role="status"
-              className="animate-slide-right pointer-events-auto flex items-stretch overflow-hidden rounded-xl bg-white shadow-elevated ring-1 ring-inset ring-slate-200"
+              className="animate-slide-right pointer-events-auto flex items-stretch overflow-hidden rounded-lg bg-white shadow-elevated ring-1 ring-inset ring-slate-200"
             >
               <div className={`w-1 shrink-0 ${s.bar}`} />
               <div className="flex flex-1 items-start gap-3 px-4 py-3">

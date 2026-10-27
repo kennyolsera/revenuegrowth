@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, CheckCircle2 } from "lucide-react";
+import { Plus, CheckCircle as CheckCircle2 } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -306,7 +306,7 @@ export default function MerchantStatusPage() {
           </div>
 
           <Label>{t("ms_col_checklist")}</Label>
-          <div className="mb-4 space-y-2 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
+          <div className="mb-4 space-y-2 rounded-lg border border-slate-200 bg-slate-50/60 p-3.5">
             {detail.checklist.map((c: any, idx: number) => (
               <label key={idx} className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-700 font-medium cursor-pointer">
                 <input

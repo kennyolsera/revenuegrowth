@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertOctagon, CalendarClock, FolderKanban, ListChecks, NotebookPen, Inbox } from "lucide-react";
+import { WarningOctagon as AlertOctagon, CalendarCheck as CalendarClock, Kanban as FolderKanban, ListChecks, NotePencil as NotebookPen, Tray as Inbox } from "@phosphor-icons/react";
 import { StatusBadge } from "@/components/ui/Badge";
 import { checklistProgress, isOverdue, moduleLabel } from "@/lib/kanban";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -42,7 +42,7 @@ export function KanbanCard({
         }
       }}
       className={cn(
-        "group cursor-grab rounded-xl border bg-white p-3 shadow-card transition-all hover:shadow-lift active:cursor-grabbing",
+        "group cursor-grab rounded-lg border bg-white p-3 transition-all active:cursor-grabbing",
         "focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40",
         task.is_blocked ? "border-rose-200 bg-rose-50/40" : "border-surface-border",
         dragging && "opacity-40"

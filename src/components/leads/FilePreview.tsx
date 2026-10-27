@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Download, FileSpreadsheet, FileText, Presentation, Search, File as FileIcon } from "lucide-react";
+import { Warning as AlertTriangle, DownloadSimple as Download, FileXls as FileSpreadsheet, FileText, PresentationChart as Presentation, MagnifyingGlass as Search, File as FileIcon } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
@@ -214,7 +214,7 @@ function SpreadsheetView({ blob }: { blob: Blob }) {
               <th className="w-12 border-b border-border px-2 py-2 text-right text-xs font-medium text-text-4">#</th>
               {Array.from({ length: colCount }).map((_, c) => (
                 <th key={c} className="max-w-[280px] whitespace-nowrap border-b border-border px-3 py-2 text-left text-xs font-medium text-text-2">
-                  {header[c] || `—`}
+                  {header[c] || ""}
                 </th>
               ))}
             </tr>
@@ -385,7 +385,7 @@ function PptxView({ blob }: { blob: Blob }) {
                   <img key={i} src={b.src} alt="" className="max-h-72 max-w-full rounded-md border border-border object-contain" />
                 );
               })}
-              {s.blocks.length === 0 && !s.hasUnsupported && <p className="text-sm text-text-4">—</p>}
+              {s.blocks.length === 0 && !s.hasUnsupported && <p className="text-sm text-text-4">-</p>}
               {s.hasUnsupported && <p className="text-xs text-text-3">{t("leads_preview_pptx_unsupported")}</p>}
             </div>
           </li>

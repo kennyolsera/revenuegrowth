@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, NotebookPen, Plus, Calendar as CalendarIcon } from "lucide-react";
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, NotePencil as NotebookPen, Plus, CalendarBlank as CalendarIcon } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -224,10 +224,10 @@ export default function CalendarPage() {
       {!isSupabaseConfigured && <SupabaseNotice />}
       {isSupabaseConfigured && error && <ErrorNotice message={error} />}
 
-      <div className="flex items-center justify-between rounded-2xl border border-slate-200/80 bg-white/95 px-5 py-3.5 shadow-sm">
+      <div className="flex items-center justify-between rounded-lg border border-slate-200/80 bg-white/95 px-5 py-3.5 shadow-sm">
         <button
           onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}
-          className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
@@ -239,13 +239,13 @@ export default function CalendarPage() {
         </div>
         <button
           onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + 1, 1))}
-          className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
         >
           <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white shadow-sm">
         <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50/80">
           {dayLabels.map((d) => (
             <div key={d} className="px-2 py-3 text-center text-xs font-bold uppercase tracking-wider text-slate-500">
@@ -292,7 +292,7 @@ export default function CalendarPage() {
                         openEdit(ev);
                       }}
                       className={cn(
-                        "block w-full truncate rounded-lg px-2 py-0.5 text-left text-[11px] font-semibold transition-transform hover:scale-[1.02] shadow-2xs",
+                        "block w-full truncate rounded-lg px-2 py-0.5 text-left text-[11px] font-semibold transition-transform hover:scale-[1.02]",
                         chipClass(eventTypes, ev.event_type)
                       )}
                     >
@@ -353,7 +353,7 @@ export default function CalendarPage() {
               <Label>{language === "id" ? "Waktu" : "Time Window"}</Label>
               <div className="flex items-center gap-2">
                 <Input type="time" required value={form.start_time} onChange={(e) => setForm((p) => ({ ...p, start_time: e.target.value }))} />
-                <span className="text-slate-400">–</span>
+                <span className="text-text-4">-</span>
                 <Input type="time" required value={form.end_time} onChange={(e) => setForm((p) => ({ ...p, end_time: e.target.value }))} />
               </div>
             </Field>

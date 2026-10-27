@@ -1,21 +1,19 @@
-import { AlertTriangle, Layers } from "lucide-react";
+import { Warning, WarningCircle, Tray } from "@phosphor-icons/react/dist/ssr";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export function SupabaseNotice() {
   const { language } = useLanguage();
   return (
-    <div className="flex items-start gap-3 rounded-2xl border border-amber-200/90 bg-gradient-to-r from-amber-50/95 to-orange-50/95 p-4 text-xs text-amber-900 shadow-sm">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-        <AlertTriangle className="h-4 w-4" />
-      </div>
-      <div className="space-y-1">
-        <p className="font-semibold">
-          {language === "id" ? "Koneksi Supabase Belum Terdeteksi" : "Supabase Connection Not Configured"}
+    <div role="status" className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3.5 py-3 text-[12.5px] text-amber-800">
+      <Warning aria-hidden className="mt-px h-4 w-4 shrink-0" />
+      <div className="space-y-0.5">
+        <p className="font-medium text-amber-900">
+          {language === "id" ? "Supabase belum tersambung" : "Supabase isn't connected"}
         </p>
-        <p className="text-amber-800 leading-relaxed">
+        <p className="leading-relaxed">
           {language === "id"
-            ? "Data pada tampilan ini menggunakan fallback kosong. Pastikan NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY sudah diatur di Environment Variables Vercel."
-            : "Displaying placeholder empty state. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are configured in Vercel Environment Variables."}
+            ? "Halaman ini kosong sampai NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY diisi di Environment Variables Vercel."
+            : "This page stays empty until NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in Vercel's Environment Variables."}
         </p>
       </div>
     </div>
@@ -25,28 +23,22 @@ export function SupabaseNotice() {
 export function ErrorNotice({ message }: { message: string }) {
   const { language } = useLanguage();
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 text-xs text-rose-800 shadow-sm">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
-        <AlertTriangle className="h-4 w-4" />
-      </div>
-      <div>
-        <span className="font-semibold">{language === "id" ? "Terjadi Kendala: " : "Error Encountered: "}</span>
-        <span>{message}</span>
-      </div>
+    <div role="alert" className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-[12.5px] text-red-800">
+      <WarningCircle aria-hidden className="mt-px h-4 w-4 shrink-0" />
+      <p>
+        <span className="font-medium text-red-900">{language === "id" ? "Gagal memuat: " : "Couldn't load: "}</span>
+        {message}
+      </p>
     </div>
   );
 }
 
 export function EmptyState({ text, description }: { text: string; description?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="relative mb-4 flex h-16 w-16 items-center justify-center">
-        <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-          <Layers className="h-7 w-7 text-slate-400" />
-        </div>
-      </div>
-      <p className="text-sm font-semibold text-slate-700">{text}</p>
-      {description && <p className="mt-1 text-xs text-slate-500 max-w-sm">{description}</p>}
+    <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+      <Tray aria-hidden className="mb-2.5 h-5 w-5 text-text-4" />
+      <p className="text-[13px] font-medium text-text-2">{text}</p>
+      {description && <p className="mt-1 max-w-sm text-[12.5px] text-text-3">{description}</p>}
     </div>
   );
 }

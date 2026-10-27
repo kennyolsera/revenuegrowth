@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download } from "lucide-react";
+import { UploadSimple as Upload, FileXls as FileSpreadsheet, CheckCircle as CheckCircle2, XCircle, DownloadSimple as Download } from "@phosphor-icons/react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
@@ -141,7 +141,7 @@ export function OnlineOrderImportDialog({
         <Download className="h-3.5 w-3.5" /> {t("qimport_download")}
       </a>
 
-      <div className="mb-4 rounded-xl border-2 border-dashed border-surface-border bg-surface-canvas p-6 text-center">
+      <div className="mb-4 rounded-lg border-2 border-dashed border-surface-border bg-surface-canvas p-6 text-center">
         <FileSpreadsheet className="mx-auto mb-2 h-8 w-8 text-accent" />
         <label className="cursor-pointer text-sm font-semibold text-accent hover:underline">
           <input

@@ -1,6 +1,6 @@
 "use client";
 
-import { ExternalLink, FileUp, Plus, SearchX } from "lucide-react";
+import { ArrowSquareOut as ExternalLink, FileArrowUp as FileUp, Plus, MagnifyingGlassMinus as SearchX } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/Button";
 import { OPTION_FIELDS, optionsFor, type ActivityOption, type ActivityRecord, type OptionColumn } from "@/lib/activity";
 import { OptionChipSelect } from "@/components/activity/options";
@@ -164,7 +164,7 @@ export function ActivityTable({
                     )}
                     style={i < 24 ? { animationDelay: `${i * 14}ms` } : undefined}
                   >
-                    <td className={cn(TD, "font-mono text-[12px] tabular-nums text-text-3")}>{fmtDate(r.activity_date, language) || <span className="text-text-4">—</span>}</td>
+                    <td className={cn(TD, "font-mono text-[12px] tabular-nums text-text-3")}>{fmtDate(r.activity_date, language)}</td>
                     <td className={cn(TD, "sticky left-0 z-[1] max-w-[280px] border-r border-r-divider bg-surface")}>
                       <span className="flex items-center gap-1.5">
                         <span className="truncate font-medium text-text" title={r.store_name}>

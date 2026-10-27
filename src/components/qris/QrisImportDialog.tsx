@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download } from "lucide-react";
+import { UploadSimple as Upload, FileXls as FileSpreadsheet, CheckCircle as CheckCircle2, XCircle, DownloadSimple as Download } from "@phosphor-icons/react";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
@@ -215,7 +215,7 @@ export function QrisImportDialog({
         <Download className="h-3.5 w-3.5" /> {t("qimport_download")}
       </a>
 
-      <div className="mb-4 rounded-xl border-2 border-dashed border-surface-border bg-surface-canvas p-6 text-center">
+      <div className="mb-4 rounded-lg border-2 border-dashed border-surface-border bg-surface-canvas p-6 text-center">
         <FileSpreadsheet className="mx-auto mb-2 h-8 w-8 text-accent" />
         <label className="cursor-pointer text-sm font-semibold text-accent hover:underline">
           <input
@@ -228,8 +228,8 @@ export function QrisImportDialog({
         </label>
         <p className="mt-1.5 text-xs text-ink-muted">
           {language === "id"
-            ? "Kolom: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address, status, qris provider — hanya QRIS Name yang wajib; status & provider boleh kosong."
-            : "Columns: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address, status, qris provider — only QRIS Name is required; status & provider may be blank."}
+            ? "Kolom: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address, status, qris provider. Hanya QRIS Name yang wajib; status & provider boleh kosong."
+            : "Columns: Date, QRIS Name, Phone Number, MID, email, bank name, bank account number, bank account holder, address, status, qris provider. Only QRIS Name is required; status & provider may be blank."}
         </p>
         {fileName && <p className="mt-2 text-xs font-semibold text-ink-body">File: {fileName}</p>}
       </div>

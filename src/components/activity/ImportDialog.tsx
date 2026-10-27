@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { FileSpreadsheet, UploadCloud } from "lucide-react";
+import { FileXls as FileSpreadsheet, CloudArrowUp as UploadCloud } from "@phosphor-icons/react";
 import { createClient } from "@/lib/supabase/client";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";

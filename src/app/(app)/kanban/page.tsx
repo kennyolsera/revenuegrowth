@@ -1,21 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  AlertOctagon,
-  CalendarClock,
-  CheckCircle2,
-  Download,
-  FolderPlus,
-  Gauge,
-  GanttChart,
-  LayoutGrid,
-  Layers,
-  Plus,
-  RefreshCw,
-  Search,
-  Timer,
-} from "lucide-react";
+import { WarningOctagon as AlertOctagon, CalendarCheck as CalendarClock, CheckCircle as CheckCircle2, DownloadSimple as Download, FolderPlus, Gauge, ChartBarHorizontal as GanttChart, GridFour as LayoutGrid, Stack as Layers, Plus, ArrowsClockwise as RefreshCw, MagnifyingGlass as Search, Timer } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -402,7 +388,7 @@ export default function KanbanPage() {
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {kpis.map((k) => (
-          <div key={k.label} className="rounded-2xl border border-surface-border bg-white px-4 py-3 shadow-card">
+          <div key={k.label} className="rounded-lg border border-surface-border bg-white px-4 py-3">
             <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
               <k.icon className="h-3.5 w-3.5" />
               <span className="truncate">{k.label}</span>
@@ -412,7 +398,7 @@ export default function KanbanPage() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-2.5 rounded-2xl border border-surface-border bg-white p-3 shadow-card lg:flex-row lg:items-center">
+      <div className="flex flex-col gap-2.5 rounded-lg border border-surface-border bg-white p-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint" />
           <Input
@@ -483,7 +469,7 @@ export default function KanbanPage() {
                 onDragOver={(e) => handleColumnDragOver(e, stage.id)}
                 onDrop={(e) => handleDrop(e, stage.id)}
                 className={cn(
-                  "flex min-h-[420px] flex-col rounded-2xl border bg-surface-muted/70 transition-colors",
+                  "flex min-h-[420px] flex-col rounded-lg border bg-surface-muted/70 transition-colors",
                   isTarget ? "border-accent-line bg-accent-light" : "border-surface-border",
                   overLimit && "border-amber-300"
                 )}
@@ -535,7 +521,7 @@ export default function KanbanPage() {
                   ))}
                   {isTarget && dropTarget?.index === cards.length && <DropLine />}
                   {!loading && cards.length === 0 && !isTarget && (
-                    <p className="rounded-xl border border-dashed border-surface-border px-3 py-6 text-center text-xs text-ink-faint">
+                    <p className="rounded-lg border border-dashed border-surface-border px-3 py-6 text-center text-xs text-ink-faint">
                       {id ? "Tarik kartu ke sini" : "Drop cards here"}
                     </p>
                   )}

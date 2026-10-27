@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, ShieldCheck, ShieldOff, Users, Activity, Eye, User, Clock, Layers } from "lucide-react";
+import { Plus, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -414,18 +414,18 @@ export default function UsersPage() {
           </Field>
 
           {/* Info notice about email invite + no default password */}
-          <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50 px-3.5 py-2.5 text-xs text-blue-800 leading-relaxed">
+          <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-2.5 text-xs text-blue-800 leading-relaxed">
             <span className="font-bold">
               {language === "id" ? "ℹ️ Cara Kerja:" : "ℹ️ How it works:"}
             </span>{" "}
             {language === "id"
               ? "Pengguna akan menerima email undangan dari Supabase. Mereka perlu klik link di email untuk mengatur password sendiri. Tidak ada password default. Minta pengguna untuk cek inbox (dan folder spam) setelah diundang."
-              : "The invited user will receive an email from Supabase with a setup link. They click the link to set their own password. There is no default password — ask the new member to check their inbox (and spam folder) after being invited."}
+              : "The invited user will receive an email from Supabase with a setup link. They click the link to set their own password. There is no default password. Ask the new member to check their inbox (and spam folder) after being invited."}
           </div>
 
           {inviteMsg && (
 
-            <p className="mb-3 rounded-xl bg-slate-100 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-700">{inviteMsg}</p>
+            <p className="mb-3 rounded-lg bg-slate-100 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-700">{inviteMsg}</p>
           )}
 
           <div className="flex justify-end gap-2.5 border-t border-slate-100 pt-4 mt-2">
@@ -444,7 +444,7 @@ export default function UsersPage() {
         <Dialog
           open={!!editing}
           onClose={() => setEditing(null)}
-          title={`Edit Role — ${editing.full_name}`}
+          title={`Edit role: ${editing.full_name}`}
         >
           <form onSubmit={saveEdit}>
             <Field>
@@ -487,11 +487,11 @@ export default function UsersPage() {
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200">
+              <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-400 block font-semibold">{t("logs_col_user")}</span>
                 <span className="font-semibold text-slate-800">{inspectRow.changed_by}</span>
               </div>
-              <div className="rounded-xl bg-slate-50 p-3 border border-slate-200">
+              <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <span className="text-slate-400 block font-semibold">{t("logs_col_time")}</span>
                 <span className="font-mono text-slate-800">{formatDate(inspectRow.changed_at, true)}</span>
               </div>
@@ -502,7 +502,7 @@ export default function UsersPage() {
                 <span className="text-xs font-bold text-slate-700 block mb-1">
                   {language === "id" ? "Nilai Sebelumnya (Before)" : "Previous Value (Before)"}:
                 </span>
-                <pre className="max-h-36 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] font-mono text-emerald-400 border border-slate-800 scrollbar-thin">
+                <pre className="max-h-36 overflow-auto rounded-lg bg-slate-900 p-3 text-[11px] font-mono text-emerald-400 border border-slate-800 scrollbar-thin">
                   {JSON.stringify(inspectRow.old_value, null, 2)}
                 </pre>
               </div>
@@ -513,7 +513,7 @@ export default function UsersPage() {
                 <span className="text-xs font-bold text-slate-700 block mb-1">
                   {language === "id" ? "Nilai Baru (After / Payload)" : "New Value (After / Payload)"}:
                 </span>
-                <pre className="max-h-36 overflow-auto rounded-xl bg-slate-900 p-3 text-[11px] font-mono text-blue-400 border border-slate-800 scrollbar-thin">
+                <pre className="max-h-36 overflow-auto rounded-lg bg-slate-900 p-3 text-[11px] font-mono text-blue-400 border border-slate-800 scrollbar-thin">
                   {JSON.stringify(inspectRow.new_value, null, 2)}
                 </pre>
               </div>
