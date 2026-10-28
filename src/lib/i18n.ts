@@ -355,7 +355,7 @@ export const translations = {
     // Users & Logs
     users_title: "User & Role Management",
     users_desc: "Kelola akun pengguna, peran otorisasi, dan status akses tim Revenue Growth.",
-    users_add: "Undang Pengguna",
+    users_add: "Tambah pengguna",
     users_col_name: "Nama Lengkap",
     users_col_email: "Email",
     users_col_role: "Role",
@@ -773,7 +773,7 @@ export const translations = {
     // Users & Logs
     users_title: "User & Role Management",
     users_desc: "Manage member accounts, role permissions, and access privileges for Revenue Growth.",
-    users_add: "Invite Member",
+    users_add: "Add member",
     users_col_name: "Full Name",
     users_col_email: "Email",
     users_col_role: "Role",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@phosphor-icons/react";
+import { Plus, Key, Copy, Check, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/Badge";
 import { formatDate, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
+import { PasswordField } from "@/components/users/PasswordField";
 
 interface AuditLogRow {
   id: string;
@@ -80,7 +81,16 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
 
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [inviteForm, setInviteForm] = useState({ email: "", full_name: "", role: "team_rg", division: "" });
+  const EMPTY_INVITE = { email: "", full_name: "", role: "team_rg", division: "", mode: "password" as "password" | "invite", password: "" };
+  const [inviteForm, setInviteForm] = useState(EMPTY_INVITE);
+  // Shown once after "Set password" creation so the admin can pass the login on.
+  const [createdCreds, setCreatedCreds] = useState<{ email: string; password: string } | null>(null);
+  const [credsCopied, setCredsCopied] = useState(false);
+
+  const [pwTarget, setPwTarget] = useState<any | null>(null);
+  const [pwValue, setPwValue] = useState("");
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwError, setPwError] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState<string | null>(null);
 
@@ -148,16 +158,68 @@ export default function UsersPage() {
         body: JSON.stringify(inviteForm),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Gagal mengundang pengguna");
-      const okMsg = language === "id" ? "Undangan berhasil dikirim." : "Invitation sent successfully.";
-      setInviteMsg(okMsg);
-      toast.success(okMsg);
-      setInviteForm({ email: "", full_name: "", role: "team_rg", division: "" });
+      if (!res.ok) throw new Error(json.error ?? (language === "id" ? "Gagal menambah pengguna" : "Couldn't add the user"));
+      if (inviteForm.mode === "password") {
+        setCreatedCreds({ email: inviteForm.email.trim().toLowerCase(), password: inviteForm.password });
+        toast.success(language === "id" ? "Pengguna dibuat, bisa langsung login." : "User created and can sign in now.");
+      } else {
+        const okMsg = language === "id" ? "Undangan berhasil dikirim." : "Invitation sent.";
+        setInviteMsg(okMsg);
+        toast.success(okMsg);
+      }
+      setInviteForm(EMPTY_INVITE);
       fetchRows();
     } catch (err: any) {
       setInviteMsg(err.message);
     } finally {
       setInviting(false);
+    }
+  }
+
+  function closeInvite() {
+    setInviteOpen(false);
+    setCreatedCreds(null);
+    setCredsCopied(false);
+    setInviteMsg(null);
+    setInviteForm(EMPTY_INVITE);
+  }
+
+  async function copyCreds() {
+    if (!createdCreds) return;
+    const text =
+      language === "id"
+        ? `Login ESMM Dashboard\n${window.location.origin}/login\nEmail: ${createdCreds.email}\nPassword: ${createdCreds.password}`
+        : `ESMM Dashboard login\n${window.location.origin}/login\nEmail: ${createdCreds.email}\nPassword: ${createdCreds.password}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      setCredsCopied(true);
+    } catch {
+      /* clipboard blocked: details stay visible to copy by hand */
+    }
+  }
+
+  async function handleSetPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (!pwTarget) return;
+    setPwSaving(true);
+    setPwError(null);
+    try {
+      const res = await fetch("/api/set-user-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: pwTarget.id, password: pwValue }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error");
+      toast.success(
+        language === "id" ? `Password ${pwTarget.full_name ?? pwTarget.email} diperbarui.` : `Password updated for ${pwTarget.full_name ?? pwTarget.email}.`
+      );
+      setPwTarget(null);
+      setPwValue("");
+    } catch (err: any) {
+      setPwError(err.message);
+    } finally {
+      setPwSaving(false);
     }
   }
 
@@ -350,6 +412,18 @@ export default function UsersPage() {
                 {language === "id" ? "Edit Role" : "Edit Role"}
               </button>
               <button
+                onClick={() => {
+                  setPwTarget(row);
+                  setPwValue("");
+                  setPwError(null);
+                }}
+                className="rounded-lg p-1.5 text-text-3 hover:bg-surface-2 hover:text-text transition-colors"
+                aria-label={`${language === "id" ? "Atur password" : "Set password"}: ${row.full_name ?? row.email}`}
+                title={language === "id" ? "Atur password" : "Set password"}
+              >
+                <Key className="h-4 w-4" />
+              </button>
+              <button
                 onClick={() => toggleActive(row)}
                 className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 transition-colors"
                 aria-label="Toggle status"
@@ -378,62 +452,157 @@ export default function UsersPage() {
         />
       )}
 
-      {/* Invite Member Modal */}
+      {/* Add Member Modal */}
       <Dialog
         open={inviteOpen}
-        onClose={() => setInviteOpen(false)}
-        title={language === "id" ? "Undang Pengguna Baru" : "Invite New Member"}
+        onClose={closeInvite}
+        title={language === "id" ? "Tambah pengguna" : "Add member"}
         description={
-          language === "id"
-            ? "Undangan dikirim via email menggunakan Supabase Auth."
-            : "Invitation is sent via email using Supabase Auth."
+          createdCreds
+            ? undefined
+            : language === "id"
+            ? "Atur password langsung, atau kirim undangan lewat email."
+            : "Set a password now, or send an email invitation."
         }
       >
-        <form onSubmit={handleInvite}>
-          <Field>
-            <Label>{t("users_col_email")}</Label>
-            <Input type="email" required value={inviteForm.email} onChange={(e) => setInviteForm((p) => ({ ...p, email: e.target.value }))} placeholder="member@perusahaan.com" />
-          </Field>
-          <Field>
-            <Label>{t("users_col_name")}</Label>
-            <Input required value={inviteForm.full_name} onChange={(e) => setInviteForm((p) => ({ ...p, full_name: e.target.value }))} placeholder="Nama Lengkap" />
-          </Field>
-          <Field>
-            <Label>{t("users_col_role")}</Label>
-            <Select value={inviteForm.role} onChange={(e) => setInviteForm((p) => ({ ...p, role: e.target.value }))}>
-              {ROLE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </Select>
-          </Field>
-          <Field>
-            <Label>{t("users_col_division")}</Label>
-            <Input value={inviteForm.division} onChange={(e) => setInviteForm((p) => ({ ...p, division: e.target.value }))} placeholder="mis. Revenue Growth / Sales" />
-          </Field>
-
-          {/* Info notice about email invite + no default password */}
-          <div className="mb-3 rounded-lg border border-blue-200 bg-blue-50 px-3.5 py-2.5 text-xs text-blue-800 leading-relaxed">
-            <span className="font-bold">
-              {language === "id" ? "ℹ️ Cara Kerja:" : "ℹ️ How it works:"}
-            </span>{" "}
-            {language === "id"
-              ? "Pengguna akan menerima email undangan dari Supabase. Mereka perlu klik link di email untuk mengatur password sendiri. Tidak ada password default. Minta pengguna untuk cek inbox (dan folder spam) setelah diundang."
-              : "The invited user will receive an email from Supabase with a setup link. They click the link to set their own password. There is no default password. Ask the new member to check their inbox (and spam folder) after being invited."}
+        {createdCreds ? (
+          <div>
+            <p className="mb-3 text-[13px] text-text-2">
+              {language === "id"
+                ? "Akun sudah aktif. Kirim detail login ini ke pengguna lewat jalur pribadi (mis. WhatsApp). Password tidak akan ditampilkan lagi setelah jendela ini ditutup."
+                : "The account is active. Send these login details to the person privately (e.g. WhatsApp). The password won't be shown again after you close this."}
+            </p>
+            <dl className="mb-4 space-y-1.5 rounded-lg border border-border bg-surface-2 p-3 font-mono text-[12.5px]">
+              <div className="flex gap-2"><dt className="w-20 shrink-0 text-text-3">URL</dt><dd className="break-all text-text">{typeof window !== "undefined" ? `${window.location.origin}/login` : "/login"}</dd></div>
+              <div className="flex gap-2"><dt className="w-20 shrink-0 text-text-3">Email</dt><dd className="break-all text-text">{createdCreds.email}</dd></div>
+              <div className="flex gap-2"><dt className="w-20 shrink-0 text-text-3">Password</dt><dd className="break-all text-text">{createdCreds.password}</dd></div>
+            </dl>
+            <div className="flex justify-end gap-2.5 border-t border-divider pt-4">
+              <Button type="button" variant="secondary" onClick={copyCreds}>
+                {credsCopied ? <Check className="h-4 w-4 text-green" /> : <Copy className="h-4 w-4" />}
+                {credsCopied ? (language === "id" ? "Tersalin" : "Copied") : language === "id" ? "Salin detail login" : "Copy login details"}
+              </Button>
+              <Button type="button" variant="accent" onClick={closeInvite}>
+                {language === "id" ? "Selesai" : "Done"}
+              </Button>
+            </div>
           </div>
+        ) : (
+          <form onSubmit={handleInvite} noValidate={false}>
+            <div role="radiogroup" aria-label={language === "id" ? "Cara menambah" : "How to add"} className="mb-4 inline-flex rounded-md bg-surface-3 p-0.5">
+              {([
+                { v: "password", l: language === "id" ? "Atur password" : "Set password" },
+                { v: "invite", l: language === "id" ? "Kirim undangan email" : "Send email invite" },
+              ] as const).map((o) => (
+                <button
+                  key={o.v}
+                  type="button"
+                  role="radio"
+                  aria-checked={inviteForm.mode === o.v}
+                  onClick={() => setInviteForm((p) => ({ ...p, mode: o.v }))}
+                  className={cn(
+                    "h-7 rounded-[5px] px-3 text-[12.5px] font-medium transition-colors",
+                    inviteForm.mode === o.v ? "bg-surface text-text shadow-sm" : "text-text-3 hover:text-text"
+                  )}
+                >
+                  {o.l}
+                </button>
+              ))}
+            </div>
+            <Field>
+              <Label htmlFor="inv-email">{t("users_col_email")}</Label>
+              <Input id="inv-email" type="email" autoComplete="off" required value={inviteForm.email} onChange={(e) => setInviteForm((p) => ({ ...p, email: e.target.value }))} placeholder="member@perusahaan.com" />
+            </Field>
+            <Field>
+              <Label htmlFor="inv-name">{t("users_col_name")}</Label>
+              <Input id="inv-name" required value={inviteForm.full_name} onChange={(e) => setInviteForm((p) => ({ ...p, full_name: e.target.value }))} placeholder={language === "id" ? "Nama lengkap" : "Full name"} />
+            </Field>
+            {inviteForm.mode === "password" && (
+              <PasswordField
+                id="inv-password"
+                label="Password"
+                value={inviteForm.password}
+                onChange={(v) => setInviteForm((p) => ({ ...p, password: v }))}
+                language={language}
+              />
+            )}
+            <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+              <Field>
+                <Label htmlFor="inv-role">{t("users_col_role")}</Label>
+                <Select id="inv-role" value={inviteForm.role} onChange={(e) => setInviteForm((p) => ({ ...p, role: e.target.value }))}>
+                  {ROLE_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field>
+                <Label htmlFor="inv-division">{t("users_col_division")}</Label>
+                <Input id="inv-division" value={inviteForm.division} onChange={(e) => setInviteForm((p) => ({ ...p, division: e.target.value }))} placeholder="Revenue Growth" />
+              </Field>
+            </div>
 
-          {inviteMsg && (
+            <p className="mb-3 text-xs leading-relaxed text-text-3">
+              {inviteForm.mode === "password"
+                ? language === "id"
+                  ? "Akun langsung aktif tanpa email. Setelah disimpan, detail login ditampilkan sekali untuk Anda kirim ke pengguna."
+                  : "The account is active straight away, no email needed. After saving, the login details are shown once for you to pass on."
+                : language === "id"
+                ? "Supabase mengirim email berisi link untuk mengatur password. Link hanya berfungsi jika Site URL di Supabase sudah diarahkan ke domain dashboard."
+                : "Supabase emails a link to set a password. The link only works once the Supabase Site URL points to the dashboard's domain."}
+            </p>
 
-            <p className="mb-3 rounded-lg bg-slate-100 border border-slate-200 px-3.5 py-2 text-xs font-medium text-slate-700">{inviteMsg}</p>
+            {inviteMsg && (
+              <p role="alert" className="mb-3 rounded-md border border-border bg-surface-2 px-3 py-2 text-xs text-text-2">
+                {inviteMsg}
+              </p>
+            )}
+
+            <div className="mt-2 flex justify-end gap-2.5 border-t border-divider pt-4">
+              <Button type="button" variant="secondary" onClick={closeInvite}>
+                {t("close")}
+              </Button>
+              <Button
+                type="submit"
+                variant="accent"
+                loading={inviting}
+                disabled={inviteForm.mode === "password" && inviteForm.password.length < 8}
+              >
+                {inviteForm.mode === "password"
+                  ? language === "id" ? "Buat pengguna" : "Create user"
+                  : language === "id" ? "Kirim undangan" : "Send invitation"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Dialog>
+
+      {/* Set Password Modal */}
+      <Dialog
+        open={!!pwTarget}
+        onClose={() => setPwTarget(null)}
+        title={language === "id" ? "Atur password" : "Set password"}
+        description={pwTarget ? `${pwTarget.full_name ?? ""} (${pwTarget.email})` : undefined}
+      >
+        <form onSubmit={handleSetPassword}>
+          <PasswordField id="set-password" label={language === "id" ? "Password baru" : "New password"} value={pwValue} onChange={setPwValue} language={language} />
+          <p className="mb-3 text-xs leading-relaxed text-text-3">
+            {language === "id"
+              ? "Password lama langsung tidak berlaku. Kirim password baru ke pengguna lewat jalur pribadi."
+              : "The old password stops working immediately. Send the new one to the person privately."}
+          </p>
+          {pwError && (
+            <p role="alert" className="mb-3 text-xs text-red">
+              {pwError}
+            </p>
           )}
-
-          <div className="flex justify-end gap-2.5 border-t border-slate-100 pt-4 mt-2">
-            <Button type="button" variant="secondary" onClick={() => setInviteOpen(false)}>
-              {t("close")}
+          <div className="mt-2 flex justify-end gap-2.5 border-t border-divider pt-4">
+            <Button type="button" variant="secondary" onClick={() => setPwTarget(null)}>
+              {t("cancel")}
             </Button>
-            <Button type="submit" variant="accent" loading={inviting}>
-              {language === "id" ? "Kirim Undangan" : "Send Invitation"}
+            <Button type="submit" variant="accent" loading={pwSaving} disabled={pwValue.length < 8}>
+              {language === "id" ? "Simpan password" : "Save password"}
             </Button>
           </div>
         </form>
