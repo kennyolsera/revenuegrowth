@@ -68,9 +68,9 @@ import { ROUTE_NAMES, render, go } from './shell/render.js';
     document.body.appendChild(l);
   }
   const h = (location.hash || '').slice(1);
-  const authRoutes = ['login', 'signup', 'forgot', 'reset', 'verify', 'onboarding'];
-  if (authRoutes.includes(h)) S.ui.auth = h;
-  else if (h && ROUTE_NAMES[h]) S.ui.route = h;
+  // Sign-in is handled by the ESMM dashboard; the template's own auth screens are not used.
+  S.ui.auth = null;
+  if (h && ROUTE_NAMES[h] && !['system', 'states'].includes(h)) S.ui.route = h;
   else S.ui.route = S.prefs.home || 'home';
   render();
 })();

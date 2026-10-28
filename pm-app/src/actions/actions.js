@@ -3,8 +3,7 @@
    ===================================================================== */
 import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core/utils.js';
 import { PR, PSTAT, ST } from '../core/constants.js';
-import { seed } from '../data/seed.js';
-import { D, DEFAULT_PREFS, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
+import { D, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
 import { fileType, fsize } from '../ui/helpers.js';
 import { effectiveDark } from '../core/theme.js';
 import { mutate, toast } from '../ui/toast.js';
@@ -462,7 +461,7 @@ A.copyLink = el => {
           : d.id && proj(d.id)
             ? `project/${proj(d.id).key.toLowerCase()}`
             : '';
-  copy(`https://gr8rstudio.com/${D().ws.url}/${path}`);
+  copy(`${location.origin}/kanban#${path}`);
 };
 A.copyText = el => copy(el.dataset.text, 'Copied to clipboard');
 A.copyEmail = el => {
@@ -1495,10 +1494,9 @@ IN.shareAccess = el => {
   });
 };
 A.invite = () => {
-  S.ui.inviteDraft = '';
-  S.ui.errors = {};
   S.ui.pop = null;
-  openModal({ type: 'invite' });
+  S.ui.palette = null;
+  toast('Team members are managed in User Management. New members appear here automatically.', { kind: 'info', ms: 5000 });
 };
 A.submitInvite = () => {
   const raw = $('#inv-emails').value;
@@ -1550,7 +1548,6 @@ A.submitInvite = () => {
     toast(`${list.length} invitation${list.length > 1 ? 's' : ''} sent`);
   });
 };
-A.copyInviteLink = () => copy(`https://gr8rstudio.com/join/${D().ws.url}-7f3k2`, 'Invite link copied');
 A.resendInvite = el => {
   S.ui.pop = null;
   render();
@@ -1737,41 +1734,10 @@ A.setSearch = el => {
 };
 
 /* workspace, account, prototype controls */
-A.switchWs = el => {
-  const w = D().workspaces.find(x => x.id === el.dataset.v);
-  S.ui.pop = null;
-  D().ws = { name: w.name, url: w.name.toLowerCase().replace(/[^a-z0-9]+/g, ''), c: w.c, brand: !!w.brand };
-  save();
-  go('home');
-  toast(`Switched to ${w.name}`);
-};
-A.newWorkspace = () => {
-  S.ui.pop = null;
-  S.ui.auth = 'onboarding';
-  S.ui.onb = 1;
-  S.ui.onbData.ws = '';
-  S.ui.onbData.url = '';
-  render();
-};
-A.signOut = () => {
-  S.ui.pop = null;
-  S.ui.palette = null;
-  S.ui.drawer = null;
-  S.ui.modals = [];
-  S.ui.auth = 'login';
-  S.ui.errors = {};
-  render();
-};
 A.shortcuts = () => {
   S.ui.pop = null;
   S.ui.palette = null;
   openModal({ type: 'shortcuts' });
-};
-A.startOnboarding = () => {
-  S.ui.pop = null;
-  S.ui.auth = 'onboarding';
-  S.ui.onb = 0;
-  render();
 };
 A.toggleOffline = () => {
   S.ui.offline = !S.ui.offline;
@@ -1786,25 +1752,6 @@ A.retryOnline = el => {
     render();
     toast('Reconnected. All changes are synced.');
   }, 700);
-};
-A.resetDemo = () => {
-  S.ui.pop = null;
-  confirmDlg({
-    title: 'Reset demo data?',
-    body: 'All projects, tasks, and settings in this browser go back to the original sample workspace.',
-    ok: 'Reset data',
-    danger: true,
-    icon: 'rotate-ccw',
-    run: () => {
-      S.data = seed();
-      S.views = {};
-      S.prefs = { ...DEFAULT_PREFS, theme: S.prefs.theme };
-      S.ui.drawer = null;
-      save();
-      go('home');
-      toast('Demo data restored');
-    },
-  });
 };
 A.toastInfo = el => toast(el.dataset.msg, { kind: 'info' });
 A.demoToast = el => {
@@ -1891,10 +1838,7 @@ A.wsColor = el => {
 };
 A.saveWorkspace = () => {
   const n = $('#ws-name').value.trim();
-  const u = $('#ws-url')
-    .value.trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-]+/g, '-');
+  const u = '';
   if (!n) {
     toast("Workspace name can't be empty", { kind: 'err' });
     return;
@@ -1912,22 +1856,6 @@ A.saveWorkspace = () => {
       toast('Workspace settings saved');
   });
 };
-A.delWorkspace = () =>
-  confirmDlg({
-    title: `Delete ${D().ws.name}?`,
-    body: 'Every project, task, file, and comment in this workspace will be permanently deleted for all members.',
-    ok: 'Delete workspace',
-    danger: true,
-    typeName: D().ws.name,
-    run: () => {
-      S.data = seed();
-      S.views = {};
-      save();
-      S.ui.auth = 'login';
-      render();
-      toast('Workspace deleted. Demo data was restored for this prototype.', { kind: 'info', ms: 5000 });
-    },
-  });
 A.avColor = el => {
   me().c = el.dataset.v;
   save();

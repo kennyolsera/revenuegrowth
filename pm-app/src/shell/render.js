@@ -10,7 +10,6 @@ import { PTABS } from '../pages/project.js';
 import { tlAfter } from '../views/timeline.js';
 import { renderLayer } from '../overlays/drawer.js';
 import { placePop } from '../overlays/popovers.js';
-import { renderAuth } from '../pages/auth.js';
 
 export const ROUTE_NAMES = {
   home: 'Home',
@@ -150,7 +149,8 @@ export function render() {
     /* not supported here; safe to skip */
   }
   const keep = $$('[data-keep]').map(el => [el.dataset.keep, el.scrollTop, el.scrollLeft]);
-  $('#app').innerHTML = S.ui.auth ? renderAuth() : renderShell();
+  S.ui.auth = null; // sign-in lives in the ESMM dashboard
+  $('#app').innerHTML = renderShell();
   $('#layer').innerHTML = renderLayer();
   makeFocusable();
   keep.forEach(([k, t, l]) => {

@@ -22,23 +22,8 @@ function applyIdentity(d) {
 /* An empty workspace with the template's structure, plus any projects and tasks from the old
    Project Timeline tables (imported once, the first time anyone opens the new one). */
 function emptyWorkspace() {
-  const s = seed();
   const d = {
-    ...s,
-    ws: { name: 'Olsera VAS', url: 'olsera-vas', c: '#1468B3', brand: false },
-    workspaces: [{ id: 'w1', name: 'Olsera VAS', c: '#1468B3', plan: 'Team' }],
-    projects: [],
-    tasks: [],
-    comments: [],
-    activity: [],
-    notifs: [],
-    files: [],
-    events: [],
-    projOrder: [],
-    savedViews: [],
-    recentSearches: [],
-    sessions: [],
-    invoices: [],
+    ...seed(),
     teams: [{ id: 'rg', name: 'Revenue Growth', icon: 'target', c: '#1468B3', desc: 'VAS Revenue Growth' }],
   };
   applyIdentity(d);
@@ -56,7 +41,13 @@ function keyFor(name, used) {
       .join('')
       .toUpperCase()
       .slice(0, 3) || 'PRJ';
-  let k = base.length < 2 ? (name || 'PRJ').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3) || 'PRJ' : base;
+  let k =
+    base.length < 2
+      ? (name || 'PRJ')
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .slice(0, 3) || 'PRJ'
+      : base;
   let n = 2;
   while (used.has(k)) k = base + n++;
   used.add(k);

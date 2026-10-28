@@ -50,11 +50,7 @@ function fail(msg) {
   const busy = () => {
     const a = document.activeElement;
     return (
-      (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) ||
-      S.ui.modals.length ||
-      S.ui.composer ||
-      S.ui.editCell ||
-      S.ui.pop
+      (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable)) || S.ui.modals.length || S.ui.composer || S.ui.editCell || S.ui.pop
     );
   };
   async function tick() {
