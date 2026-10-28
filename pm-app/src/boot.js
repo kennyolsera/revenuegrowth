@@ -4,6 +4,15 @@
    ===================================================================== */
 const API = '/api/pm-workspace';
 
+/* Tell the ESMM page that embeds us how far loading has got (it shows the progress bar). */
+function tell(type, progress) {
+  try {
+    if (window.parent !== window) window.parent.postMessage({ source: 'pm', type, progress }, location.origin);
+  } catch {
+    /* not embedded */
+  }
+}
+
 function fail(msg) {
   const app = document.getElementById('app');
   app.innerHTML = '';
@@ -22,6 +31,7 @@ function fail(msg) {
 }
 
 (async function boot() {
+  tell('progress', 35);
   try {
     const res = await fetch(API, { credentials: 'same-origin', cache: 'no-store' });
     if (res.status === 401 || (res.redirected && new URL(res.url).pathname === '/login')) {
@@ -30,7 +40,9 @@ function fail(msg) {
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     window.__PM = await res.json();
+    tell('progress', 75);
   } catch {
+    tell('error');
     fail('Could not load Project Timeline.');
     return;
   }
@@ -41,6 +53,8 @@ function fail(msg) {
     import('./core/remote.js'),
     import('./shell/render.js'),
   ]);
+
+  requestAnimationFrame(() => tell('ready', 100));
 
   // First open ever: store the new shared workspace (with the imported old projects) right away.
   if (!R.version) pushRemote(S.data);
