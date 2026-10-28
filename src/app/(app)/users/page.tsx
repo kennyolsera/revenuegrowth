@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Key, Copy, Check, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@phosphor-icons/react";
+import { Plus, Key, Copy, Check, PencilSimple, Trash, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@phosphor-icons/react";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -95,6 +95,12 @@ export default function UsersPage() {
   const [inviteMsg, setInviteMsg] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<any | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<any | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [myId, setMyId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Logs state
@@ -137,6 +143,10 @@ export default function UsersPage() {
   useEffect(() => {
     fetchRows();
     fetchLogs();
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => setMyId(data.user?.id ?? null))
+      .catch(() => {});
   }, []);
 
   const filteredMembers = rows.filter(
@@ -237,20 +247,53 @@ export default function UsersPage() {
   async function saveEdit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    setEditError(null);
     try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("profiles")
-        .update({ role: editing.role, division: editing.division, phone: editing.phone })
-        .eq("id", editing.id);
-      if (error) throw error;
+      // Server route keeps the login email and the profile in sync, and applies role rules.
+      const res = await fetch("/api/update-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: editing.id,
+          full_name: editing.full_name ?? "",
+          email: editing.email ?? "",
+          role: editing.role,
+          division: editing.division ?? "",
+          phone: editing.phone ?? "",
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error");
       setEditing(null);
       toast.success(t("toast_updated"));
       fetchRows();
     } catch (err: any) {
-      toast.error(`${t("save_error")}: ${err.message}`);
+      setEditError(err.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleDelete(e: React.FormEvent) {
+    e.preventDefault();
+    if (!deleting) return;
+    setDeleteBusy(true);
+    setDeleteError(null);
+    try {
+      const res = await fetch("/api/delete-user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: deleting.id }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error");
+      toast.success(language === "id" ? `${deleting.full_name || deleting.email} dihapus.` : `${deleting.full_name || deleting.email} deleted.`);
+      setDeleting(null);
+      fetchRows();
+    } catch (err: any) {
+      setDeleteError(err.message);
+    } finally {
+      setDeleteBusy(false);
     }
   }
 
@@ -406,10 +449,15 @@ export default function UsersPage() {
           actions={(row) => (
             <div className="flex justify-end gap-1">
               <button
-                onClick={() => setEditing(row)}
-                className="rounded-lg px-2.5 py-1 text-xs font-semibold text-accent hover:bg-blue-50 transition-colors"
+                onClick={() => {
+                  setEditing(row);
+                  setEditError(null);
+                }}
+                className="rounded-lg p-1.5 text-text-3 hover:bg-surface-2 hover:text-text transition-colors"
+                aria-label={`${language === "id" ? "Ubah" : "Edit"}: ${row.full_name || row.email}`}
+                title={language === "id" ? "Ubah pengguna" : "Edit user"}
               >
-                {language === "id" ? "Edit Role" : "Edit Role"}
+                <PencilSimple className="h-4 w-4" />
               </button>
               <button
                 onClick={() => {
@@ -430,6 +478,19 @@ export default function UsersPage() {
                 title={row.is_active ? (language === "id" ? "Nonaktifkan" : "Deactivate") : (language === "id" ? "Aktifkan" : "Activate")}
               >
                 {row.is_active ? <ShieldOff className="h-4 w-4 text-slate-400" /> : <ShieldCheck className="h-4 w-4 text-emerald-600" />}
+              </button>
+              <button
+                onClick={() => {
+                  setDeleting(row);
+                  setDeleteConfirm("");
+                  setDeleteError(null);
+                }}
+                disabled={row.id === myId}
+                className="rounded-lg p-1.5 text-text-3 hover:bg-red-50 hover:text-red transition-colors disabled:pointer-events-none disabled:opacity-30"
+                aria-label={`${language === "id" ? "Hapus" : "Delete"}: ${row.full_name || row.email}`}
+                title={row.id === myId ? (language === "id" ? "Tidak bisa menghapus akun sendiri" : "You can't delete your own account") : language === "id" ? "Hapus pengguna" : "Delete user"}
+              >
+                <Trash className="h-4 w-4" />
               </button>
             </div>
           )}
@@ -608,17 +669,29 @@ export default function UsersPage() {
         </form>
       </Dialog>
 
-      {/* Edit Role Modal */}
+      {/* Edit User Modal */}
       {editing && (
         <Dialog
           open={!!editing}
           onClose={() => setEditing(null)}
-          title={`Edit role: ${editing.full_name}`}
+          title={language === "id" ? "Ubah pengguna" : "Edit user"}
+          description={rows.find((r) => r.id === editing.id)?.email ?? editing.email}
         >
           <form onSubmit={saveEdit}>
             <Field>
-              <Label>{t("users_col_role")}</Label>
-              <Select value={editing.role} onChange={(e) => setEditing((p: any) => ({ ...p, role: e.target.value }))}>
+              <Label htmlFor="edit-name">{t("users_col_name")}</Label>
+              <Input id="edit-name" required value={editing.full_name ?? ""} onChange={(e) => setEditing((p: any) => ({ ...p, full_name: e.target.value }))} />
+            </Field>
+            <Field>
+              <Label htmlFor="edit-email">{t("users_col_email")}</Label>
+              <Input id="edit-email" type="email" required value={editing.email ?? ""} onChange={(e) => setEditing((p: any) => ({ ...p, email: e.target.value }))} />
+              <p className="mt-1 text-xs text-text-3">
+                {language === "id" ? "Mengubah email juga mengubah email untuk login." : "Changing the email also changes the email they sign in with."}
+              </p>
+            </Field>
+            <Field>
+              <Label htmlFor="edit-role">{t("users_col_role")}</Label>
+              <Select id="edit-role" value={editing.role} disabled={editing.id === myId} onChange={(e) => setEditing((p: any) => ({ ...p, role: e.target.value }))}>
                 {ROLE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
@@ -626,15 +699,27 @@ export default function UsersPage() {
                 ))}
               </Select>
             </Field>
-            <Field>
-              <Label>{t("users_col_division")}</Label>
-              <Input value={editing.division ?? ""} onChange={(e) => setEditing((p: any) => ({ ...p, division: e.target.value }))} />
-            </Field>
-            <Field>
-              <Label>{language === "id" ? "Nomor Telepon" : "Phone Number"}</Label>
-              <Input value={editing.phone ?? ""} onChange={(e) => setEditing((p: any) => ({ ...p, phone: e.target.value }))} />
-            </Field>
-            <div className="flex justify-end gap-2.5 border-t border-slate-100 pt-4 mt-2">
+            <div className="grid grid-cols-1 gap-x-4 sm:grid-cols-2">
+              <Field>
+                <Label htmlFor="edit-division">{t("users_col_division")}</Label>
+                <Input id="edit-division" value={editing.division ?? ""} onChange={(e) => setEditing((p: any) => ({ ...p, division: e.target.value }))} />
+              </Field>
+              <Field>
+                <Label htmlFor="edit-phone">{language === "id" ? "Nomor telepon" : "Phone number"}</Label>
+                <Input id="edit-phone" inputMode="tel" value={editing.phone ?? ""} onChange={(e) => setEditing((p: any) => ({ ...p, phone: e.target.value }))} />
+              </Field>
+            </div>
+            {editing.id === myId && (
+              <p className="mb-3 text-xs text-text-3">
+                {language === "id" ? "Anda tidak bisa mengubah role sendiri." : "You can't change your own role."}
+              </p>
+            )}
+            {editError && (
+              <p role="alert" className="mb-3 text-xs text-red">
+                {editError}
+              </p>
+            )}
+            <div className="flex justify-end gap-2.5 border-t border-divider pt-4 mt-2">
               <Button type="button" variant="secondary" onClick={() => setEditing(null)}>
                 {t("cancel")}
               </Button>
@@ -645,6 +730,55 @@ export default function UsersPage() {
           </form>
         </Dialog>
       )}
+
+      {/* Delete User Modal */}
+      <Dialog
+        open={!!deleting}
+        onClose={() => setDeleting(null)}
+        title={language === "id" ? "Hapus pengguna" : "Delete user"}
+        description={deleting ? `${deleting.full_name || ""} (${deleting.email})` : undefined}
+      >
+        {deleting && (
+          <form onSubmit={handleDelete}>
+            <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2.5 text-[12.5px] leading-relaxed text-red-800">
+              {language === "id"
+                ? "Akun login dan profil dihapus permanen dan tidak bisa dibatalkan. Request dan klaim yang pernah dibuat tetap ada. Jika hanya ingin memblokir sementara, gunakan Nonaktifkan."
+                : "The login and profile are deleted permanently. This can't be undone. Requests and claims they created are kept. To block access temporarily, use Deactivate instead."}
+            </div>
+            <Field>
+              <Label htmlFor="delete-confirm">
+                {language === "id" ? "Ketik email pengguna untuk konfirmasi" : "Type the user's email to confirm"}
+              </Label>
+              <Input
+                id="delete-confirm"
+                autoComplete="off"
+                spellCheck={false}
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder={deleting.email}
+              />
+            </Field>
+            {deleteError && (
+              <p role="alert" className="mb-3 text-xs text-red">
+                {deleteError}
+              </p>
+            )}
+            <div className="mt-2 flex justify-end gap-2.5 border-t border-divider pt-4">
+              <Button type="button" variant="secondary" onClick={() => setDeleting(null)}>
+                {t("cancel")}
+              </Button>
+              <Button
+                type="submit"
+                variant="danger"
+                loading={deleteBusy}
+                disabled={deleteConfirm.trim().toLowerCase() !== (deleting.email ?? "").toLowerCase()}
+              >
+                <Trash className="h-4 w-4" /> {language === "id" ? "Hapus permanen" : "Delete permanently"}
+              </Button>
+            </div>
+          </form>
+        )}
+      </Dialog>
 
       {/* Inspect Log Details Modal */}
       {inspectRow && (
