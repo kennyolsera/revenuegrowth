@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";
-import { Warning as AlertTriangle, Lock, Envelope as Mail } from "@phosphor-icons/react";
+import { Warning as AlertTriangle, Lock, Envelope as Mail, Eye, EyeSlash } from "@phosphor-icons/react";
 import { AuthShell, AuthNotice } from "@/components/auth/AuthShell";
 import { useLanguage } from "@/lib/LanguageContext";
 import { safeNext } from "@/lib/auth/safe-next";
@@ -14,11 +14,12 @@ import { safeNext } from "@/lib/auth/safe-next";
 function LoginPageInner() {
   const router = useRouter();
   const params = useSearchParams();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const linkInvalid = params.get("error") === "link_invalid";
@@ -28,10 +29,22 @@ function LoginPageInner() {
     setError(null);
     setLoading(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Pasting from WhatsApp/email often brings a stray space or line break along.
+    const cleanEmail = email.trim().toLowerCase();
+    let { error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    if (error && /invalid login credentials/i.test(error.message) && password.trim() !== password) {
+      // Admin-set passwords never start or end with a space: retry without it.
+      ({ error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password: password.trim() }));
+    }
     setLoading(false);
     if (error) {
-      setError(error.message);
+      setError(
+        /invalid login credentials/i.test(error.message)
+          ? language === "id"
+            ? "Email atau password salah. Periksa huruf besar/kecil, atau minta admin mengatur password baru."
+            : "Wrong email or password. Check upper/lower case, or ask an admin to set a new password."
+          : error.message
+      );
       return;
     }
     // Only same-site paths: a crafted ?redirectTo= must not send users off-site after sign-in.
@@ -66,6 +79,7 @@ function LoginPageInner() {
               id="email"
               type="email"
               autoComplete="email"
+              autoCapitalize="off"
               required
               placeholder="nama@perusahaan.com"
               className="h-9 pl-8"
@@ -86,14 +100,26 @@ function LoginPageInner() {
             <Lock className="pointer-events-none absolute left-2.5 top-1/2 h-[14px] w-[14px] -translate-y-1/2 text-text-4" />
             <Input
               id="password"
-              type="password"
+              type={showPw ? "text" : "password"}
               autoComplete="current-password"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               required
               placeholder="••••••••"
-              className="h-9 pl-8"
+              className="h-9 pl-8 pr-9"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            <button
+              type="button"
+              onClick={() => setShowPw((v) => !v)}
+              aria-label={showPw ? (language === "id" ? "Sembunyikan password" : "Hide password") : language === "id" ? "Tampilkan password" : "Show password"}
+              aria-pressed={showPw}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-text-3 hover:text-text"
+            >
+              {showPw ? <EyeSlash aria-hidden className="h-4 w-4" /> : <Eye aria-hidden className="h-4 w-4" />}
+            </button>
           </div>
         </Field>
 

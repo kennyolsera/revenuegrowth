@@ -5,9 +5,11 @@ import { Eye, EyeSlash, ArrowsClockwise, Copy, Check } from "@phosphor-icons/rea
 import { Input, Label } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 
-// No look-alikes (0/O, 1/l/I) so a password read over the phone or WhatsApp survives.
-const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-const SYMBOLS = "!@#$%*?";
+// No look-alikes (0/O/o, 1/l/I) so a password read over the phone survives, and no
+// characters WhatsApp treats as formatting (* bold, _ italic, ~ strike, ` mono):
+// a password like "ab*cd*ef" would arrive as bold "cd" with the asterisks gone.
+const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+const SYMBOLS = "!@#$%?";
 
 /** 14 characters from the browser's CSPRNG, always with a digit and a symbol. */
 export function generatePassword(length = 14): string {
@@ -47,12 +49,17 @@ export function PasswordField({
   const [shown, setShown] = useState(false);
   const [copied, setCopied] = useState(false);
   const tooShort = value.length > 0 && value.length < 8;
+  const waRisk = /[*_~`]/.test(value);
   const L = {
     show: language === "id" ? "Tampilkan password" : "Show password",
     hide: language === "id" ? "Sembunyikan password" : "Hide password",
     gen: language === "id" ? "Buat otomatis" : "Generate",
     copy: language === "id" ? "Salin password" : "Copy password",
     hint: language === "id" ? "Minimal 8 karakter." : "At least 8 characters.",
+    wa:
+      language === "id"
+        ? "Hindari * _ ~ ` jika dikirim lewat WhatsApp: karakter ini diubah jadi format teks dan hilang."
+        : "Avoid * _ ~ ` if you'll send it on WhatsApp: it turns them into text formatting and they disappear.",
   };
 
   async function copy() {
@@ -117,8 +124,8 @@ export function PasswordField({
           </button>
         </div>
       </div>
-      <p id={`${id}-hint`} className={cn("mt-1 text-xs", tooShort ? "text-red" : "text-text-3")}>
-        {L.hint}
+      <p id={`${id}-hint`} className={cn("mt-1 text-xs", tooShort ? "text-red" : waRisk ? "text-amber" : "text-text-3")}>
+        {waRisk ? L.wa : L.hint}
       </p>
     </div>
   );

@@ -67,5 +67,6 @@ export function passwordProblem(pw: unknown): string | null {
   if (typeof pw !== "string" || pw.length < 8) return "Password must be at least 8 characters.";
   if (new TextEncoder().encode(pw).length > 72) return "Password is too long (max 72 bytes).";
   if (pw.trim() !== pw) return "Password can't start or end with a space.";
+  if (/[\u0000-\u001f\u007f]/.test(pw)) return "Password can't contain line breaks or control characters.";
   return null;
 }
