@@ -8,6 +8,7 @@ import './core/icons.js';
 import './core/constants.js';
 import './data/seed.js';
 import './core/store.js';
+import './core/notify.js';
 import './ui/helpers.js';
 import './core/theme.js';
 import './ui/toast.js';

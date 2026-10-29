@@ -8,6 +8,7 @@ import { NAV_ITEMS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useSidebar } from "@/lib/SidebarContext";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "./NotificationBell";
 
 type Theme = "light" | "dark";
 
@@ -113,6 +114,8 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
             </button>
           ))}
         </div>
+
+        <NotificationBell />
 
         <button
           type="button"

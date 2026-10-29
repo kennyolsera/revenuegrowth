@@ -37,6 +37,14 @@ export const translations = {
     nav_leads: "Data Leads",
     nav_users: "User Management",
     nav_logs: "Activity Log",
+    nav_settings: "Pengaturan",
+    notif_title: "Notifikasi",
+    notif_mark_all: "Tandai semua dibaca",
+    notif_empty: "Belum ada notifikasi. Anda akan diberi tahu saat disebut, ditugaskan, atau ada komentar di tugas Anda.",
+    notif_open_inbox: "Buka Inbox Project Timeline",
+    notif_mentioned: "menyebut Anda",
+    notif_assigned: "menugaskan Anda",
+    notif_commented: "berkomentar",
     nav_qris_providers: "QRIS Provider",
 
     // Dashboard
@@ -456,6 +464,14 @@ export const translations = {
     nav_leads: "Leads Data",
     nav_users: "User Management",
     nav_logs: "Activity Log",
+    nav_settings: "Settings",
+    notif_title: "Notifications",
+    notif_mark_all: "Mark all read",
+    notif_empty: "No notifications yet. You will be told when someone mentions you, assigns you, or comments on your tasks.",
+    notif_open_inbox: "Open Project Timeline inbox",
+    notif_mentioned: "mentioned you",
+    notif_assigned: "assigned you",
+    notif_commented: "commented",
     nav_qris_providers: "QRIS Providers",
 
     // Dashboard

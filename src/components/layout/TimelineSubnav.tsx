@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { House, Inbox, CircleCheck, FolderKanban, ListChecks, Calendar, ChartGantt, Users, Settings } from "lucide-react";
+import { House, Inbox, CircleCheck, FolderKanban, ListChecks, Calendar, ChartGantt, Users } from "lucide-react";
 import { ptGo, usePtNav } from "@/lib/pt-bridge";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,6 @@ const SECTIONS = [
   { route: "calendar", label: "Calendar", icon: Calendar },
   { route: "timeline", label: "Timeline", icon: ChartGantt },
   { route: "members", label: "Members", icon: Users },
-  { route: "settings", label: "Settings", icon: Settings },
 ];
 
 /** Project Timeline's own sections, shown under its menu item while it is open (ADR-012). */

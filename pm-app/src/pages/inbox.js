@@ -1,3 +1,4 @@
+import { myNotifs } from '../core/notify.js';
 /* ---------- INBOX ---------- */
 import { MOD, ago, esc } from '../core/utils.js';
 import { ic } from '../core/icons.js';
@@ -15,8 +16,8 @@ export function pageInbox() {
     ['update', 'Updates'],
   ];
   const cat = S.ui.inboxCat;
-  let ns = D()
-    .notifs.slice()
+  let ns = myNotifs()
+    .slice()
     .sort((a, b) => b.at - a.at);
   const count = k => ns.filter(n => (k === 'all' || n.type === k) && !n.read).length;
   ns = ns.filter(n => cat === 'all' || n.type === cat);

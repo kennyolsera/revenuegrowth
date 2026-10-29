@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PT_GO_EVENT, setPtNav, type PtGo, type PtNav } from "@/lib/pt-bridge";
+import { useRouter } from "next/navigation";
+import { PT_CMD_EVENT, setPtNav, type PtCmd, type PtNav } from "@/lib/pt-bridge";
 
 const SRC = "/project-timeline/index.html";
 const PRELOAD_AFTER_MS = 1500;
@@ -20,7 +21,8 @@ export function TimelineHost({ active }: { active: boolean }) {
   const floor = useRef(8);
   const frameRef = useRef<HTMLIFrameElement>(null);
   const ready = useRef(false);
-  const queue = useRef<PtGo[]>([]);
+  const queue = useRef<PtCmd[]>([]);
+  const router = useRouter();
 
   const post = (msg: Record<string, unknown>) =>
     frameRef.current?.contentWindow?.postMessage({ source: "esmm", ...msg }, window.location.origin);
@@ -56,16 +58,17 @@ export function TimelineHost({ active }: { active: boolean }) {
     return () => obs.disconnect();
   }, [mounted]);
 
-  // Sidebar navigation -> template (queued until the app reports ready).
+  // Dashboard -> template commands (sidebar navigation, bell, settings), queued until the app is ready.
   useEffect(() => {
-    const onGo = (e: Event) => {
-      const d = (e as CustomEvent<PtGo>).detail;
-      if (ready.current) post({ type: "go", ...d });
-      else queue.current = [d];
+    const onCmd = (e: Event) => {
+      const d = (e as CustomEvent<PtCmd>).detail;
+      if (ready.current) post(d);
+      else queue.current = d.type === "go" ? [...queue.current.filter((q) => q.type !== "go"), d] : [...queue.current, d];
+      if (!mounted) setMounted(true);
     };
-    window.addEventListener(PT_GO_EVENT, onGo);
-    return () => window.removeEventListener(PT_GO_EVENT, onGo);
-  }, []);
+    window.addEventListener(PT_CMD_EVENT, onCmd);
+    return () => window.removeEventListener(PT_CMD_EVENT, onCmd);
+  }, [mounted]);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -78,11 +81,13 @@ export function TimelineHost({ active }: { active: boolean }) {
         ready.current = true;
         setProgress(100);
         setState("done");
-        queue.current.forEach((d) => post({ type: "go", ...d }));
+        queue.current.forEach((d) => post(d));
         queue.current = [];
         post({ type: "visible", visible: activeRef.current });
       } else if (e.data.type === "nav" && e.data.nav && typeof e.data.nav.route === "string") {
         setPtNav(e.data.nav as PtNav);
+      } else if (e.data.type === "open-settings") {
+        router.push("/settings#project-timeline");
       } else if (e.data.type === "error") {
         setState("hidden");
       }

@@ -11,11 +11,37 @@ export interface PtProject {
   name: string;
   color: string;
 }
+export interface PtNotif {
+  id: string;
+  type: "mention" | "assign" | "comment" | string;
+  by: string;
+  text: string;
+  title: string;
+  snippet: string;
+  at: number;
+  read: boolean;
+}
+export interface PtSettings {
+  wsName: string;
+  prefs: {
+    weekStart: string;
+    dateFmt: string;
+    timeFmt: string;
+    home: string;
+    openTasks: string;
+    confirmDel: boolean;
+    showDoneBoard: boolean;
+  };
+  notif: { mention: boolean; assign: boolean; comment: boolean };
+}
 export interface PtNav {
   route: string;
   id: string | null;
   projects: PtProject[];
   counts: { inbox: number; mytasks: number };
+  unread: number;
+  notifs: PtNotif[];
+  settings: PtSettings;
 }
 
 let nav: PtNav | null = null;
@@ -37,10 +63,16 @@ export function usePtNav() {
   );
 }
 
-export const PT_GO_EVENT = "esmm:pt-go";
+export const PT_CMD_EVENT = "esmm:pt-cmd";
+export type PtCmd = { type: string; [k: string]: unknown };
 export type PtGo = { route: string; id?: string; tab?: string };
 
-/** Ask Project Timeline to open a section (the host forwards it, queued until the app is ready). */
+/** Send a command to Project Timeline (the host forwards it, queued until the app is ready). */
+export function ptSend(cmd: PtCmd) {
+  window.dispatchEvent(new CustomEvent<PtCmd>(PT_CMD_EVENT, { detail: cmd }));
+}
+
+/** Ask Project Timeline to open a section. */
 export function ptGo(detail: PtGo) {
-  window.dispatchEvent(new CustomEvent<PtGo>(PT_GO_EVENT, { detail }));
+  ptSend({ type: "go", ...detail });
 }

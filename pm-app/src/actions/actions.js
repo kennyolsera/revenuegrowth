@@ -3,6 +3,7 @@
    ===================================================================== */
 import { $, $$, TODAY, addD, dOff, esc, fmtDate, iso, parse, uid } from '../core/utils.js';
 import { PR, PSTAT, ST } from '../core/constants.js';
+import { notifyAssign, notifyComment, myNotifs, setMyNotifPref } from '../core/notify.js';
 import { D, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
 import { fileType, fsize } from '../ui/helpers.js';
 import { effectiveDark } from '../core/theme.js';
@@ -56,6 +57,7 @@ export function createTask(f) {
   D().tasks.push(t);
   fxSet({ added: t.id });
   logAct('created', t);
+  if (t.assignee) notifyAssign(t, t.assignee);
   return t;
 }
 export const RECUR_DAYS = { Daily: 1, Weekly: 7, 'Every 2 weeks': 14, Monthly: 30 };
@@ -89,8 +91,10 @@ export function applyPatch(t, patch) {
         delete n.prevStatus;
         msgs.push(`Next “${t.title}” scheduled for ${fmtDate(nd)}`);
       }
-    } else if (k === 'assignee') logAct('assigned', t, nv ? `to ${mem(nv)?.name}` : '(unassigned)');
-    else if (k === 'priority') logAct('changed priority of', t, `to ${PR[nv].name}`);
+    } else if (k === 'assignee') {
+      logAct('assigned', t, nv ? `to ${mem(nv)?.name}` : '(unassigned)');
+      if (nv) notifyAssign(t, nv);
+    } else if (k === 'priority') logAct('changed priority of', t, `to ${PR[nv].name}`);
     else if (k === 'due') logAct('changed due date of', t, nv ? `to ${fmtDate(nv)}` : '(cleared)');
     else if (k === 'start') logAct('changed start date of', t, nv ? `to ${fmtDate(nv)}` : '(cleared)');
     else if (k === 'project') {
@@ -881,6 +885,7 @@ A.postComment = el => {
   const t = task(id);
   if (
     mutate(() => {
+      notifyComment(t, txt); // before pushing, so earlier commenters are found but not the author
       D().comments.push({ id: uid('c'), task: id, by: D().me, at: Date.now(), text: txt, re: {} });
       logAct('commented on', t);
       S.ui.drafts[id] = '';
@@ -1669,8 +1674,8 @@ A.toggleRead = el => {
   render();
 };
 A.markAllRead = () => {
-  const n = D().notifs.filter(x => !x.read).length;
-  D().notifs.forEach(x => (x.read = true));
+  const n = myNotifs().filter(x => !x.read).length;
+  myNotifs().forEach(x => (x.read = true));
   save();
   render();
   if (n) toast("You're all caught up.");
@@ -1820,6 +1825,17 @@ IN.prefToggle = el => {
   save();
 };
 IN.npToggle = el => {
+  const kind = {
+    email_mention: 'mention',
+    push_mention: 'mention',
+    mention_all: 'mention',
+    email_assign: 'assign',
+    push_assign: 'assign',
+    assign_self: 'assign',
+    email_comment: 'comment',
+    push_comment: 'comment',
+  }[el.dataset.k];
+  if (kind) setMyNotifPref(kind, el.checked);
   D().notifPrefs[el.dataset.k] = el.checked;
   save();
   toast('Notification preferences saved', { ms: 1500 });

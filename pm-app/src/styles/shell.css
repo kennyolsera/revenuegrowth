@@ -447,6 +447,7 @@ html[data-embedded] .side,
 html[data-embedded] .side-scrim,
 html[data-embedded] .bottomnav,
 html[data-embedded] #mnav-btn,
-html[data-embedded] .topbar [data-pop='user'] {
+html[data-embedded] .topbar [data-pop='user'],
+html[data-embedded] .topbar [data-r='notifications'] {
   display: none !important;
 }

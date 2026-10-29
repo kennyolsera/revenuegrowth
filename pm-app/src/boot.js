@@ -70,7 +70,11 @@ function hostTheme() {
   ]);
 
   const { applyPrefs } = await import('./core/theme.js');
-  let hidden = false; // the dashboard keeps this frame alive but hidden when you leave Project Timeline
+  const { save, D, mem, task, proj } = await import('./core/store.js');
+  const { myNotifs, notifPrefsOf, setMyNotifPref } = await import('./core/notify.js');
+  const { A } = await import('./actions/actions.js');
+  let hidden = false;
+  let lastHiddenPoll = 0; // the dashboard keeps this frame alive but hidden when you leave Project Timeline
   const TABS = ['overview', 'board', 'list', 'table', 'calendar', 'timeline', 'files', 'activity'];
   window.addEventListener('message', e => {
     if (e.origin !== location.origin || e.data?.source !== 'esmm') return;
@@ -83,6 +87,40 @@ function hostTheme() {
     } else if (m.type === 'visible') {
       hidden = !m.visible;
       if (!hidden) tick();
+    } else if (m.type === 'notif-open') {
+      const n = myNotifs().find(x => x.id === m.id);
+      if (n) A.openNotif({ dataset: { id: n.id } });
+    } else if (m.type === 'notif-read-all') {
+      myNotifs().forEach(x => (x.read = true));
+      save();
+      render();
+    } else if (m.type === 'set-pref') {
+      // Project Timeline settings now live on the dashboard Settings page (allowlisted keys only).
+      const P = {
+        weekStart: ['1', '0', '6'],
+        dateFmt: ['MMM d', 'd/M', 'M/d', 'yyyy-MM-dd'],
+        timeFmt: ['12', '24'],
+        home: ['home', 'mytasks', 'inbox'],
+        openTasks: ['drawer', 'full'],
+      };
+      const B = ['confirmDel', 'showDoneBoard'];
+      if (P[m.k] && P[m.k].includes(String(m.v))) S.prefs[m.k] = m.k === 'weekStart' ? +m.v : String(m.v);
+      else if (B.includes(m.k)) S.prefs[m.k] = !!m.v;
+      else return;
+      save();
+      render();
+    } else if (m.type === 'set-notif-pref') {
+      setMyNotifPref(m.k, m.v);
+      save();
+      render();
+    } else if (m.type === 'set-ws-name') {
+      const name = String(m.name || '')
+        .trim()
+        .slice(0, 60);
+      if (!name) return;
+      D().ws.name = name;
+      save();
+      render();
     } else if (m.type === 'go') {
       // Navigation from the dashboard sidebar. Only known routes and existing projects.
       if (m.route === 'project') {
@@ -104,11 +142,49 @@ function hostTheme() {
       projects: visibleProjects()
         .filter(p => p.status !== 'complete')
         .map(p => ({ id: String(p.id), name: String(p.name), color: pColor(p) })),
+      unread: myNotifs().filter(n => !n.read).length,
+      notifs: myNotifs()
+        .slice()
+        .sort((a, b) => b.at - a.at)
+        .slice(0, 12)
+        .map(n => {
+          const t = n.task ? task(n.task) : null;
+          return {
+            id: n.id,
+            type: n.type,
+            by: (n.by && mem(n.by)?.name) || '',
+            text: String(n.text || ''),
+            title: t ? t.title : n.project ? proj(n.project)?.name || '' : '',
+            snippet: String(n.snippet || '').slice(0, 160),
+            at: n.at,
+            read: !!n.read,
+          };
+        }),
+      settings: {
+        wsName: D().ws.name,
+        prefs: {
+          weekStart: String(S.prefs.weekStart ?? 1),
+          dateFmt: S.prefs.dateFmt || 'MMM d',
+          timeFmt: S.prefs.timeFmt || '12',
+          home: S.prefs.home || 'home',
+          openTasks: S.prefs.openTasks || 'drawer',
+          confirmDel: S.prefs.confirmDel !== false,
+          showDoneBoard: S.prefs.showDoneBoard !== false,
+        },
+        notif: notifPrefsOf(D().me),
+      },
       counts: {
-        inbox: (d.notifs || []).filter(n => !n.read && n.type !== 'update').length,
+        inbox: myNotifs().filter(n => !n.read && n.type !== 'update').length,
         mytasks: allTasks().filter(t => t.assignee === d.me && t.status !== 'done').length,
       },
     };
+    // Settings moved to the dashboard: if anything inside opens the old settings page, hand over.
+    if (S.ui.route === 'settings' && window.parent !== window) {
+      tell('open-settings');
+      const back = S.ui.history.length ? S.ui.history[S.ui.history.length - 1] : { route: 'home', params: {} };
+      go(back.route === 'settings' ? 'home' : back.route, back.params || {}, { back: true });
+      return;
+    }
     const sig = JSON.stringify(nav);
     if (sig === lastNav) return;
     lastNav = sig;
@@ -131,7 +207,9 @@ function hostTheme() {
     );
   };
   async function tick() {
-    if (hidden || document.visibilityState !== 'visible' || busy()) return;
+    if (document.visibilityState !== 'visible' || busy()) return;
+    if (hidden && Date.now() - lastHiddenPoll < 60000) return; // hidden: check once a minute for the bell
+    if (hidden) lastHiddenPoll = Date.now();
     try {
       const j = await pullRemote();
       if (j && !busy()) {

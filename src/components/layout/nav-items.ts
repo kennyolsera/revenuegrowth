@@ -1,5 +1,5 @@
 import { SquaresFour as LayoutDashboard, CalendarDots as CalendarDays, NotePencil as NotebookPen, QrCode, ShoppingCart, ChartLine as LineChart, Graph as Network, SealCheck as BadgeCheck, Tray as Inbox, ChartBar as FileBarChart, Database, Users, Pulse as Activity, CreditCard, ChartBarHorizontal as GanttChart, ClipboardText as ClipboardList } from "@/components/icons";
-import { PhoneCall } from "lucide-react";
+import { PhoneCall, Settings } from "lucide-react";
 import type { Icon as PhosphorIcon } from "@/components/icons";
 import type { TranslationKey } from "@/lib/i18n";
 
@@ -57,6 +57,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/qris-providers", label: "QRIS Providers", translationKey: "nav_qris_providers", icon: CreditCard },
       { href: "/users", label: "User Management", translationKey: "nav_users", icon: Users },
       { href: "/logs", label: "Activity Log", translationKey: "nav_logs", icon: Activity },
+      { href: "/settings", label: "Settings", translationKey: "nav_settings", icon: Settings },
     ],
   },
 ];
