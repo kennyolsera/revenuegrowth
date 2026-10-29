@@ -1,4 +1,4 @@
-import { Warning, WarningCircle, Tray } from "@phosphor-icons/react/dist/ssr";
+import { Warning, WarningCircle, Tray } from "@/components/icons";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export function SupabaseNotice() {

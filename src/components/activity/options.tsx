@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CaretDown as ChevronDown, Plus } from "@phosphor-icons/react";
+import { CaretDown as ChevronDown, Plus } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Label, Select } from "@/components/ui/Input";

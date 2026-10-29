@@ -1,5 +1,5 @@
-import { SquaresFour as LayoutDashboard, CalendarDots as CalendarDays, NotePencil as NotebookPen, QrCode, ShoppingCart, ChartLine as LineChart, Graph as Network, SealCheck as BadgeCheck, Tray as Inbox, ChartBar as FileBarChart, Database, Users, Pulse as Activity, CreditCard, ChartBarHorizontal as GanttChart, ClipboardText as ClipboardList } from "@phosphor-icons/react/dist/ssr";
-import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { SquaresFour as LayoutDashboard, CalendarDots as CalendarDays, NotePencil as NotebookPen, QrCode, ShoppingCart, ChartLine as LineChart, Graph as Network, SealCheck as BadgeCheck, Tray as Inbox, ChartBar as FileBarChart, Database, Users, Pulse as Activity, CreditCard, ChartBarHorizontal as GanttChart, ClipboardText as ClipboardList } from "@/components/icons";
+import type { Icon as PhosphorIcon } from "@/components/icons";
 import type { TranslationKey } from "@/lib/i18n";
 
 export interface NavItem {

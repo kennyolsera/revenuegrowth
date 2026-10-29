@@ -1,6 +1,6 @@
 "use client";
 
-import { WarningOctagon as AlertOctagon, CalendarCheck as CalendarClock, Kanban as FolderKanban, ListChecks, NotePencil as NotebookPen, Tray as Inbox } from "@phosphor-icons/react";
+import { WarningOctagon as AlertOctagon, CalendarCheck as CalendarClock, Kanban as FolderKanban, ListChecks, NotePencil as NotebookPen, Tray as Inbox } from "@/components/icons";
 import { StatusBadge } from "@/components/ui/Badge";
 import { checklistProgress, isOverdue, moduleLabel } from "@/lib/kanban";
 import { useLanguage } from "@/lib/LanguageContext";

@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";
-import { Warning as AlertTriangle, Lock, Envelope as Mail, Eye, EyeSlash } from "@phosphor-icons/react";
+import { Warning as AlertTriangle, Lock, Envelope as Mail, Eye, EyeSlash } from "@/components/icons";
 import { AuthShell, AuthNotice } from "@/components/auth/AuthShell";
 import { useLanguage } from "@/lib/LanguageContext";
 import { safeNext } from "@/lib/auth/safe-next";

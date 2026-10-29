@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowSquareOut as ExternalLink, FileArrowUp as FileUp, Plus, MagnifyingGlassMinus as SearchX } from "@phosphor-icons/react";
+import { ArrowSquareOut as ExternalLink, FileArrowUp as FileUp, Plus, MagnifyingGlassMinus as SearchX } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { OPTION_FIELDS, optionsFor, type ActivityOption, type ActivityRecord, type OptionColumn } from "@/lib/activity";
 import { OptionChipSelect } from "@/components/activity/options";

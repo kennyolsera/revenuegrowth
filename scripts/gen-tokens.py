@@ -30,40 +30,42 @@ WHITE, BLACK = '#ffffff', '#000000'
 # cool grey; colour is spent on ONE accent (Olsera Blue, the midpoint of the
 # logo's wordmark navy #16397B and balloon blue #1393D1) and on meaning
 # (status chips). The logo keeps navy + balloon blues.
+# v1.4 (2026-10-28, ADR-011): the Gr8r template palette used by Project Timeline, so the dashboard and the
+# embedded app read as one product. Warm neutrals in both modes; one accent (Olsera Blue) kept.
 NEUTRAL = {
-    'light': dict(bg='#f7f8fa', side='#f1f3f6', surface='#ffffff', **{'surface-2': '#f4f5f7', 'surface-3': '#eceef1'},
-                  sunken='#f1f2f4', border='#e3e6ea', **{'border-strong': '#d0d5dc'}, divider='#edeff2',
-                  text='#0d1424', **{'text-2': '#3b4556', 'text-3': '#4f5868', 'text-4': '#7c8594'}),
-    'dark': dict(bg='#0a0d14', side='#0c1018', surface='#10141d', **{'surface-2': '#151a25', 'surface-3': '#1c2230'},
-                 sunken='#080b11', border='#232a38', **{'border-strong': '#2f3848'}, divider='#1a202b',
-                 text='#eef1f6', **{'text-2': '#c3cad6', 'text-3': '#9aa3b2', 'text-4': '#737d8d'}),
+    'light': dict(bg='#fbfaf8', side='#f4f3f0', surface='#ffffff', **{'surface-2': '#f6f5f2', 'surface-3': '#eeede9'},
+                  sunken='#f7f6f3', border='#e9e7e2', **{'border-strong': '#dad7d0'}, divider='#f0eeea',
+                  text='#1d1c1a', **{'text-2': '#57544e', 'text-3': '#6b6760', 'text-4': '#8c8880'}),
+    'dark': dict(bg='#1a1a19', side='#151514', surface='#1d1d1c', **{'surface-2': '#252524', 'surface-3': '#2d2d2b'},
+                 sunken='#181817', border='#2c2b29', **{'border-strong': '#3a3936'}, divider='#252523',
+                 text='#eceae5', **{'text-2': '#b5b2ab', 'text-3': '#9a968f', 'text-4': '#6f6c66'}),
 }
 
-# Sidebar ("rail"): a quiet neutral panel in both modes, one step off the page.
+# Sidebar ("rail"): the template's side panel (bg-side; hover surface-3; active = raised surface).
 RAIL = {
-    'light': {'rail': '#f1f3f6', 'rail-hover': '#e7eaee', 'rail-active': '#ffffff', 'rail-line': '#e1e5ea',
-              'rail-text': '#0d1424', 'rail-text-2': '#3b4556', 'rail-muted': '#5c6574', 'rail-node': '#1468b3'},
-    'dark': {'rail': '#0c1018', 'rail-hover': '#151a25', 'rail-active': '#1a2030', 'rail-line': '#1a202b',
-             'rail-text': '#eef1f6', 'rail-text-2': '#c3cad6', 'rail-muted': '#8790a0', 'rail-node': '#5aaee9'},
+    'light': {'rail': '#f4f3f0', 'rail-hover': '#eeede9', 'rail-active': '#ffffff', 'rail-line': '#e9e7e2',
+              'rail-text': '#1d1c1a', 'rail-text-2': '#57544e', 'rail-muted': '#6b6760', 'rail-node': '#1468b3'},
+    'dark': {'rail': '#151514', 'rail-hover': '#252524', 'rail-active': '#2d2d2b', 'rail-line': '#252523',
+             'rail-text': '#eceae5', 'rail-text-2': '#b5b2ab', 'rail-muted': '#9a968f', 'rail-node': '#5aaee9'},
 }
 
-# Neutral scale used for slate/gray/zinc/neutral/stone (cool, near-neutral).
+# Neutral scale used for slate/gray/zinc/neutral/stone (warm, from the template).
 NSCALE = {
-    'light': {50: '#f4f5f7', 100: '#eceef1', 200: '#e3e6ea', 300: '#d0d5dc', 400: '#7c8594', 500: '#4f5868',
-              600: '#3b4556', 700: '#2a3342', 800: '#1a2231', 900: '#0d1424', 950: '#070b15'},
-    'dark': {50: '#151a25', 100: '#1c2230', 200: '#232a38', 300: '#2f3848', 400: '#737d8d', 500: '#9aa3b2',
-             600: '#c3cad6', 700: '#d8dde6', 800: '#e6e9ef', 900: '#eef1f6', 950: '#f7f8fa'},
+    'light': {50: '#f6f5f2', 100: '#eeede9', 200: '#e9e7e2', 300: '#dad7d0', 400: '#8c8880', 500: '#6b6760',
+              600: '#57544e', 700: '#3d3b37', 800: '#2a2926', 900: '#1d1c1a', 950: '#121110'},
+    'dark': {50: '#252524', 100: '#2d2d2b', 200: '#2c2b29', 300: '#3a3936', 400: '#6f6c66', 500: '#9a968f',
+             600: '#b5b2ab', 700: '#cfccc5', 800: '#dfdcd6', 900: '#eceae5', 950: '#f6f5f2'},
 }
 
-HUES = {  # (light: darkened for AA text on white, dark: lifted for near-black)
-    'red': ('#b42f2a', '#f08a7e'),
-    'amber': ('#8a5a0c', '#e8bd5a'),
-    'green': ('#1d6b46', '#5fcf96'),
-    'blue': ('#1468b3', '#7fbcef'),
-    'violet': ('#5f4bb0', '#b3a3f0'),
-    'teal': ('#156e72', '#6acdd0'),
-    'orange': ('#a4521c', '#eda06a'),
-    'rose': ('#ab3a5c', '#f09ab2'),
+HUES = {  # template semantic colours (light: AA on white, dark: lifted for near-black)
+    'red': ('#b23c30', '#e57d70'),
+    'amber': ('#8f5e0e', '#d8a443'),
+    'green': ('#25754b', '#5cba86'),
+    'blue': ('#1468b3', '#72a5ea'),
+    'violet': ('#7652c2', '#a98deb'),
+    'teal': ('#1e8580', '#58c0b6'),
+    'orange': ('#c0612b', '#e3925f'),
+    'rose': ('#bc4270', '#e68aab'),
 }
 
 # One brand accent. Light: Olsera Blue (white text 5.7:1). Dark: lifted Olsera Blue (near-black text 7.9:1).
@@ -71,14 +73,14 @@ ACCENT_DEFAULT = 'olsera'
 ACCENTS = {
     'olsera': ('#1468b3', '#5aaee9'),
 }
-ON_ACCENT = {'light': '#ffffff', 'dark': '#08101c'}
+ON_ACCENT = {'light': '#ffffff', 'dark': '#151514'}
 # Highlight: the logo's balloon blues. Graphics only (logo node, today line), never body text.
 HIGHLIGHT = {'light': '#1393d1', 'dark': '#3ac7ea'}
 
 # Charts: accent, amber (warm contrast), slate, balloon blue (+ muted for "before"/target series).
 CHARTS = {
-    'light': ['#1468b3', '#b7791f', '#6b7484', '#1393d1', '#d0d5dc'],
-    'dark': ['#5aaee9', '#e3b062', '#9aa3b2', '#3ac7ea', '#2f3848'],
+    'light': ['#1468b3', '#c88a14', '#8c8880', '#1393d1', '#dad7d0'],
+    'dark': ['#5aaee9', '#d8a443', '#9a968f', '#3ac7ea', '#3a3936'],
 }
 
 def hue_scale(base, mode):
@@ -128,11 +130,11 @@ def block(mode):
         out.append(f'  --{hue}: rgb(var(--c-{hue}));')
     if mode == 'light':
         out += [
-            '  --overlay: rgb(13 20 36 / 0.28);',
-            '  --shadow-sm: 0 1px 2px rgb(13 20 36 / 0.06);',
-            '  --shadow-card: 0 0 0 1px rgb(13 20 36 / 0.06), 0 1px 2px rgb(13 20 36 / 0.04);',
-            '  --shadow-pop: 0 0 0 1px rgb(13 20 36 / 0.06), 0 8px 24px rgb(13 20 36 / 0.12);',
-            '  --shadow-drag: 0 0 0 1px rgb(13 20 36 / 0.08), 0 16px 32px rgb(13 20 36 / 0.18);',
+            '  --overlay: rgb(24 22 19 / 0.28);',
+            '  --shadow-sm: 0 1px 2px rgb(28 25 20 / 0.05);',
+            '  --shadow-card: 0 1px 2px rgb(28 25 20 / 0.04), 0 0 0 1px rgb(var(--c-border));',
+            '  --shadow-pop: 0 12px 32px -8px rgb(28 25 20 / 0.16), 0 2px 6px -2px rgb(28 25 20 / 0.06), 0 0 0 1px rgb(var(--c-border));',
+            '  --shadow-drag: 0 16px 36px -10px rgb(28 25 20 / 0.28), 0 0 0 1px rgb(var(--c-border-strong));',
             '  color-scheme: light;',
         ]
     else:

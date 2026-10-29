@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAx
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
 import { formatRupiah } from "@/lib/utils";
-import { TrendUp as TrendingUp } from "@phosphor-icons/react";
+import { TrendUp as TrendingUp } from "@/components/icons";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export interface LoanGrowthPoint {

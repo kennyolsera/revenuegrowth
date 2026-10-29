@@ -33,6 +33,8 @@ export function load() {
 }
 export const saved = load();
 if (window.__PM?.me) Object.assign(saved, { prefs: { ...saved.prefs, name: window.__PM.me.name, title: window.__PM.me.title } });
+// Theme comes from the ESMM dashboard and the accent is always Olsera Blue (ADR-011).
+saved.prefs = { ...saved.prefs, accent: 'blue', ...(window.__PM?.theme ? { theme: window.__PM.theme } : {}) };
 export const S = {
   data: saved.data,
   prefs: Object.assign({}, DEFAULT_PREFS, saved?.prefs || {}),

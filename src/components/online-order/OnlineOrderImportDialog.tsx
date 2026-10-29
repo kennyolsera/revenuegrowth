@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import * as XLSX from "xlsx";
-import { UploadSimple as Upload, FileXls as FileSpreadsheet, CheckCircle as CheckCircle2, XCircle, DownloadSimple as Download } from "@phosphor-icons/react";
+import { UploadSimple as Upload, FileXls as FileSpreadsheet, CheckCircle as CheckCircle2, XCircle, DownloadSimple as Download } from "@/components/icons";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";

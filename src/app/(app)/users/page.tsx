@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Key, Copy, Check, PencilSimple, Trash, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@phosphor-icons/react";
+import { Plus, Key, Copy, Check, PencilSimple, Trash, ShieldCheck, ShieldSlash as ShieldOff, Users, Pulse as Activity, Eye, User, Clock, Stack as Layers } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -15,6 +15,7 @@ import { formatDate, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 import { PasswordField } from "@/components/users/PasswordField";
+import { recordName, savedMsg } from "@/lib/toast-copy";
 
 interface AuditLogRow {
   id: string;
@@ -240,7 +241,11 @@ export default function UsersPage() {
       toast.error(`${t("save_error")}: ${error.message}`);
       return;
     }
-    toast.success(t("toast_updated"));
+    toast.success(
+      language === "id"
+        ? `${row.full_name || row.email} ${row.is_active ? "dinonaktifkan" : "diaktifkan"}`
+        : `${row.full_name || row.email} ${row.is_active ? "deactivated" : "activated"}`
+    );
     fetchRows();
   }
 
@@ -265,7 +270,7 @@ export default function UsersPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Error");
       setEditing(null);
-      toast.success(t("toast_updated"));
+      toast.success(savedMsg(language, "updated", recordName(editing)));
       fetchRows();
     } catch (err: any) {
       setEditError(err.message);

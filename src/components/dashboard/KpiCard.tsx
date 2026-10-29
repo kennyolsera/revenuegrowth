@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { TrendUp, TrendDown, Minus, type Icon as PhosphorIcon } from "@phosphor-icons/react";
+import { TrendUp, TrendDown, Minus, type Icon as PhosphorIcon } from "@/components/icons";
 import { useCountUp } from "@/lib/hooks/useCountUp";
 
 type Tone = "blue" | "emerald" | "amber" | "indigo" | "rose";

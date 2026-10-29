@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { X, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft } from "@phosphor-icons/react";
+import { X, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft } from "@/components/icons";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { NAV_GROUPS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";
@@ -86,7 +86,7 @@ export function Sidebar({
                     )}
                   >
                     <Icon
-                      weight={active ? "fill" : "regular"}
+                      strokeWidth={active ? 2.2 : 1.8}
                       aria-hidden
                       className={cn(
                         "shrink-0",

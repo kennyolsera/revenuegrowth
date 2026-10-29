@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
-import { Bank as Landmark, Wallet, Percent, Users, FileArrowUp as FileUp, ShieldWarning as ShieldAlert, Lock, Warning as AlertTriangle, Info } from "@phosphor-icons/react";
+import { Bank as Landmark, Wallet, Percent, Users, FileArrowUp as FileUp, ShieldWarning as ShieldAlert, Lock, Warning as AlertTriangle, Info } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/SupabaseNotice";

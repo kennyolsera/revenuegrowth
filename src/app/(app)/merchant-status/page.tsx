@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, CheckCircle as CheckCircle2 } from "@phosphor-icons/react";
+import { Plus, CheckCircle as CheckCircle2 } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -16,6 +16,7 @@ import { MerchantSelectField, resolveMerchantId } from "@/components/shared/Merc
 import { formatDate, formatRupiah } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
+import { recordName, savedMsg } from "@/lib/toast-copy";
 
 const FEATURE_OPTIONS = ["QRIS", "Network Partner", "Online Order", "Financing Loan"];
 
@@ -124,7 +125,7 @@ export default function MerchantStatusPage() {
       if (error) throw error;
       setCreateOpen(false);
       setNewClaim({ feature: FEATURE_OPTIONS[0] });
-      toast.success(t("toast_created"));
+      toast.success(savedMsg(language, "created", `${newClaim.feature ?? ""} claim`.trim()));
       fetchRows();
     } catch (err: any) {
       toast.error(`${t("save_error")}: ${err.message}`);
@@ -175,7 +176,7 @@ export default function MerchantStatusPage() {
       return;
     }
     setDetail(null);
-    toast.success(t("toast_updated"));
+    toast.success(savedMsg(language, "updated", recordName(detail.merchant) || recordName(detail)));
     fetchRows();
   }
 

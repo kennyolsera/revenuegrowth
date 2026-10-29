@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, Trash as Trash2, CheckCircle as CheckCircle2, Circle, Paperclip, UploadSimple as Upload, X, PencilSimple as Pencil } from "@phosphor-icons/react";
+import { Plus, Trash as Trash2, CheckCircle as CheckCircle2, Circle, Paperclip, UploadSimple as Upload, X, PencilSimple as Pencil, FileText, Envelope as Mail } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -14,6 +14,8 @@ import { Field, Input, Label, Select, Textarea } from "@/components/ui/Input";
 import { formatDate, cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
+import { savedMsg } from "@/lib/toast-copy";
+import { downloadMom, momMailto, momRecipients, type MomRecord } from "@/lib/mom-export";
 
 const CATEGORY_OPTIONS = ["Demo", "Onboarding", "Support", "Internal", "Lainnya"];
 const ATTACH_BUCKET = "mom-attachments";
@@ -59,6 +61,7 @@ function MomPageInner() {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState<"" | "word" | "email">("");
 
   async function fetchRows() {
     setLoading(true);
@@ -178,24 +181,71 @@ function MomPageInner() {
         action_items: actionItems.filter((a) => a.label.trim() !== ""),
         attachments,
       };
+      let saved: any;
       if (editingId) {
-        const { error } = await supabase.from("meeting_minutes").update(payload).eq("id", editingId);
+        const { data, error } = await supabase.from("meeting_minutes").update(payload).eq("id", editingId).select().single();
         if (error) throw error;
-        toast.success(t("toast_updated"));
+        saved = data;
       } else {
         const { data: userData } = await supabase.auth.getUser();
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from("meeting_minutes")
-          .insert({ ...payload, created_by: userData.user?.email ?? null });
+          .insert({ ...payload, created_by: userData.user?.email ?? null })
+          .select()
+          .single();
         if (error) throw error;
-        toast.success(t("toast_created"));
+        saved = data;
       }
+      const row = saved ?? { ...payload };
+      toast.success(savedMsg(language, editingId ? "updated" : "created", row.title), {
+        action: { label: lang === "id" ? "Export Word" : "Export Word", onClick: () => exportWord(row) },
+        ms: 7000,
+      });
       setDialogOpen(false);
+      setDetail(row); // reopen as the read view, where Export and Email live
       fetchRows();
     } catch (err: any) {
       toast.error(`${t("save_error")}: ${err.message}`);
     } finally {
       setSaving(false);
+    }
+  }
+
+  const lang = language === "id" ? "id" : "en";
+
+  async function exportWord(row: MomRecord) {
+    setExporting("word");
+    try {
+      const file = await downloadMom(row, lang);
+      toast.success(lang === "id" ? `MOM diunduh: ${file}` : `MOM downloaded: ${file}`);
+    } catch (err: any) {
+      toast.error(lang === "id" ? `Gagal membuat file Word: ${err?.message ?? ""}` : `Couldn't create the Word file: ${err?.message ?? ""}`);
+    } finally {
+      setExporting("");
+    }
+  }
+
+  async function emailMom(row: MomRecord) {
+    setExporting("email");
+    try {
+      let members: { full_name: string | null; email: string | null }[] = [];
+      if (isSupabaseConfigured) {
+        const { data } = await createClient().from("profiles").select("full_name,email").eq("is_active", true);
+        members = data ?? [];
+      }
+      const to = momRecipients(row.participants, members);
+      const file = await downloadMom(row, lang);
+      window.location.href = momMailto(row, to, file, lang);
+      toast.info(
+        lang === "id"
+          ? `Draf email dibuka${to.length ? ` untuk ${to.length} penerima` : ""}. Lampirkan ${file} dari folder Download.`
+          : `Email draft opened${to.length ? ` for ${to.length} recipient${to.length > 1 ? "s" : ""}` : ""}. Attach ${file} from your Downloads.`,
+        { ms: 7000 }
+      );
+    } catch (err: any) {
+      toast.error(lang === "id" ? `Gagal menyiapkan email: ${err?.message ?? ""}` : `Couldn't prepare the email: ${err?.message ?? ""}`);
+    } finally {
+      setExporting("");
     }
   }
 
@@ -333,7 +383,14 @@ function MomPageInner() {
             </section>
           </div>
 
-          <div className="mt-6 flex justify-end gap-2.5 border-t border-surface-border pt-4">
+          <div className="mt-6 flex flex-wrap items-center gap-2.5 border-t border-surface-border pt-4">
+            <Button type="button" variant="secondary" onClick={() => exportWord(detail)} loading={exporting === "word"} disabled={!!exporting}>
+              <FileText className="h-4 w-4" /> {lang === "id" ? "Export MOM (Word)" : "Export MOM (Word)"}
+            </Button>
+            <Button type="button" variant="secondary" onClick={() => emailMom(detail)} loading={exporting === "email"} disabled={!!exporting}>
+              <Mail className="h-4 w-4" /> {lang === "id" ? "Email MOM" : "Email MOM"}
+            </Button>
+            <span className="flex-1" />
             <Button type="button" variant="secondary" onClick={() => setDetail(null)}>
               {t("close")}
             </Button>

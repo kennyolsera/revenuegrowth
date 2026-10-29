@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileArrowUp as FileUp } from "@phosphor-icons/react";
+import { FileArrowUp as FileUp } from "@/components/icons";
 import { ResourceManager } from "@/components/shared/ResourceManager";
 import { OnlineOrderImportDialog } from "@/components/online-order/OnlineOrderImportDialog";
 import { Button } from "@/components/ui/Button";

@@ -12,6 +12,21 @@ export function TimelineFrame() {
   const [progress, setProgress] = useState(8);
   const [state, setState] = useState<"loading" | "done" | "hidden" | "error">("loading");
   const floor = useRef(8);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+
+  // The dashboard's theme is the only switch (ADR-011): mirror every change into the frame.
+  useEffect(() => {
+    const root = document.documentElement;
+    const send = () => {
+      const t = root.dataset.theme;
+      const dark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+      const theme = dark ? "dark" : "light";
+      frameRef.current?.contentWindow?.postMessage({ source: "esmm", type: "theme", theme }, window.location.origin);
+    };
+    const obs = new MutationObserver(send);
+    obs.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
@@ -57,7 +72,7 @@ export function TimelineFrame() {
 
   return (
     <div className="relative h-full w-full">
-      <iframe src="/project-timeline/index.html" title="Project Timeline" className="block h-full w-full border-0 bg-bg" />
+      <iframe ref={frameRef} src="/project-timeline/index.html" title="Project Timeline" className="block h-full w-full border-0 bg-bg" />
       {state !== "hidden" && <TimelineLoading progress={progress} fading={state === "done"} />}
     </div>
   );

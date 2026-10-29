@@ -3,7 +3,7 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
-import { ChartPie as PieIcon } from "@phosphor-icons/react";
+import { ChartPie as PieIcon } from "@/components/icons";
 import { useLanguage } from "@/lib/LanguageContext";
 
 const COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-4)", "var(--chart-3)", "var(--rose)", "var(--text-3)"];

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Input, Label } from "@/components/ui/Input";
 import { useLanguage } from "@/lib/LanguageContext";
-import { Storefront as Store, Check, Plus } from "@phosphor-icons/react";
+import { Storefront as Store, Check, Plus } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 export interface MerchantOption {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FileArrowUp as FileUp, Warning as AlertTriangle } from "@phosphor-icons/react";
+import { FileArrowUp as FileUp, Warning as AlertTriangle } from "@/components/icons";
 import { ResourceManager } from "@/components/shared/ResourceManager";
 import { InlineStatusSelect } from "@/components/shared/InlineStatusSelect";
 import { QrisImportDialog } from "@/components/qris/QrisImportDialog";

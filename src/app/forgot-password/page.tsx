@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Warning as AlertTriangle, ArrowLeft, Envelope as Mail, EnvelopeOpen as MailCheck } from "@phosphor-icons/react";
+import { Warning as AlertTriangle, ArrowLeft, Envelope as Mail, EnvelopeOpen as MailCheck } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Tray as Inbox, CircleNotch as Loader2, NotePencil as NotebookPen } from "@phosphor-icons/react";
+import { Tray as Inbox, CircleNotch as Loader2, NotePencil as NotebookPen } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";

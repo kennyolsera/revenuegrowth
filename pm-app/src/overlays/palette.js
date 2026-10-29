@@ -1,10 +1,9 @@
 /* ---------------- COMMAND PALETTE ---------------- */
-import { MOD, clamp, esc } from '../core/utils.js';
+import { clamp, esc } from '../core/utils.js';
 import { LOGO, ic } from '../core/icons.js';
 import { PSTAT } from '../core/constants.js';
 import { D, S, allTasks, pColor, proj, save, task } from '../core/store.js';
 import { FT, av, hl, stIcon } from '../ui/helpers.js';
-import { effectiveDark } from '../core/theme.js';
 import { go, render } from '../shell/render.js';
 import { sortTasks } from '../shell/view-engine.js';
 import { searchAll } from '../pages/search.js';
@@ -34,13 +33,6 @@ export function commands() {
     { id: 'c-mem', name: 'Go to Members', icon: 'users', run: () => go('members') },
     { id: 'c-set', name: 'Open settings', icon: 'settings', kbd: 'G S', run: () => go('settings') },
     { id: 'c-app', name: 'Appearance settings', icon: 'palette', run: () => go('settings', { sec: 'appearance' }) },
-    {
-      id: 'c-dark',
-      name: effectiveDark() ? 'Switch to light mode' : 'Switch to dark mode',
-      icon: effectiveDark() ? 'sun' : 'moon',
-      kbd: MOD + ' ⇧ L',
-      run: () => A.toggleDark(),
-    },
     { id: 'c-inv', name: 'Invite member', icon: 'user-plus', run: () => A.invite() },
     { id: 'c-side', name: 'Toggle sidebar', icon: 'panel-left', kbd: '[', run: () => A.toggleSide() },
     { id: 'c-keys', name: 'Keyboard shortcuts', icon: 'keyboard', kbd: '?', run: () => A.shortcuts() },

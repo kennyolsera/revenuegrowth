@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { List as Menu, SignOut as LogOut, User as UserIcon, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft, Sun, Moon } from "@phosphor-icons/react";
+import { List as Menu, SignOut as LogOut, User as UserIcon, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft, Sun, Moon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { NAV_ITEMS } from "./nav-items";
 import { useLanguage } from "@/lib/LanguageContext";

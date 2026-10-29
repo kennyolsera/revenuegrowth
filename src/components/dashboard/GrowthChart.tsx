@@ -12,7 +12,7 @@ import {
 } from "recharts";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
-import { TrendUp as TrendingUp } from "@phosphor-icons/react";
+import { TrendUp as TrendingUp } from "@/components/icons";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export interface GrowthPoint {

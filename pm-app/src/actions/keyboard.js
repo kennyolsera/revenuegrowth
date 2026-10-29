@@ -18,11 +18,6 @@ document.addEventListener('keydown', e => {
     pl ? A.closePalette() : A.openPalette();
     return;
   }
-  if (mod && e.shiftKey && e.key.toLowerCase() === 'l') {
-    e.preventDefault();
-    A.toggleDark();
-    return;
-  }
   // Keep Tab inside whichever surface is modal right now.
   if (e.key === 'Tab') {
     const box = pl ? $('.palette') : S.ui.modals.length ? $$('.modal').pop() : S.ui.drawer && S.ui.drawerFull ? $('.drawer') : null;

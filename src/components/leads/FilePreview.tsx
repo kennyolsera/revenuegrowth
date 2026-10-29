@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Warning as AlertTriangle, DownloadSimple as Download, FileXls as FileSpreadsheet, FileText, PresentationChart as Presentation, MagnifyingGlass as Search, File as FileIcon } from "@phosphor-icons/react";
+import { Warning as AlertTriangle, DownloadSimple as Download, FileXls as FileSpreadsheet, FileText, PresentationChart as Presentation, MagnifyingGlass as Search, File as FileIcon } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Dialog } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";

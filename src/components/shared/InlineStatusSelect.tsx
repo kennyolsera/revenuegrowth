@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { CaretDown as ChevronDown, CircleNotch as Loader2 } from "@phosphor-icons/react";
+import { CaretDown as ChevronDown, CircleNotch as Loader2 } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { statusTone } from "@/components/ui/Badge";
 import { useLanguage } from "@/lib/LanguageContext";
+import { recordName, statusMsg } from "@/lib/toast-copy";
 import { useToast } from "@/lib/ToastContext";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,7 @@ export function InlineStatusSelect({
   field?: string;
   onChanged?: () => void;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const current = row[field] as string;
@@ -58,7 +59,7 @@ export function InlineStatusSelect({
       /* ignore */
     }
     setSaving(false);
-    toast.success(t("toast_status_updated"));
+    toast.success(statusMsg(language, recordName(row), String(next)));
     onChanged?.();
   }
 

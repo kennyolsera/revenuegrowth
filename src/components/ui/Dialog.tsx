@@ -1,7 +1,7 @@
 "use client";
 
-import { X } from "@phosphor-icons/react";
-import { useEffect, useId, useRef } from "react";
+import { X } from "@/components/icons";
+import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 const FOCUSABLE =
@@ -14,6 +14,7 @@ export function Dialog({
   description,
   children,
   width = "max-w-lg",
+  guardChanges = true,
 }: {
   open: boolean;
   onClose: () => void;
@@ -21,6 +22,8 @@ export function Dialog({
   description?: string;
   children: React.ReactNode;
   width?: string;
+  /** Ask before Esc / outside click throws away edits (ADR-011). On by default. */
+  guardChanges?: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
@@ -33,11 +36,35 @@ export function Dialog({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
+  // Unsaved-changes guard: any edit inside the panel marks it dirty; Esc or a click outside
+  // then asks first. Closing from code (open=false, e.g. after a successful save) needs no answer;
+  // a failed save keeps the guard, so the entered values are not lost.
+  const dirty = useRef(false);
+  const [confirming, setConfirming] = useState(false);
+  const confirmingRef = useRef(false);
+  confirmingRef.current = confirming;
+  const guardRef = useRef(guardChanges);
+  guardRef.current = guardChanges;
+  const keepRef = useRef<HTMLButtonElement>(null);
+
+  const requestClose = () => {
+    if (guardRef.current && dirty.current) setConfirming(true);
+    else onCloseRef.current();
+  };
+  const requestCloseRef = useRef(requestClose);
+  requestCloseRef.current = requestClose;
+
+  useEffect(() => {
+    if (confirming) keepRef.current?.focus();
+  }, [confirming]);
+
   useEffect(() => {
     if (!open) return;
 
     // Remember what was focused so we can restore it on close.
     previouslyFocused.current = document.activeElement as HTMLElement | null;
+    dirty.current = false;
+    setConfirming(false);
     document.body.style.overflow = "hidden";
 
     // Move focus into the dialog once, on open (first field, else the panel).
@@ -45,9 +72,25 @@ export function Dialog({
     const first = panel?.querySelector<HTMLElement>(FOCUSABLE);
     (first ?? panel)?.focus();
 
+    const markDirty = (e: Event) => {
+      const el = e.target as HTMLElement | null;
+      if (el?.closest?.("[data-no-dirty]")) return;
+      dirty.current = true;
+    };
+    panel?.addEventListener("input", markDirty, true);
+    panel?.addEventListener("change", markDirty, true);
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!guardRef.current || !dirty.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
-        onCloseRef.current();
+        e.preventDefault();
+        if (confirmingRef.current) setConfirming(false);
+        else requestCloseRef.current();
         return;
       }
       if (e.key !== "Tab" || !panel) return;
@@ -77,6 +120,9 @@ export function Dialog({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
+      panel?.removeEventListener("input", markDirty, true);
+      panel?.removeEventListener("change", markDirty, true);
+      window.removeEventListener("beforeunload", onBeforeUnload);
       document.body.style.overflow = "unset";
       // Restore focus to whatever triggered the dialog.
       previouslyFocused.current?.focus?.();
@@ -89,7 +135,7 @@ export function Dialog({
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--overlay)] p-4 sm:items-center animate-fade-in">
-      <div className="fixed inset-0" onClick={() => onCloseRef.current()} aria-hidden="true" />
+      <div className="fixed inset-0" onClick={() => requestCloseRef.current()} aria-hidden="true" />
       <div
         ref={panelRef}
         role="dialog"
@@ -119,8 +165,58 @@ export function Dialog({
           </button>
         </div>
         <div className="max-h-[75vh] overflow-y-auto px-6 py-5 scrollbar-thin">{children}</div>
+        {confirming && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-[var(--overlay)] p-4 animate-fade-in">
+            <div
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby={`${titleId}-discard`}
+              aria-describedby={`${titleId}-discard-d`}
+              className="w-full max-w-sm rounded-lg border border-border bg-surface p-5 shadow-pop"
+            >
+              <h4 id={`${titleId}-discard`} className="text-base font-semibold text-text">
+                {lang() === "id" ? "Buang perubahan?" : "Discard changes?"}
+              </h4>
+              <p id={`${titleId}-discard-d`} className="mt-1.5 text-sm leading-relaxed text-text-2">
+                {lang() === "id"
+                  ? `Isian di “${title}” belum disimpan dan akan hilang.`
+                  : `What you entered in “${title}” hasn't been saved and will be lost.`}
+              </p>
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  ref={keepRef}
+                  type="button"
+                  onClick={() => setConfirming(false)}
+                  className="h-8 rounded-md border border-border bg-surface px-3 text-sm font-medium text-text hover:bg-surface-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                >
+                  {lang() === "id" ? "Lanjut mengisi" : "Keep editing"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    dirty.current = false;
+                    setConfirming(false);
+                    onCloseRef.current();
+                  }}
+                  className="h-8 rounded-md bg-red-600 px-3 text-sm font-medium text-[rgb(var(--c-on-accent))] hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600/40"
+                >
+                  {lang() === "id" ? "Buang" : "Discard"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>,
     document.body
   );
+}
+
+/** Current UI language from the dashboard's saved preference (dialog copy only). */
+function lang(): "id" | "en" {
+  try {
+    return localStorage.getItem("rgd_lang") === "id" ? "id" : "en";
+  } catch {
+    return "en";
+  }
 }

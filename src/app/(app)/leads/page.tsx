@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import * as XLSX from "xlsx";
-import { CloudArrowUp as UploadCloud, DownloadSimple as Download, CheckCircle as CheckCircle2, Eye, PencilSimple as Pencil } from "@phosphor-icons/react";
+import { CloudArrowUp as UploadCloud, DownloadSimple as Download, CheckCircle as CheckCircle2, Eye, PencilSimple as Pencil } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -18,6 +18,7 @@ import { useToast } from "@/lib/ToastContext";
 import { FilePreview, KIND_ICON } from "@/components/leads/FilePreview";
 import { fileKind, isAcceptedLeadsFile, LEADS_ACCEPT, LEADS_MAX_BYTES } from "@/lib/files/fileKind";
 import { cleanBaseName, MAX_BASE_LENGTH, splitFileName } from "@/lib/files/rename";
+import { recordName, savedMsg, statusMsg } from "@/lib/toast-copy";
 
 const BUCKET = "leads-raw";
 
@@ -148,7 +149,7 @@ export default function LeadsPage() {
 
       setUploadOpen(false);
       setFile(null);
-      toast.success(t("toast_created"));
+      toast.success(savedMsg(language, "created", file?.name));
       fetchRows();
     } catch (err: any) {
       setUploadError(err?.message ?? "Failed to upload file.");
@@ -164,7 +165,7 @@ export default function LeadsPage() {
       toast.error(`${t("save_error")}: ${error.message}`);
       return;
     }
-    toast.success(t("toast_status_updated"));
+    toast.success(statusMsg(language, recordName(row), language === "id" ? "Diproses" : "Processed"));
     fetchRows();
   }
 

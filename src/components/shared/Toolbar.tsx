@@ -1,6 +1,6 @@
 "use client";
 
-import { MagnifyingGlass as Search, X } from "@phosphor-icons/react";
+import { MagnifyingGlass as Search, X } from "@/components/icons";
 import { Input, Select } from "@/components/ui/Input";
 import { useLanguage } from "@/lib/LanguageContext";
 

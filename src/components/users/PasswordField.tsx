@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, EyeSlash, ArrowsClockwise, Copy, Check } from "@phosphor-icons/react";
+import { Eye, EyeSlash, ArrowsClockwise, Copy, Check } from "@/components/icons";
 import { Input, Label } from "@/components/ui/Input";
 import { cn } from "@/lib/utils";
 

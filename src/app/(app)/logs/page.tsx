@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Pulse as Activity, User, Clock, Stack as Layers, Eye, ArrowsClockwise as RefreshCw } from "@phosphor-icons/react";
+import { Pulse as Activity, User, Clock, Stack as Layers, Eye, ArrowsClockwise as RefreshCw } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";

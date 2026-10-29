@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileArrowUp as FileUp, ListChecks, Plus, ArrowsClockwise as RefreshCw, MagnifyingGlass as Search, X } from "@phosphor-icons/react";
+import { FileArrowUp as FileUp, ListChecks, Plus, ArrowsClockwise as RefreshCw, MagnifyingGlass as Search, X } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
 import { Button } from "@/components/ui/Button";

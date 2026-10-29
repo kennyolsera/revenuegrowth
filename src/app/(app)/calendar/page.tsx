@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, NotePencil as NotebookPen, Plus, CalendarBlank as CalendarIcon } from "@phosphor-icons/react";
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, NotePencil as NotebookPen, Plus, CalendarBlank as CalendarIcon } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, ErrorNotice } from "@/components/shared/SupabaseNotice";
@@ -23,6 +23,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
+import { recordName, savedMsg } from "@/lib/toast-copy";
 
 const MONTH_NAMES_ID = [
   "Januari", "Februari", "Maret", "April", "Mei", "Juni",
@@ -180,7 +181,7 @@ export default function CalendarPage() {
       const { error } = await query;
       if (error) throw error;
       setDialogOpen(false);
-      toast.success(editingId ? t("toast_updated") : t("toast_created"));
+      toast.success(savedMsg(language, editingId ? "updated" : "created", payload.title));
       fetchEvents();
     } catch (err: any) {
       toast.error(`${t("save_error")}: ${err.message}`);
@@ -198,7 +199,7 @@ export default function CalendarPage() {
       toast.error(`${t("delete_error")}: ${error.message}`);
       return;
     }
-    toast.success(t("toast_deleted"));
+    toast.success(savedMsg(language, "deleted", form.title));
     fetchEvents();
   }
 

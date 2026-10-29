@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, Kanban as FolderKanban, PencilSimple as Pencil, Plus, Kanban as SquareKanban } from "@phosphor-icons/react";
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, Kanban as FolderKanban, PencilSimple as Pencil, Plus, Kanban as SquareKanban } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { moduleLabel, todayISO } from "@/lib/kanban";
 import {

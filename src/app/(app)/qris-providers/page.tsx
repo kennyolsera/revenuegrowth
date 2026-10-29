@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Power, Lock } from "@phosphor-icons/react";
+import { Power, Lock } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/SupabaseNotice";
@@ -11,6 +11,7 @@ import { ResourceManager } from "@/components/shared/ResourceManager";
 import type { ColumnDef } from "@/components/shared/DataTable";
 import { formatDate } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
+import { recordName, statusMsg } from "@/lib/toast-copy";
 import { useToast } from "@/lib/ToastContext";
 
 export default function QrisProvidersPage() {
@@ -46,7 +47,7 @@ export default function QrisProvidersPage() {
       toast.error(error.message);
       return;
     }
-    toast.success(t("toast_status_updated"));
+    toast.success(statusMsg(language, recordName(row), row.is_active ? (language === "id" ? "nonaktif" : "inactive") : (language === "id" ? "aktif" : "active")));
     refresh();
   }
 

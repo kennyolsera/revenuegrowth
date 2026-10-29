@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus, PencilSimple as Pencil, Trash as Trash2, DownloadSimple as Download } from "@phosphor-icons/react";
+import { Plus, PencilSimple as Pencil, Trash as Trash2, DownloadSimple as Download } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -13,6 +13,7 @@ import { PageHeader } from "./PageHeader";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 import { MerchantSelectField, resolveMerchantId } from "./MerchantSelectField";
+import { recordName, savedMsg } from "@/lib/toast-copy";
 
 export interface FormFieldDef {
   key: string;
@@ -223,7 +224,7 @@ export function ResourceManager<T extends { id: string }>({
     await logActivity("DELETE", deleteTarget.id, sanitizePayload(deleteTarget as any));
     setDeleting(false);
     setDeleteTarget(null);
-    toast.success(t("toast_deleted"));
+    toast.success(savedMsg(language, "deleted", recordName(deleteTarget)));
     fetchRows();
   }
 
@@ -272,12 +273,12 @@ export function ResourceManager<T extends { id: string }>({
         const { error } = await supabase.from(table).update(payload).eq("id", editing.id);
         if (error) throw error;
         await logActivity("UPDATE", editing.id, sanitizePayload(editing as any), payload);
-        toast.success(t("toast_updated"));
+        toast.success(savedMsg(language, "updated", recordName(payload) || recordName(editing)));
       } else {
         const { data: inserted, error } = await supabase.from(table).insert(payload).select().single();
         if (error) throw error;
         await logActivity("CREATE", inserted?.id, null, payload);
-        toast.success(t("toast_created"));
+        toast.success(savedMsg(language, "created", recordName(payload)));
       }
       setDialogOpen(false);
       fetchRows();

@@ -30,6 +30,19 @@ function fail(msg) {
   app.append(box);
 }
 
+/* The dashboard's theme is the only theme switch (ADR-011). */
+function hostTheme() {
+  try {
+    if (window.parent !== window) {
+      const t = window.parent.document.documentElement.dataset.theme;
+      return t === 'dark' || (t === 'system' && window.parent.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+  } catch {
+    /* different origin: keep this browser's setting */
+  }
+  return null;
+}
+
 (async function boot() {
   tell('progress', 35);
   try {
@@ -40,6 +53,7 @@ function fail(msg) {
     }
     if (!res.ok) throw new Error('HTTP ' + res.status);
     window.__PM = await res.json();
+    window.__PM.theme = hostTheme();
     tell('progress', 75);
   } catch {
     tell('error');
@@ -53,6 +67,15 @@ function fail(msg) {
     import('./core/remote.js'),
     import('./shell/render.js'),
   ]);
+
+  const { applyPrefs } = await import('./core/theme.js');
+  window.addEventListener('message', e => {
+    if (e.origin !== location.origin || e.data?.source !== 'esmm' || e.data.type !== 'theme') return;
+    if (e.data.theme !== 'dark' && e.data.theme !== 'light') return;
+    S.prefs.theme = e.data.theme;
+    applyPrefs();
+    render();
+  });
 
   requestAnimationFrame(() => tell('ready', 100));
 

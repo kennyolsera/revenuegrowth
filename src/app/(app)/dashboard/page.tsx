@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, QrCode, Bank as Landmark, Tray as Inbox, CalendarCheck as CalendarClock, ListChecks, ArrowUpRight } from "@phosphor-icons/react";
+import { Users, QrCode, Bank as Landmark, Tray as Inbox, CalendarCheck as CalendarClock, ListChecks, ArrowUpRight } from "@/components/icons";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { SupabaseNotice, EmptyState } from "@/components/shared/SupabaseNotice";

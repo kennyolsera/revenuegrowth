@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WarningOctagon as AlertOctagon, ArrowRight, ChatCenteredText as MessageSquare, Plus, Trash as Trash2 } from "@phosphor-icons/react";
+import { WarningOctagon as AlertOctagon, ArrowRight, ChatCenteredText as MessageSquare, Plus, Trash as Trash2 } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
@@ -22,6 +22,7 @@ import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
 import type { KanbanActivity, KanbanProject, KanbanStage, KanbanTask } from "@/lib/types";
 import { cn, formatDate } from "@/lib/utils";
+import { recordName, savedMsg } from "@/lib/toast-copy";
 
 type ChecklistItem = { label: string; done: boolean };
 
@@ -212,7 +213,7 @@ export function TaskDialog({
       }
       if (stageChanged && saved.stage === "in_progress") await syncSourceOnStart(supabase, saved).catch(() => {});
       if (stageChanged && saved.stage === "done") await syncSourceOnDone(supabase, saved).catch(() => {});
-      toast.success(task ? t("toast_updated") : t("toast_created"));
+      toast.success(savedMsg(language, task ? "updated" : "created", saved.title));
       onSaved();
       onClose();
     } catch (err: any) {
@@ -230,7 +231,7 @@ export function TaskDialog({
       toast.error(`${t("delete_error")}: ${error.message}`);
       return;
     }
-    toast.success(t("toast_deleted"));
+    toast.success(savedMsg(language, "deleted", task.title));
     onSaved();
     onClose();
   }

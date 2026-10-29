@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Warning as AlertTriangle, Eye, EyeSlash as EyeOff, CircleNotch as Loader2, Lock } from "@phosphor-icons/react";
+import { Warning as AlertTriangle, Eye, EyeSlash as EyeOff, CircleNotch as Loader2, Lock } from "@/components/icons";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Input, Field, Label } from "@/components/ui/Input";
