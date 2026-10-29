@@ -7,7 +7,8 @@ const API = '/api/pm-workspace';
 /* Tell the ESMM page that embeds us how far loading has got (it shows the progress bar). */
 function tell(type, progress) {
   try {
-    if (window.parent !== window) window.parent.postMessage({ source: 'pm', type, progress }, location.origin);
+    if (window.parent !== window)
+      window.parent.postMessage(type === 'nav' ? { source: 'pm', type, nav: progress } : { source: 'pm', type, progress }, location.origin);
   } catch {
     /* not embedded */
   }
@@ -62,20 +63,59 @@ function hostTheme() {
   }
 
   await import('./main.js');
-  const [{ S }, { R, adoptRemote, pullRemote, pushRemote }, { render }] = await Promise.all([
+  const [{ S, allTasks, visibleProjects, pColor }, { R, adoptRemote, pullRemote, pushRemote }, { render, go, ROUTE_NAMES }] = await Promise.all([
     import('./core/store.js'),
     import('./core/remote.js'),
     import('./shell/render.js'),
   ]);
 
   const { applyPrefs } = await import('./core/theme.js');
+  let hidden = false; // the dashboard keeps this frame alive but hidden when you leave Project Timeline
+  const TABS = ['overview', 'board', 'list', 'table', 'calendar', 'timeline', 'files', 'activity'];
   window.addEventListener('message', e => {
-    if (e.origin !== location.origin || e.data?.source !== 'esmm' || e.data.type !== 'theme') return;
-    if (e.data.theme !== 'dark' && e.data.theme !== 'light') return;
-    S.prefs.theme = e.data.theme;
-    applyPrefs();
-    render();
+    if (e.origin !== location.origin || e.data?.source !== 'esmm') return;
+    const m = e.data;
+    if (m.type === 'theme') {
+      if (m.theme !== 'dark' && m.theme !== 'light') return;
+      S.prefs.theme = m.theme;
+      applyPrefs();
+      render();
+    } else if (m.type === 'visible') {
+      hidden = !m.visible;
+      if (!hidden) tick();
+    } else if (m.type === 'go') {
+      // Navigation from the dashboard sidebar. Only known routes and existing projects.
+      if (m.route === 'project') {
+        if (!visibleProjects().some(p => p.id === m.id)) return;
+        go('project', { id: m.id, tab: TABS.includes(m.tab) ? m.tab : 'board' });
+      } else if (typeof m.route === 'string' && ROUTE_NAMES[m.route] && !['system', 'states', 'member', 'team', 'project'].includes(m.route)) {
+        go(m.route);
+      }
+    }
   });
+
+  // Tell the dashboard sidebar where we are and which projects to list (after every render, only when it changed).
+  let lastNav = '';
+  const postNav = () => {
+    const d = S.data;
+    const nav = {
+      route: S.ui.route,
+      id: S.ui.params?.id || null,
+      projects: visibleProjects()
+        .filter(p => p.status !== 'complete')
+        .map(p => ({ id: String(p.id), name: String(p.name), color: pColor(p) })),
+      counts: {
+        inbox: (d.notifs || []).filter(n => !n.read && n.type !== 'update').length,
+        mytasks: allTasks().filter(t => t.assignee === d.me && t.status !== 'done').length,
+      },
+    };
+    const sig = JSON.stringify(nav);
+    if (sig === lastNav) return;
+    lastNav = sig;
+    tell('nav', nav);
+  };
+  window.addEventListener('pm:rendered', postNav);
+  postNav();
 
   requestAnimationFrame(() => tell('ready', 100));
 
@@ -91,7 +131,7 @@ function hostTheme() {
     );
   };
   async function tick() {
-    if (document.visibilityState !== 'visible' || busy()) return;
+    if (hidden || document.visibilityState !== 'visible' || busy()) return;
     try {
       const j = await pullRemote();
       if (j && !busy()) {

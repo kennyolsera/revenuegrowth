@@ -437,3 +437,16 @@ h3.sub {
 .offline-bar .i {
   color: var(--amber);
 }
+
+/* Embedded in the ESMM dashboard (ADR-012): the dashboard sidebar owns navigation and the account menu. */
+html[data-embedded] .shell,
+html[data-embedded] .shell.collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+html[data-embedded] .side,
+html[data-embedded] .side-scrim,
+html[data-embedded] .bottomnav,
+html[data-embedded] #mnav-btn,
+html[data-embedded] .topbar [data-pop='user'] {
+  display: none !important;
+}

@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { X, SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeft } from "@/components/icons";
 import { Logo, LogoMark } from "@/components/brand/Logo";
 import { NAV_GROUPS } from "./nav-items";
+import { TimelineSubnav } from "./TimelineSubnav";
+import { Fragment } from "react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useSidebar } from "@/lib/SidebarContext";
 import { cn } from "@/lib/utils";
@@ -72,8 +74,8 @@ export function Sidebar({
                 const translatedLabel = t(item.translationKey);
 
                 return (
+                  <Fragment key={item.href}>
                   <Link
-                    key={item.href}
                     href={item.href}
                     onClick={handleClose}
                     title={isCollapsed ? translatedLabel : undefined}
@@ -107,6 +109,8 @@ export function Sidebar({
                       </div>
                     )}
                   </Link>
+                  {item.href === "/kanban" && active && !isCollapsed && <TimelineSubnav onNavigate={handleClose} />}
+                  </Fragment>
                 );
               })}
             </div>

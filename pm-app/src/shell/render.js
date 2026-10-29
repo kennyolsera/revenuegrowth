@@ -152,6 +152,7 @@ export function render() {
   S.ui.auth = null; // sign-in lives in the ESMM dashboard
   $('#app').innerHTML = renderShell();
   $('#layer').innerHTML = renderLayer();
+  window.dispatchEvent(new Event('pm:rendered')); // lets boot.js tell the dashboard sidebar where we are
   makeFocusable();
   keep.forEach(([k, t, l]) => {
     const el = document.querySelector(`[data-keep="${CSS.escape(k)}"]`);

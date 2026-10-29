@@ -55,24 +55,39 @@ async function caller() {
 }
 
 export async function GET(req: NextRequest) {
-  const { supabase, user, profile } = await caller();
+  const supabase = createServerSupabaseClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const user = auth?.user;
   if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-  if (!profile?.is_active) return NextResponse.json({ error: "Your account is not active" }, { status: 403 });
 
-  const { data: row, error } = await supabase.from("pm_workspace").select("doc,version").eq("id", ROW_ID).maybeSingle();
+  // One round trip after sign-in: caller's profile, the workspace and (on a full load) the team, in parallel.
+  const since = Number(req.nextUrl.searchParams.get("since"));
+  const isPoll = Number.isFinite(since) && since > 0;
+  const [profileRes, rowRes, profilesRes] = await Promise.all([
+    supabase.from("profiles").select("id,email,full_name,role,division,is_active").eq("id", user.id).maybeSingle<Profile>(),
+    supabase.from("pm_workspace").select("doc,version").eq("id", ROW_ID).maybeSingle(),
+    isPoll
+      ? Promise.resolve({ data: null })
+      : supabase.from("profiles").select("id,email,full_name,role,division,is_active").eq("is_active", true).order("full_name"),
+  ]);
+  const profile = profileRes.data;
+  if (!profile?.is_active) return NextResponse.json({ error: "Your account is not active" }, { status: 403 });
+  const { data: row, error } = rowRes;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const since = Number(req.nextUrl.searchParams.get("since"));
-  if (Number.isFinite(since) && since > 0 && row && row.version <= since) {
+  if (isPoll && row && row.version <= since) {
     return new NextResponse(null, { status: 204 });
   }
 
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select("id,email,full_name,role,division,is_active")
-    .eq("is_active", true)
-    .order("full_name");
-  const members = ((profiles as Profile[] | null) || []).map(toMember);
+  let profiles = profilesRes.data as Profile[] | null;
+  if (isPoll) {
+    ({ data: profiles } = await supabase
+      .from("profiles")
+      .select("id,email,full_name,role,division,is_active")
+      .eq("is_active", true)
+      .order("full_name"));
+  }
+  const members = (profiles || []).map(toMember);
   if (!members.some((m) => m.id === profile.id)) members.unshift(toMember(profile));
   const me = toMember(profile);
 

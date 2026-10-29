@@ -70,5 +70,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  // Project Timeline's hashed static bundle and fonts are public code (no data), so they skip the
+  // per-request Supabase session check; its data still goes through /api/pm-workspace, which is gated.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|project-timeline/assets/|project-timeline/fonts/|project-timeline/fonts.css|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2)$).*)"],
 };

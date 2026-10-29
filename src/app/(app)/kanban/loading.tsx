@@ -1,10 +1,4 @@
-import { TimelineLoading } from "@/components/kanban/TimelineFrame";
-
-// Shown the instant the menu is clicked, while the page itself loads.
+// The layout's TimelineHost shows Project Timeline's own progress bar; nothing to render here.
 export default function Loading() {
-  return (
-    <div className="relative h-full w-full">
-      <TimelineLoading progress={5} />
-    </div>
-  );
+  return null;
 }

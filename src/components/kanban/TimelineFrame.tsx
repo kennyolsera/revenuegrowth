@@ -1,42 +1,88 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { PT_GO_EVENT, setPtNav, type PtGo, type PtNav } from "@/lib/pt-bridge";
+
+const SRC = "/project-timeline/index.html";
+const PRELOAD_AFTER_MS = 1500;
 
 /**
- * Embeds the Project Timeline app (public/project-timeline) and shows a progress bar until
- * it reports it is ready. Progress is real where we know it (the app posts 35% when its code
- * has loaded, 75% when the shared data has arrived, 100% after the first render) and creeps
- * forward in between so the bar never looks stuck.
+ * Hosts the Project Timeline app (public/project-timeline) once, in the app layout (ADR-012):
+ * - preloaded in the background shortly after the dashboard opens, so the first visit is fast;
+ * - kept alive (hidden) when you switch menus, so coming back is instant;
+ * - shows a progress bar only while it is visible and still loading.
+ * Progress is real where we know it (35% code loaded, 75% data arrived, 100% first render).
  */
-export function TimelineFrame() {
+export function TimelineHost({ active }: { active: boolean }) {
+  const [mounted, setMounted] = useState(active);
   const [progress, setProgress] = useState(8);
   const [state, setState] = useState<"loading" | "done" | "hidden" | "error">("loading");
   const floor = useRef(8);
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const ready = useRef(false);
+  const queue = useRef<PtGo[]>([]);
+
+  const post = (msg: Record<string, unknown>) =>
+    frameRef.current?.contentWindow?.postMessage({ source: "esmm", ...msg }, window.location.origin);
+
+  // Mount on first visit, or preload quietly once the dashboard has settled.
+  useEffect(() => {
+    if (active) {
+      setMounted(true);
+      return;
+    }
+    if (mounted) return;
+    const w = window as Window & { requestIdleCallback?: (cb: () => void) => number };
+    const id = window.setTimeout(() => (w.requestIdleCallback ? w.requestIdleCallback(() => setMounted(true)) : setMounted(true)), PRELOAD_AFTER_MS);
+    return () => window.clearTimeout(id);
+  }, [active, mounted]);
+
+  // Pause the template's background sync while hidden; resume (and catch up) when shown.
+  useEffect(() => {
+    if (ready.current) post({ type: "visible", visible: active });
+  }, [active]);
 
   // The dashboard's theme is the only switch (ADR-011): mirror every change into the frame.
   useEffect(() => {
+    if (!mounted) return;
     const root = document.documentElement;
     const send = () => {
       const t = root.dataset.theme;
       const dark = t === "dark" || (t === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-      const theme = dark ? "dark" : "light";
-      frameRef.current?.contentWindow?.postMessage({ source: "esmm", type: "theme", theme }, window.location.origin);
+      post({ type: "theme", theme: dark ? "dark" : "light" });
     };
     const obs = new MutationObserver(send);
     obs.observe(root, { attributes: true, attributeFilter: ["data-theme"] });
     return () => obs.disconnect();
+  }, [mounted]);
+
+  // Sidebar navigation -> template (queued until the app reports ready).
+  useEffect(() => {
+    const onGo = (e: Event) => {
+      const d = (e as CustomEvent<PtGo>).detail;
+      if (ready.current) post({ type: "go", ...d });
+      else queue.current = [d];
+    };
+    window.addEventListener(PT_GO_EVENT, onGo);
+    return () => window.removeEventListener(PT_GO_EVENT, onGo);
   }, []);
 
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
       if (e.origin !== window.location.origin || e.data?.source !== "pm") return;
+      if (e.source !== frameRef.current?.contentWindow) return;
       if (e.data.type === "progress") {
         floor.current = Math.max(floor.current, e.data.progress);
         setProgress((p) => Math.max(p, e.data.progress));
       } else if (e.data.type === "ready") {
+        ready.current = true;
         setProgress(100);
         setState("done");
+        queue.current.forEach((d) => post({ type: "go", ...d }));
+        queue.current = [];
+        post({ type: "visible", visible: activeRef.current });
+      } else if (e.data.type === "nav" && e.data.nav && typeof e.data.nav.route === "string") {
+        setPtNav(e.data.nav as PtNav);
       } else if (e.data.type === "error") {
         setState("hidden");
       }
@@ -44,10 +90,12 @@ export function TimelineFrame() {
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);
   }, []);
+  const activeRef = useRef(active);
+  activeRef.current = active;
 
   // Creep toward (but never reach) the next milestone while waiting.
   useEffect(() => {
-    if (state !== "loading") return;
+    if (state !== "loading" || !mounted) return;
     const id = window.setInterval(() => {
       setProgress((p) => {
         const cap = floor.current < 35 ? 30 : floor.current < 75 ? 70 : 95;
@@ -55,7 +103,7 @@ export function TimelineFrame() {
       });
     }, 120);
     return () => window.clearInterval(id);
-  }, [state]);
+  }, [state, mounted]);
 
   // Fade the overlay out after the bar fills.
   useEffect(() => {
@@ -66,14 +114,15 @@ export function TimelineFrame() {
 
   // Safety net: never leave the overlay up if the app can't report back.
   useEffect(() => {
+    if (!mounted) return;
     const id = window.setTimeout(() => setState((s) => (s === "loading" ? "hidden" : s)), 20000);
     return () => window.clearTimeout(id);
-  }, []);
+  }, [mounted]);
 
   return (
-    <div className="relative h-full w-full">
-      <iframe ref={frameRef} src="/project-timeline/index.html" title="Project Timeline" className="block h-full w-full border-0 bg-bg" />
-      {state !== "hidden" && <TimelineLoading progress={progress} fading={state === "done"} />}
+    <div className={active ? "relative min-h-0 w-full flex-1" : "hidden"} aria-hidden={!active}>
+      {mounted && <iframe ref={frameRef} src={SRC} title="Project Timeline" className="block h-full w-full border-0 bg-bg" />}
+      {active && state !== "hidden" && <TimelineLoading progress={progress} fading={state === "done"} />}
     </div>
   );
 }
