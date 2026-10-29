@@ -6,6 +6,7 @@ import { PR, PSTAT, ST } from '../core/constants.js';
 import { notifyAssign, notifyComment, myNotifs, setMyNotifPref } from '../core/notify.js';
 import { D, S, allTasks, canSee, commentsOf, logAct, me, mem, proj, save, task, tasksOf, visibleProjects } from '../core/store.js';
 import { fileType, fsize } from '../ui/helpers.js';
+import { MAX_UPLOAD, uploadFile } from '../core/files.js';
 import { effectiveDark } from '../core/theme.js';
 import { mutate, toast } from '../ui/toast.js';
 import { autosize, focusKey, fxSet, go, render } from '../shell/render.js';
@@ -795,6 +796,18 @@ A.filePreview = el => {
   const f = t.attachments.find(a => a.id === el.dataset.aid);
   openModal({ type: 'filePreview', file: f, tid: t.id });
 };
+/* step through a task's attachments inside the preview (buttons and arrow keys) */
+A.fileStep = el => {
+  const m = S.ui.modals[S.ui.modals.length - 1];
+  if (!m || m.type !== 'filePreview' || !m.tid) return;
+  const list = task(m.tid)?.attachments || [];
+  const i = list.findIndex(a => a.id === m.file.id);
+  const next = list[(i + Number(el.dataset.dir) + list.length) % list.length];
+  if (next && next !== m.file) {
+    m.file = next;
+    render();
+  }
+};
 A.previewFile = el => {
   const f = D().files.find(x => x.id === el.dataset.id);
   S.ui.pop = null;
@@ -803,34 +816,45 @@ A.previewFile = el => {
 export function handleFiles(files, ctx) {
   if (!files || !files.length) return;
   if (S.ui.offline) {
-    toast("Upload failed — you're offline.", { kind: 'err', action: 'Try again', onAction: () => {} });
+    toast("Upload failed. You're offline.", { kind: 'err' });
     return;
   }
   S.ui.uploads = S.ui.uploads || [];
   [...files].forEach(file => {
+    if (file.size > MAX_UPLOAD) {
+      toast(`${file.name} is over 25 MB and wasn't uploaded`, { kind: 'err' });
+      return;
+    }
     const up = { id: uid('u'), name: file.name, size: fsize(file.size), project: ctx.project, task: ctx.task, pct: 0 };
     S.ui.uploads.push(up);
-    const iv = setInterval(() => {
-      up.pct = Math.min(100, up.pct + 9 + Math.round(Math.random() * 22));
+    const paint = () => {
       const bar = document.getElementById('upbar-' + up.id),
         pc = document.getElementById('upct-' + up.id);
       if (bar) bar.style.setProperty('--p', up.pct / 100);
       if (pc) pc.textContent = up.pct + '%';
-      if (up.pct >= 100) {
-        clearInterval(iv);
+    };
+    uploadFile(file, pct => {
+      up.pct = Math.min(99, pct);
+      paint();
+    })
+      .then(path => {
         S.ui.uploads = S.ui.uploads.filter(x => x !== up);
-        const rec = { id: uid('f'), name: up.name, type: fileType(up.name), size: up.size, by: D().me, at: Date.now() };
+        const rec = { id: uid('f'), name: up.name, type: fileType(up.name), size: up.size, by: D().me, at: Date.now(), path, mime: file.type || '' };
         D().files.unshift({ ...rec, project: up.project, task: up.task || null });
-        if (up.task) {
-          const t = task(up.task);
+        const t = up.task ? task(up.task) : null;
+        if (t) {
           t.attachments.push(rec);
           logAct('added a file to', t, up.name);
         }
         save();
         render();
         toast(`Uploaded ${up.name}`);
-      }
-    }, 220);
+      })
+      .catch(err => {
+        S.ui.uploads = S.ui.uploads.filter(x => x !== up);
+        render();
+        toast(`${up.name}: ${err.message}`, { kind: 'err', action: 'Try again', onAction: () => handleFiles([file], ctx) });
+      });
   });
   render();
 }

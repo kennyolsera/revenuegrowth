@@ -12,3 +12,5 @@ Run in file-name order. All are additive and safe to re-run.
 | `20261029_online_order_followups.sql` | Activity Online Order: `online_order_followup_options` (5 editable coloured lists: subscription, Status FU, Sumber Data, Produk, Perihal) + `online_order_followups` (ADR-013) | Applied 2026-10-29 |
 
 `schema.sql` holds the full schema for a fresh project and includes all of the above.
+
+- `20261029_pm_attachments.sql`: private Storage bucket `pm-attachments` (25 MB, active members read/add). **Applied live 2026-10-29.**

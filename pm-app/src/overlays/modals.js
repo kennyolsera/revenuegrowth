@@ -4,6 +4,7 @@ import { ic } from '../core/icons.js';
 import { PCOLORS, PICONS } from '../core/constants.js';
 import { D, S, mem, pColor, proj, task, teamsList } from '../core/store.js';
 import { FT, av, filePrev, lbl, prPill, stPill } from '../ui/helpers.js';
+import { fileUrl, previewKind } from '../core/files.js';
 import { focusKey, render } from '../shell/render.js';
 import { teamModal } from '../features/teams.js';
 
@@ -50,7 +51,7 @@ export function modalHtml(m) {
     case 'team':
       return wrap('', teamModal(m, H));
     case 'filePreview':
-      return wrap('lg', filePreviewModal(m, H));
+      return wrap('lg fpv', filePreviewModal(m, H));
     case 'saveView':
       return wrap(
         'sm',
@@ -283,8 +284,25 @@ export function shortcutsModal(H) {
 export function filePreviewModal(m, H) {
   const f = m.file;
   const t = FT[f.type] || FT.other;
+  const kind = previewKind(f);
+  const url = esc(fileUrl(f));
+  const list = m.tid ? task(m.tid)?.attachments || [] : [];
+  const pos = list.findIndex(a => a.id === f.id);
+  const stage = (inner, extra = '') => `<div class="fpv-stage${extra}">${inner}</div>`;
+  let body;
+  if (kind === 'img') body = stage(`<img src="${url}" alt="${esc(f.name)}" class="fpv-img">`);
+  else if (kind === 'pdf') body = stage(`<iframe src="${url}" title="${esc(f.name)}" class="fpv-frame"></iframe>`, ' doc');
+  else if (kind === 'video') body = stage(`<video src="${url}" controls preload="metadata" class="fpv-img"></video>`);
+  else if (kind === 'audio') body = stage(`<audio src="${url}" controls preload="metadata" style="width:min(520px,90%)"></audio>`, ' short');
+  else
+    body = `<div style="border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">${filePrev(f).replace('class="fprev"', 'class="fprev" style="aspect-ratio:16/9"')}</div>
+    <p class="faint" style="font-size:12.5px;margin-top:10px;text-align:center">${f.path ? `No preview for ${esc(t.n)} files. Download it to open.` : 'This file was added before uploads were stored, so there is nothing to show. Re-upload it to preview.'}</p>`;
+  const nav =
+    list.length > 1 && pos >= 0
+      ? `<div class="fpv-nav"><button class="ibtn ibtn-sm" data-a="fileStep" data-dir="-1" aria-label="Previous attachment">${ic('chevron-left', 15)}</button><span class="faint" style="font-size:12px;font-variant-numeric:tabular-nums">${pos + 1} / ${list.length}</span><button class="ibtn ibtn-sm" data-a="fileStep" data-dir="1" aria-label="Next attachment">${ic('chevron-right', 15)}</button></div>`
+      : '';
   return `${H(esc(f.name), `${t.n} · ${f.size} · Uploaded by ${esc(mem(f.by)?.name || 'you')} ${ago(f.at)}`)}
-  <div class="modal-b"><div style="border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden">${filePrev(f).replace('class="fprev"', 'class="fprev" style="aspect-ratio:16/9"')}</div>
+  <div class="modal-b">${body}
   ${m.tid ? `<div class="row faint" style="font-size:12.5px">${ic('link', 13)}Attached to <button class="link" data-a="openTask" data-id="${m.tid}">${esc(task(m.tid)?.title)}</button></div>` : ''}</div>
-  <div class="modal-f"><button class="btn btn-secondary" data-a="copyLink" data-fid="${f.id}">${ic('link', 14)}Copy link</button><span class="sp"></span><button class="btn btn-primary" data-a="closeModal">Close</button></div>`;
+  <div class="modal-f">${nav}<span class="sp"></span>${f.path ? `<a class="btn btn-secondary" href="${url}" target="_blank" rel="noopener">${ic('external-link', 14)}Open in new tab</a><a class="btn btn-secondary" href="${esc(fileUrl(f, true))}" download>${ic('download', 14)}Download</a>` : ''}<button class="btn btn-primary" data-a="closeModal">Close</button></div>`;
 }

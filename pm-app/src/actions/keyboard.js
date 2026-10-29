@@ -18,6 +18,13 @@ document.addEventListener('keydown', e => {
     pl ? A.closePalette() : A.openPalette();
     return;
   }
+  // Arrow keys step through attachments while one is previewed.
+  const top = S.ui.modals[S.ui.modals.length - 1];
+  if (top?.type === 'filePreview' && !typing && !mod && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    e.preventDefault();
+    A.fileStep({ dataset: { dir: e.key === 'ArrowLeft' ? '-1' : '1' } });
+    return;
+  }
   // Keep Tab inside whichever surface is modal right now.
   if (e.key === 'Tab') {
     const box = pl ? $('.palette') : S.ui.modals.length ? $$('.modal').pop() : S.ui.drawer && S.ui.drawerFull ? $('.drawer') : null;

@@ -314,3 +314,48 @@
   border-color: var(--accent-line);
   color: var(--text);
 }
+
+/* real attachments (ADR-015): thumbnail + preview stage */
+.fprev .fthumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.modal.fpv {
+  max-width: min(1040px, 94vw);
+}
+.fpv-stage {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+  max-height: calc(100vh - 230px);
+  background: var(--sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.fpv-stage.short {
+  min-height: 120px;
+}
+.fpv-stage.doc {
+  height: calc(100vh - 230px);
+}
+.fpv-img {
+  max-width: 100%;
+  max-height: calc(100vh - 232px);
+  object-fit: contain;
+  display: block;
+}
+.fpv-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+.fpv-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
