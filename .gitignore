@@ -3,3 +3,8 @@ node_modules
 .env*.local
 .DS_Store
 *.log
+
+# graphify: keep report/graph/manifest, ignore regenerable bits
+graphify-out/cache/
+graphify-out/graph.html
+graphify-out/.graphify_python
