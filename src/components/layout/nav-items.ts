@@ -24,7 +24,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/dashboard", label: "Dashboard", translationKey: "nav_dashboard", icon: LayoutDashboard },
       { href: "/kanban", label: "Project Timeline", translationKey: "nav_kanban", icon: GanttChart },
-      { href: "/activity", label: "Activity Record", translationKey: "nav_activity", icon: ClipboardList },
+      { href: "/activity", label: "Activity QRIS", translationKey: "nav_activity", icon: ClipboardList },
       { href: "/online-order-activity", label: "Activity Online Order", translationKey: "nav_online_order_activity", icon: PhoneCall },
       { href: "/calendar", label: "Calendar & Meetings", translationKey: "nav_calendar", icon: CalendarDays },
       { href: "/mom", label: "MOM Minutes", translationKey: "nav_mom", icon: NotebookPen },

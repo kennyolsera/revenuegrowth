@@ -14,3 +14,4 @@ Run in file-name order. All are additive and safe to re-run.
 `schema.sql` holds the full schema for a fresh project and includes all of the above.
 
 - `20261029_pm_attachments.sql`: private Storage bucket `pm-attachments` (25 MB, active members read/add). **Applied live 2026-10-29.**
+- `20261102_activity_superadmin_delete.sql`: delete on activity_records and online_order_followups limited to super_admin (ADR-016). **Applied live 2026-11-02.**

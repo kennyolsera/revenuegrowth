@@ -69,6 +69,7 @@ export function ActivityDialog({
   onClose,
   onSaved,
   onOptionCreated,
+  canDelete = false,
 }: {
   open: boolean;
   record: ActivityRecord | null;
@@ -76,6 +77,8 @@ export function ActivityDialog({
   onClose: () => void;
   onSaved: () => void;
   onOptionCreated: (o: ActivityOption) => void;
+  /** Super admins only (ADR-016); the database enforces it too. */
+  canDelete?: boolean;
 }) {
   const { language } = useLanguage();
   const toast = useToast();
@@ -147,9 +150,10 @@ export function ActivityDialog({
   async function handleDelete() {
     if (!record) return;
     setSaving(true);
-    const { error: err } = await createClient().from("activity_records").delete().eq("id", record.id);
+    const { error: err, count } = await createClient().from("activity_records").delete({ count: "exact" }).eq("id", record.id);
     setSaving(false);
     if (err) return setError(`${COPY.saveError[language]}: ${err.message}`);
+    if (!count) return setError(language === "id" ? "Hanya super admin yang bisa menghapus." : "Only super admins can delete records.");
     toast.success(COPY.deleted[language]);
     onSaved();
     onClose();
@@ -231,7 +235,7 @@ export function ActivityDialog({
         )}
 
         <div className="mt-2 flex items-center justify-between gap-2 border-t border-divider pt-4">
-          {record ? (
+          {record && canDelete ? (
             <Button type="button" variant="ghost" size="sm" className="text-red" onClick={() => setConfirmDelete(true)}>
               <Trash2 className="h-3.5 w-3.5" /> {COPY.remove[language]}
             </Button>

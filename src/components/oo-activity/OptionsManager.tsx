@@ -155,7 +155,7 @@ export function OptionsManager({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={COPY.title[language]} description={COPY.desc[language]} width="max-w-2xl">
+    <Dialog open={open} onClose={onClose} title={COPY.title[language]} description={COPY.desc[language]} width="max-w-2xl" guardChanges={false}>
       <div role="tablist" aria-label={COPY.title[language]} className="mb-4 flex flex-wrap gap-1 rounded-md bg-surface-3 p-0.5">
         {OPTION_FIELDS.map((f) => (
           <button

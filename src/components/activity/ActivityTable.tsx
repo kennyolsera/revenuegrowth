@@ -56,6 +56,7 @@ export function ActivityTable({
   onImport,
   onNew,
   onClearFilters,
+  selection,
 }: {
   rows: ActivityRecord[];
   options: ActivityOption[];
@@ -68,9 +69,14 @@ export function ActivityTable({
   onImport: () => void;
   onNew: () => void;
   onClearFilters: () => void;
+  /** Present only for super admins: checkbox column for bulk delete (ADR-016). */
+  selection?: { selected: Set<string>; toggle: (id: string) => void; setMany: (ids: string[], on: boolean) => void };
 }) {
   const lists = OPTION_FIELDS.map((f) => ({ ...f, opts: optionsFor(options, f.field) }));
-  const colCount = 4 + lists.length;
+  const colCount = 4 + lists.length + (selection ? 1 : 0);
+  const visibleIds = rows.map((r) => r.id);
+  const pickedHere = selection ? visibleIds.filter((id) => selection.selected.has(id)).length : 0;
+  const allHere = visibleIds.length > 0 && pickedHere === visibleIds.length;
 
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface">
@@ -78,6 +84,20 @@ export function ActivityTable({
         <table className="w-full border-separate border-spacing-0 text-[13px]">
           <thead>
             <tr>
+              {selection && (
+                <th scope="col" className={cn(TH, "w-9 px-0 text-center")}>
+                  <input
+                    type="checkbox"
+                    aria-label={language === "id" ? "Pilih semua baris yang tampil" : "Select all shown rows"}
+                    checked={allHere}
+                    ref={(el) => {
+                      if (el) el.indeterminate = pickedHere > 0 && !allHere;
+                    }}
+                    onChange={() => selection.setMany(visibleIds, !allHere)}
+                    className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                  />
+                </th>
+              )}
               <th scope="col" className={cn(TH, "w-[76px]")}>
                 {COPY.date[language]}
               </th>
@@ -163,7 +183,19 @@ export function ActivityTable({
                       i < 24 && "animate-fade-in opacity-0"
                     )}
                     style={i < 24 ? { animationDelay: `${i * 14}ms` } : undefined}
+                    aria-selected={selection ? selection.selected.has(r.id) : undefined}
                   >
+                    {selection && (
+                      <td className={cn(TD, "w-9 px-0 text-center", selection.selected.has(r.id) && "bg-accent/[0.06]")} onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          aria-label={`${language === "id" ? "Pilih" : "Select"} ${r.store_name}`}
+                          checked={selection.selected.has(r.id)}
+                          onChange={() => selection.toggle(r.id)}
+                          className="h-3.5 w-3.5 cursor-pointer accent-[var(--accent)]"
+                        />
+                      </td>
+                    )}
                     <td className={cn(TD, "font-mono text-[12px] tabular-nums text-text-3")}>{fmtDate(r.activity_date, language)}</td>
                     <td className={cn(TD, "sticky left-0 z-[1] max-w-[280px] border-r border-r-divider bg-surface")}>
                       <span className="flex items-center gap-1.5">

@@ -23,6 +23,9 @@ import { FilterPill, StatusViews } from "@/components/activity/ActivityFilters";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/LanguageContext";
 import { useToast } from "@/lib/ToastContext";
+import { useMyRole, isSuperAdmin } from "@/lib/useMyRole";
+import { bulkDelete } from "@/lib/bulk-delete";
+import { BulkDeleteBar } from "@/components/shared/BulkDeleteBar";
 
 const PAGE = 100;
 const FETCH = 1000;
@@ -31,7 +34,7 @@ const NONE = "__none__";
 type DatePreset = "" | "today" | "7d" | "30d" | "month" | "lastmonth" | "custom";
 
 const COPY = {
-  title: { id: "Catatan Aktivitas", en: "Activity Record" },
+  title: { id: "Aktivitas QRIS", en: "Activity QRIS" },
   desc: {
     id: "Aktivitas tim per toko. Ubah chip langsung di baris; klik baris untuk detail.",
     en: "The team's activity per store. Change a chip right in the row; click a row for details.",
@@ -240,6 +243,44 @@ export default function ActivityRecordPage() {
 
   useEffect(() => setShown(PAGE), [search, filters, preset, customFrom, customTo]);
 
+  // Super-admin selection and bulk delete (ADR-016). Only rows that are currently filtered in count.
+  const canDelete = isSuperAdmin(useMyRole());
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const selectedIds = useMemo(() => filtered.filter((r) => selected.has(r.id)).map((r) => r.id), [filtered, selected]);
+  const selection = canDelete
+    ? {
+        selected,
+        toggle: (id: string) =>
+          setSelected((s) => {
+            const n = new Set(s);
+            if (n.has(id)) n.delete(id);
+            else n.add(id);
+            return n;
+          }),
+        setMany: (ids: string[], on: boolean) =>
+          setSelected((s) => {
+            const n = new Set(s);
+            ids.forEach((id) => (on ? n.add(id) : n.delete(id)));
+            return n;
+          }),
+      }
+    : undefined;
+
+  async function deleteSelected() {
+    const ids = selectedIds;
+    const { deleted, error: err } = await bulkDelete("activity_records", ids);
+    if (deleted > 0) {
+      const gone = new Set(ids);
+      setRecords((rs) => rs.filter((r) => !gone.has(r.id)));
+      setSelected(new Set());
+    }
+    if (err) toast.error(language === "id" ? `${deleted} dari ${ids.length} terhapus. Gagal: ${err}` : `Deleted ${deleted} of ${ids.length}. Failed: ${err}`);
+    else if (deleted < ids.length)
+      toast.error(language === "id" ? "Hanya super admin yang bisa menghapus catatan." : "Only super admins can delete records.");
+    else toast.success(language === "id" ? `${fmt(deleted)} catatan dihapus` : `Deleted ${fmt(deleted)} ${deleted === 1 ? "record" : "records"}`);
+    fetchRecords().catch((e) => setError(e.message));
+  }
+
   const todayIso = isoOf(new Date());
   const todayCount = useMemo(() => records.filter((r) => r.activity_date === todayIso).length, [records, todayIso]);
 
@@ -432,7 +473,19 @@ export default function ActivityRecordPage() {
             </p>
           </div>
 
+          {canDelete && (
+            <BulkDeleteBar
+              count={selectedIds.length}
+              matching={filtered.length}
+              language={language}
+              onSelectAllMatching={() => selection?.setMany(filtered.map((r) => r.id), true)}
+              onClear={() => setSelected(new Set())}
+              onDelete={deleteSelected}
+            />
+          )}
+
           <ActivityTable
+            selection={selection}
             rows={filtered.slice(0, shown)}
             options={options}
             loading={loading}
@@ -466,6 +519,7 @@ export default function ActivityRecordPage() {
       )}
 
       <ActivityDialog
+        canDelete={canDelete}
         open={dialogOpen}
         record={editing}
         options={options}

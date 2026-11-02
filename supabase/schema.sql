@@ -956,9 +956,12 @@ drop policy if exists "activity_options_internal_all" on public.activity_options
 create policy "activity_options_internal_all" on public.activity_options
   for all using (public.is_internal()) with check (public.is_internal());
 
+-- ADR-016: everyone internal reads/adds/edits; only super_admin deletes.
 drop policy if exists "activity_records_internal_all" on public.activity_records;
-create policy "activity_records_internal_all" on public.activity_records
-  for all using (public.is_internal()) with check (public.is_internal());
+create policy activity_records_select on public.activity_records for select using (public.is_internal());
+create policy activity_records_insert on public.activity_records for insert with check (public.is_internal());
+create policy activity_records_update on public.activity_records for update using (public.is_internal()) with check (public.is_internal());
+create policy activity_records_delete on public.activity_records for delete using (public.current_profile_role() = 'super_admin');
 
 -- The trigger function is not an API endpoint.
 revoke execute on function public.activity_records_touch() from public, anon, authenticated;

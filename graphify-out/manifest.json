@@ -372,10 +372,10 @@
     "semantic_hash": "5630d86f9a600e4aecaf979b19e9206a"
   },
   "src/app/(app)/activity/page.tsx": {
-    "mtime": 1793172236.3039882,
-    "seen": 1793243944.0339568,
-    "ast_hash": "2be9d138a08cbe8aab40f34c2490cd0f",
-    "semantic_hash": "2be9d138a08cbe8aab40f34c2490cd0f"
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.1191592,
+    "ast_hash": "5191c436af8121fdd31a40be37d5cca9",
+    "semantic_hash": ""
   },
   "src/app/(app)/calendar/page.tsx": {
     "mtime": 1793172400.3936255,
@@ -552,10 +552,10 @@
     "semantic_hash": "bb5e840b25a050c9f184baa4d66f75fe"
   },
   "src/components/activity/ActivityDialog.tsx": {
-    "mtime": 1793172236.299227,
-    "seen": 1793243944.033981,
-    "ast_hash": "32d869998bcf401610ab48d33c597453",
-    "semantic_hash": "32d869998bcf401610ab48d33c597453"
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.1192343,
+    "ast_hash": "30d2a8a7c57b27321eea10647ac890c9",
+    "semantic_hash": ""
   },
   "src/components/activity/ActivityFilters.tsx": {
     "mtime": 1793172236.2987268,
@@ -564,10 +564,10 @@
     "semantic_hash": "c8cedb20dd59d6e2eba9d3b555bf46ef"
   },
   "src/components/activity/ActivityTable.tsx": {
-    "mtime": 1793172236.298228,
-    "seen": 1793243944.0339828,
-    "ast_hash": "db3ed03dbe9865c73161b5aa06522f6b",
-    "semantic_hash": "db3ed03dbe9865c73161b5aa06522f6b"
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.119237,
+    "ast_hash": "3065e1ae542d24ae9efad6055ca8cd58",
+    "semantic_hash": ""
   },
   "src/components/activity/ImportDialog.tsx": {
     "mtime": 1793172236.2989368,
@@ -576,10 +576,10 @@
     "semantic_hash": "c756c31a9525baab5ce10b3f4dac44d8"
   },
   "src/components/activity/OptionsManager.tsx": {
-    "mtime": 1793172236.2979884,
-    "seen": 1793243944.0339842,
-    "ast_hash": "c6560e53306f9c7c819b8db0ecdb100a",
-    "semantic_hash": "c6560e53306f9c7c819b8db0ecdb100a"
+    "mtime": 1793613617.4804733,
+    "seen": 1793613845.1192396,
+    "ast_hash": "882f472e0e18276733367379c3161172",
+    "semantic_hash": ""
   },
   "src/components/activity/options.tsx": {
     "mtime": 1793172236.298512,
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "src/components/layout/nav-items.ts": {
-    "mtime": 1793265966.4196987,
-    "seen": 1793266516.64212,
-    "ast_hash": "6a0447ae749b968d984df58c913fd6c0",
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.1192691,
+    "ast_hash": "694038719721da4caa1d7ef05c042eed",
     "semantic_hash": ""
   },
   "src/components/leads/FilePreview.tsx": {
@@ -882,9 +882,9 @@
     "semantic_hash": "eb551d63c77755f99d5e2f590c7db18c"
   },
   "src/lib/i18n.ts": {
-    "mtime": 1793265966.420886,
-    "seen": 1793266516.6421602,
-    "ast_hash": "dc9b46f6f8e1545fc6a86b04c7f96e65",
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.119317,
+    "ast_hash": "88817b0fbb53ab9af4a5e035d986896f",
     "semantic_hash": ""
   },
   "src/lib/kanban-projects.ts": {
@@ -990,10 +990,10 @@
     "semantic_hash": "fd8ea8655cdcaa3ed001717b34d24ff1"
   },
   "supabase/schema.sql": {
-    "mtime": 1793007537.5208573,
-    "seen": 1793243944.0340452,
-    "ast_hash": "d4ca697b3510cd75b61edc771d730b41",
-    "semantic_hash": "d4ca697b3510cd75b61edc771d730b41"
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.119346,
+    "ast_hash": "1a70853e8330fb92e3af95877ccd9490",
+    "semantic_hash": ""
   },
   "tailwind.config.ts": {
     "mtime": 1793010660.1404495,
@@ -1026,9 +1026,9 @@
     "semantic_hash": "48c2f529747c437251b9d91a5f961f8b"
   },
   "supabase/migrations/README.md": {
-    "mtime": 1793268219.3306699,
-    "seen": 1793268226.1409414,
-    "ast_hash": "b03df19300f5a1a0d8f92f4dec1a6b21",
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.119356,
+    "ast_hash": "9e60166b1f57a2a4bf9ad42979798365",
     "semantic_hash": ""
   },
   "public/project-timeline/assets/remote-Be2DW6MT.js": {
@@ -1104,15 +1104,15 @@
     "semantic_hash": ""
   },
   "src/app/(app)/online-order-activity/page.tsx": {
-    "mtime": 1793264023.1019592,
-    "seen": 1793264249.5765164,
-    "ast_hash": "307d8896de48d7b1330ef15fef4c61d3",
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.1192048,
+    "ast_hash": "93142589f2d502bf0e658e2cc7e3014f",
     "semantic_hash": ""
   },
   "src/components/oo-activity/ActivityDialog.tsx": {
-    "mtime": 1793263962.8310504,
-    "seen": 1793264249.5765736,
-    "ast_hash": "c81279d75993eee1c117903568cd654e",
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.119273,
+    "ast_hash": "3784575e70b39f0867f1af302bf4178e",
     "semantic_hash": ""
   },
   "src/components/oo-activity/ActivityFilters.tsx": {
@@ -1122,9 +1122,9 @@
     "semantic_hash": ""
   },
   "src/components/oo-activity/ActivityTable.tsx": {
-    "mtime": 1793263981.434058,
-    "seen": 1793264249.5765762,
-    "ast_hash": "f1717768e4fe44d8ea22bac3ed9e4a75",
+    "mtime": 1793613559.646956,
+    "seen": 1793613845.1192763,
+    "ast_hash": "1ab4ba511edce60064fec1b473aa5a1a",
     "semantic_hash": ""
   },
   "src/components/oo-activity/ImportDialog.tsx": {
@@ -1134,9 +1134,9 @@
     "semantic_hash": ""
   },
   "src/components/oo-activity/OptionsManager.tsx": {
-    "mtime": 1793263922.4195518,
-    "seen": 1793264249.5765789,
-    "ast_hash": "e156dcbb18ec93e172c7d92db59bab5c",
+    "mtime": 1793613617.4814591,
+    "seen": 1793613845.1192794,
+    "ast_hash": "c04c47c22434be14c9704a7e6195a8e9",
     "semantic_hash": ""
   },
   "src/components/oo-activity/options.tsx": {
@@ -1215,6 +1215,30 @@
     "mtime": 1793267865.4569645,
     "seen": 1793268226.1409209,
     "ast_hash": "1094919c8d67cd2cb9ef8818c9d0ef30",
+    "semantic_hash": ""
+  },
+  "src/components/shared/BulkDeleteBar.tsx": {
+    "mtime": 1793612989.5709221,
+    "seen": 1793613845.119284,
+    "ast_hash": "1b4e1c0965813f5db42df130c2f12a9a",
+    "semantic_hash": ""
+  },
+  "src/lib/bulk-delete.ts": {
+    "mtime": 1793612989.5706515,
+    "seen": 1793613845.1193068,
+    "ast_hash": "2b2ff3d1c53554e431531c9396362706",
+    "semantic_hash": ""
+  },
+  "src/lib/useMyRole.ts": {
+    "mtime": 1793612989.5688872,
+    "seen": 1793613845.1193314,
+    "ast_hash": "fd43ae009fff466e7ed575b1cfe16709",
+    "semantic_hash": ""
+  },
+  "supabase/migrations/20261102_activity_superadmin_delete.sql": {
+    "mtime": 1793613035.2423997,
+    "seen": 1793613845.1193445,
+    "ast_hash": "e3d6288daec97874de3c601f05ab3693",
     "semantic_hash": ""
   },
   "pm-app/package-lock.json": {
